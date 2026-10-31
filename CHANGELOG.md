@@ -5,6 +5,15 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow the `VersionName` in
 `AdamskAI.uplugin`. XML v1 stays compatible across all of them: a file that compiled still compiles.
 
+## Unreleased
+
+### Added
+- `HasGameplayTag` sensor: reads `IGameplayTagAssetInterface` on the target actor and publishes a Bool Input,
+  with hierarchical matching. Missing actors or interfaces read false; Actor Tags and components are not searched.
+- Perception binding filters `RequiredActorTag` (ordinary Actor Tags) and `RequiredStimulusTag` (exact stimulus tag).
+  Empty filters preserve behavior; callback and resync use the same filters, loss still clears accepted sensing,
+  and removing the required actor tag invalidates the candidate on the next sample.
+
 ## 0.5.0 — 2026-10-31
 
 The first release from its own repository: new nodes (`Parallel`, `Set`, `Retry`), sensors, actions, groups and

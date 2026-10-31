@@ -5,6 +5,9 @@
 #if WITH_AUTOMATION_TESTS && WITH_EDITOR
 
 #include "World/WorldScenario.h"
+#include "Bridges/ADSKPerceptionBridgeComponent.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISense_Sight.h"
 #include "CQTest.h"
 
 // The perception bridge on real AI sight, with no InjectStimulusForTest or fake clock: the target is seen in
@@ -90,6 +93,42 @@ TEST_CLASS_WITH_FLAGS(FWorldPerceptionSpec, "AdamskAIWorld.Perception",
 				ASSERT_THAT(IsFalse(Agent.Value(TEXT("HasTarget")).bBool, TEXT("still has a target after ForgetAfter")));
 				ASSERT_THAT(AreEqual(1, CountConsumed(Agent, TEXT("Alerted"))));
 				ASSERT_THAT(AreEqual(1, CountConsumed(Agent, TEXT("TargetSeen"))));
+			});
+	}
+
+	TEST_METHOD(TaggedCallbacksAreFilteredAndAnUntaggedLossStillClearsSight)
+	{
+		if (!Scenario.IsOpen()) return;
+		TestCommandBuilder
+			.StartWhen(TEXT("navmesh ready"), [this] { return Scenario.IsNavigationReady(); }, Timeout)
+			.Then(TEXT("spawn a filtered watcher and deliver rejected stimuli"), [this]
+			{
+				Target = &Scenario.SpawnPawn(InSight);
+				Agent = Scenario.SpawnAgent(Watcher, FADSKWorldScenario::Behavior(TEXT("world_sight.xml")),
+					{.ControllerClass = AADSKWorldFilteredSightController::StaticClass(), .Rotation = FRotator(0.0, 90.0, 0.0)});
+				const UAISense_Sight& Sense = *GetDefault<UAISense_Sight>();
+				UAIPerceptionComponent* Perception = Agent.Controller->GetPerceptionComponent();
+				Perception->OnTargetPerceptionUpdated.Broadcast(Target.Get(), FAIStimulus(Sense, 1.f, InSight, Watcher,
+					FAIStimulus::SensingSucceeded, TEXT("Important")));
+				Target->Tags.Add(TEXT("Source"));
+				Perception->OnTargetPerceptionUpdated.Broadcast(Target.Get(), FAIStimulus(Sense, 1.f, InSight, Watcher,
+					FAIStimulus::SensingSucceeded, TEXT("Other")));
+				const UADSKPerceptionBridgeComponent* Bridge = CastChecked<AADSKWorldSightController>(Agent.Controller.Get())->Bridge;
+				ASSERT_THAT(AreEqual(0, Bridge->GetCandidateCountForTest(UAISense_Sight::StaticClass())));
+				ASSERT_THAT(AreEqual(0, Bridge->GetQueuedStimulusCountForTest(UAISense_Sight::StaticClass())));
+				Perception->OnTargetPerceptionUpdated.Broadcast(Target.Get(), FAIStimulus(Sense, 1.f, InSight, Watcher,
+					FAIStimulus::SensingSucceeded, TEXT("Important")));
+			})
+			.Until(TEXT("tagged callback published"), [this] { return Agent.Value(TEXT("Sensed")).bBool; }, Timeout)
+			.Then(TEXT("deliver loss with no tag"), [this]
+			{
+				Agent.Controller->GetPerceptionComponent()->OnTargetPerceptionUpdated.Broadcast(Target.Get(),
+					FAIStimulus(*GetDefault<UAISense_Sight>(), 0.f, InSight, Watcher, FAIStimulus::SensingFailed));
+			})
+			.Until(TEXT("accepted sight is lost"), [this] { return !Agent.Value(TEXT("Sensed")).bBool; }, Timeout)
+			.Then(TEXT("the frozen contact is still remembered"), [this]
+			{
+				ASSERT_THAT(IsTrue(Agent.Value(TEXT("HasTarget")).bBool, TEXT("loss bypassed memory")));
 			});
 	}
 };

@@ -30,6 +30,10 @@ struct FADSKPerceptionBinding
 	UPROPERTY(EditAnywhere, Category = "AdamskAI") FString TargetSeenEvent;
 	UPROPERTY(EditAnywhere, Category = "AdamskAI") FString TargetLostEvent;
 	UPROPERTY(EditAnywhere, Category = "AdamskAI") FString StimulusEvent;
+	/** Optional AActor::Tags filter, not a GameplayTag. Configure before BeginPlay. */
+	UPROPERTY(EditAnywhere, Category = "AdamskAI") FName RequiredActorTag = NAME_None;
+	/** Optional exact FAIStimulus::Tag filter. Configure before BeginPlay; loss still clears accepted sight. */
+	UPROPERTY(EditAnywhere, Category = "AdamskAI") FName RequiredStimulusTag = NAME_None;
 
 	/** Seconds a lost actor stays a candidate at its last sensed location; 0 forgets at once. Sensed candidates always win. */
 	UPROPERTY(EditAnywhere, Category = "AdamskAI", meta = (ClampMin = "0")) float ForgetAfter = 0.f;
@@ -48,6 +52,15 @@ struct FADSKPerceptionBinding
 };
 
 DECLARE_DELEGATE_RetVal_ThreeParams(AActor*, FADSKSelectTarget, const UADSKPerceptionBridgeComponent&, TSubclassOf<UAISense>, TConstArrayView<AActor*>);
+
+#if WITH_AUTOMATION_TESTS
+struct FADSKPerceptionTestStimulus
+{
+	TWeakObjectPtr<AActor> Actor;
+	FVector Location;
+	FName Tag = NAME_None;
+};
+#endif
 
 /** Mirrors configured perception senses into one AdamskAI brain immediately before its tick. */
 UCLASS(ClassGroup = AI, meta = (BlueprintSpawnableComponent))
@@ -69,9 +82,9 @@ public:
 	bool IsBridgeEnabled() const { return bEnabled; }
 
 #if WITH_AUTOMATION_TESTS
-	void InjectStimulusForTest(TSubclassOf<UAISense> Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed);
-	void InjectResolvedStimulusForTest(TSubclassOf<UAISense> Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed);
-	void SetResyncCandidatesForTest(TSubclassOf<UAISense> Sense, TArray<TPair<TWeakObjectPtr<AActor>, FVector>> Candidates);
+	void InjectStimulusForTest(TSubclassOf<UAISense> Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed, FName Tag = NAME_None);
+	void InjectResolvedStimulusForTest(TSubclassOf<UAISense> Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed, FName Tag = NAME_None);
+	void SetResyncCandidatesForTest(TSubclassOf<UAISense> Sense, TArray<FADSKPerceptionTestStimulus> Candidates);
 	AActor* SelectTargetForTest(TSubclassOf<UAISense> Sense);
 	bool ValidateDefinitionForTest(const FADSKDefinition& Definition, FString& OutError) const { return ValidateDefinition(Definition, OutError); }
 	int32 GetCandidateCountForTest(TSubclassOf<UAISense> Sense) const;
@@ -98,6 +111,8 @@ private:
 		bool bSortDirty = true;
 		TArray<FVector> Stimuli;
 		float ForgetAfter = 0.f;
+		FName RequiredActorTag;
+		FName RequiredStimulusTag;
 		float Alert = 0.f;
 		bool bAlerted = false;
 		bool bHadPublishedTarget = false;
@@ -111,8 +126,10 @@ private:
 	void OnStopped();
 	bool ValidateDefinition(const FADSKDefinition& Definition, FString& OutError) const;
 	void Disable(const FString& Reason);
-	void ProcessResolvedStimulus(UClass* Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed);
-	void ProcessStimulus(UClass* Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed);
+	void ProcessResolvedStimulus(UClass* Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed, FName Tag);
+	void ProcessStimulus(UClass* Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed, FName Tag);
+	static bool AcceptsActor(const FBindingState& State, const AActor& Actor);
+	static bool AcceptsStimulus(const FBindingState& State, const AActor& Actor, FName Tag);
 	void Resync(FBindingState& State, TSubclassOf<UAISense> Sense);
 	static void AddCandidate(FBindingState& State, AActor* Actor, const FVector& Location);
 	AActor* Select(FBindingState& State, TSubclassOf<UAISense> Sense);
@@ -154,7 +171,7 @@ private:
 	bool bLoggedDisable = false;
 	bool bWarnedUnknownSense = false;
 #if WITH_AUTOMATION_TESTS
-	TMap<UClass*, TArray<TPair<TWeakObjectPtr<AActor>, FVector>>> TestResyncCandidates;
+	TMap<UClass*, TArray<FADSKPerceptionTestStimulus>> TestResyncCandidates;
 #endif
 	TOptional<double> LastPreTick;
 };

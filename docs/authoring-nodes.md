@@ -131,6 +131,7 @@ or `OnStart` and fail plainly without it:
 | `UADSKPerceptionBridgeComponent` | a `UAIPerceptionComponent` on the same actor | it binds to that component |
 | `Distance`, `LineOfSight`, `PlayerPawn` sensors | a host actor | they measure from it (`LineOfSight` traces from its eyes, `GetActorEyesViewPoint`) |
 | `Grounded` sensor | an `ACharacter` host actor | it reads the character movement; false otherwise |
+| `HasGameplayTag` sensor | a target implementing `IGameplayTagAssetInterface` | hierarchical GameplayTag matching; false without that interface, never a component search |
 | `Act` | an `IADSKActionPerformer` on the host actor, else on the brain's owner (the controller) | the performer does the action and reports its end |
 | `HoldToken` | a brain in a world (no group needed) | the tokens are that world's `UADSKGroupSubsystem`'s, held by the brain |
 | `Radio`, `GroupTarget` sensor | a host actor the host put in a group (`UADSKGroupSubsystem::Join`) | they reach the other members only through the group service |

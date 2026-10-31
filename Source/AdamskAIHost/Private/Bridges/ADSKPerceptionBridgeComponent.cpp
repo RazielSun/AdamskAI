@@ -48,7 +48,11 @@ void UADSKPerceptionBridgeComponent::BeginPlay()
 	}
 	for (const FADSKPerceptionBinding& Binding : Bindings)
 	{
-		if (Binding.Sense) States.FindOrAdd(Binding.Sense.Get()).ForgetAfter = Binding.ForgetAfter;
+		if (!Binding.Sense) continue;
+		FBindingState& State = States.FindOrAdd(Binding.Sense.Get());
+		State.ForgetAfter = Binding.ForgetAfter;
+		State.RequiredActorTag = Binding.RequiredActorTag;
+		State.RequiredStimulusTag = Binding.RequiredStimulusTag;
 	}
 	Perceptions[0]->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &UADSKPerceptionBridgeComponent::OnTargetPerceptionUpdated);
 	PreTickHandle = Brains[0]->OnPreTick.AddUObject(this, &UADSKPerceptionBridgeComponent::OnPreTick);
@@ -153,10 +157,10 @@ void UADSKPerceptionBridgeComponent::OnTargetPerceptionUpdated(AActor* Actor, FA
 {
 	if (!bEnabled) return;
 	const TSubclassOf<UAISense> Sense = UAIPerceptionSystem::GetSenseClassForStimulus(this, Stimulus);
-	ProcessResolvedStimulus(Sense.Get(), Actor, Stimulus.StimulusLocation, Stimulus.WasSuccessfullySensed());
+	ProcessResolvedStimulus(Sense.Get(), Actor, Stimulus.StimulusLocation, Stimulus.WasSuccessfullySensed(), Stimulus.Tag);
 }
 
-void UADSKPerceptionBridgeComponent::ProcessResolvedStimulus(UClass* Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed)
+void UADSKPerceptionBridgeComponent::ProcessResolvedStimulus(UClass* Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed, FName Tag)
 {
 	if (!Sense)
 	{
@@ -168,13 +172,23 @@ void UADSKPerceptionBridgeComponent::ProcessResolvedStimulus(UClass* Sense, AAct
 		if (!WarnedUnboundSenses.Contains(Sense)) { WarnedUnboundSenses.Add(Sense); UE_LOG(LogAdamskAIHost, Warning, TEXT("AdamskAI perception bridge ignored unbound sense %s"), *Sense->GetName()); }
 		return;
 	}
-	ProcessStimulus(Sense, Actor, Location, bSuccessfullySensed);
+	ProcessStimulus(Sense, Actor, Location, bSuccessfullySensed, Tag);
 }
 
-void UADSKPerceptionBridgeComponent::ProcessStimulus(UClass* Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed)
+bool UADSKPerceptionBridgeComponent::AcceptsActor(const FBindingState& State, const AActor& Actor)
+{
+	return State.RequiredActorTag.IsNone() || Actor.ActorHasTag(State.RequiredActorTag);
+}
+
+bool UADSKPerceptionBridgeComponent::AcceptsStimulus(const FBindingState& State, const AActor& Actor, FName Tag)
+{
+	return AcceptsActor(State, Actor) && (State.RequiredStimulusTag.IsNone() || State.RequiredStimulusTag == Tag);
+}
+
+void UADSKPerceptionBridgeComponent::ProcessStimulus(UClass* Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed, FName Tag)
 {
 	FBindingState* State = States.Find(Sense);
-	if (!State || !Actor) return;
+	if (!State || !IsValid(Actor)) return;
 	if (!bSuccessfullySensed)
 	{
 		// With a memory the actor stays a candidate at the location it was last sensed at.
@@ -183,6 +197,7 @@ void UADSKPerceptionBridgeComponent::ProcessStimulus(UClass* Sense, AActor* Acto
 		else if (Candidate->LostAt < 0.0) { Candidate->LostAt = Now(); }
 		return;
 	}
+	if (!AcceptsStimulus(*State, *Actor, Tag)) return;
 	AddCandidate(*State, Actor, Location);
 	if (State->Stimuli.Num() == MaxQueuedStimuli) { State->Stimuli.RemoveAt(0); ++DroppedStimuli; }
 	State->Stimuli.Add(Location);
@@ -200,9 +215,13 @@ void UADSKPerceptionBridgeComponent::Resync(FBindingState& State, TSubclassOf<UA
 	State.Candidates.Reset();
 	State.bSortDirty = true;
 #if WITH_AUTOMATION_TESTS
-	if (const TArray<TPair<TWeakObjectPtr<AActor>, FVector>>* Test = TestResyncCandidates.Find(Sense.Get()))
+	if (const TArray<FADSKPerceptionTestStimulus>* Test = TestResyncCandidates.Find(Sense.Get()))
 	{
-		for (const TPair<TWeakObjectPtr<AActor>, FVector>& Candidate : *Test) if (AActor* Actor = Candidate.Key.Get()) AddCandidate(State, Actor, Candidate.Value);
+		for (const FADSKPerceptionTestStimulus& Candidate : *Test)
+		{
+			AActor* Actor = Candidate.Actor.Get();
+			if (Actor && AcceptsStimulus(State, *Actor, Candidate.Tag)) AddCandidate(State, Actor, Candidate.Location);
+		}
 		State.bNeedsResync = false;
 		return;
 	}
@@ -214,13 +233,13 @@ void UADSKPerceptionBridgeComponent::Resync(FBindingState& State, TSubclassOf<UA
 	for (AActor* Actor : Actors)
 	{
 		FActorPerceptionBlueprintInfo Info;
-		if (!Source->GetActorsPerception(Actor, Info)) continue;
+		if (!IsValid(Actor) || !Source->GetActorsPerception(Actor, Info)) continue;
 		for (int32 Index = Info.LastSensedStimuli.Num() - 1; Index >= 0; --Index)
 		{
 			const FAIStimulus& Stimulus = Info.LastSensedStimuli[Index];
 			if (Stimulus.WasSuccessfullySensed() && UAIPerceptionSystem::GetSenseClassForStimulus(this, Stimulus) == Sense)
 			{
-				AddCandidate(State, Actor, Stimulus.StimulusLocation);
+				if (AcceptsStimulus(State, *Actor, Stimulus.Tag)) AddCandidate(State, Actor, Stimulus.StimulusLocation);
 				break;
 			}
 		}
@@ -240,7 +259,7 @@ AActor* UADSKPerceptionBridgeComponent::Select(FBindingState& State, TSubclassOf
 	for (auto It = State.Candidates.CreateIterator(); It; ++It)
 	{
 		const bool bForgotten = It.Value().LostAt >= 0.0 && Time - It.Value().LostAt >= State.ForgetAfter;
-		if (!It.Key().IsValid() || bForgotten) { It.RemoveCurrent(); State.bSortDirty = true; }
+		if (!It.Key().IsValid() || bForgotten || !AcceptsActor(State, *It.Key().Get())) { It.RemoveCurrent(); State.bSortDirty = true; }
 	}
 	// Most ticks see the same candidates as the last one, so the string sort runs only when the set changed.
 	if (State.bSortDirty)
@@ -371,9 +390,9 @@ void UADSKPerceptionBridgeComponent::OnStopped()
 }
 
 #if WITH_AUTOMATION_TESTS
-void UADSKPerceptionBridgeComponent::InjectStimulusForTest(TSubclassOf<UAISense> Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed) { ProcessStimulus(Sense.Get(), Actor, Location, bSuccessfullySensed); }
-void UADSKPerceptionBridgeComponent::InjectResolvedStimulusForTest(TSubclassOf<UAISense> Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed) { ProcessResolvedStimulus(Sense.Get(), Actor, Location, bSuccessfullySensed); }
-void UADSKPerceptionBridgeComponent::SetResyncCandidatesForTest(TSubclassOf<UAISense> Sense, TArray<TPair<TWeakObjectPtr<AActor>, FVector>> Candidates) { TestResyncCandidates.Add(Sense.Get(), MoveTemp(Candidates)); }
+void UADSKPerceptionBridgeComponent::InjectStimulusForTest(TSubclassOf<UAISense> Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed, FName Tag) { ProcessStimulus(Sense.Get(), Actor, Location, bSuccessfullySensed, Tag); }
+void UADSKPerceptionBridgeComponent::InjectResolvedStimulusForTest(TSubclassOf<UAISense> Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed, FName Tag) { ProcessResolvedStimulus(Sense.Get(), Actor, Location, bSuccessfullySensed, Tag); }
+void UADSKPerceptionBridgeComponent::SetResyncCandidatesForTest(TSubclassOf<UAISense> Sense, TArray<FADSKPerceptionTestStimulus> Candidates) { TestResyncCandidates.Add(Sense.Get(), MoveTemp(Candidates)); }
 AActor* UADSKPerceptionBridgeComponent::SelectTargetForTest(TSubclassOf<UAISense> Sense) { if (FBindingState* State = States.Find(Sense.Get())) return Select(*State, Sense); return nullptr; }
 int32 UADSKPerceptionBridgeComponent::GetCandidateCountForTest(TSubclassOf<UAISense> Sense) const { if (const FBindingState* State = States.Find(Sense.Get())) return State->Candidates.Num(); return 0; }
 int32 UADSKPerceptionBridgeComponent::GetQueuedStimulusCountForTest(TSubclassOf<UAISense> Sense) const { if (const FBindingState* State = States.Find(Sense.Get())) return State->Stimuli.Num(); return 0; }

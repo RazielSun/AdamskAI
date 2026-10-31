@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Nodes/ADSKBuiltinNodes.h"
 #include "UObject/SoftObjectPath.h"
 #include "ADSKHostNodeTypes.generated.h"
@@ -103,6 +104,12 @@ struct FADSKMoveSpeedConfig
 {
 	GENERATED_BODY()
 	UPROPERTY() float Speed = 600.f;
+};
+USTRUCT()
+struct FADSKHasGameplayTagConfig
+{
+	GENERATED_BODY()
+	UPROPERTY() FGameplayTag Tag;
 };
 USTRUCT()
 struct FADSKLineOfSightConfig

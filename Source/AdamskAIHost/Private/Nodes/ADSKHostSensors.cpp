@@ -10,6 +10,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameplayTagAssetInterface.h"
 #include "Kismet/GameplayStatics.h"
 
 namespace ADSKHostSensorsPrivate
@@ -46,6 +47,24 @@ namespace ADSKHostSensorsPrivate
 			const AActor* Self = HostActor(Context);
 			const AActor* Target = ReadTarget(Context);
 			Context.WritePort(1, FADSKValue::MakeFloat(Self && Target ? FVector::Dist(Self->GetActorLocation(), Target->GetActorLocation()) : TNumericLimits<float>::Max()));
+		};
+		return Node;
+	}
+
+	FADSKNodeDescriptor HasGameplayTag()
+	{
+		FADSKNodeDescriptor Node = Sensor(TEXT("HasGameplayTag"), EADSKValueType::Bool, true);
+		Node.ConfigStruct = FADSKHasGameplayTagConfig::StaticStruct();
+		Node.Fields.Add({TEXT("tag"), TEXT("Tag")});
+		Node.ValidateConfig = [](const void* Value) { return static_cast<const FADSKHasGameplayTagConfig*>(Value)->Tag.IsValid(); };
+		Node.Description = TEXT("Writes whether the actor in `in-target` implements IGameplayTagAssetInterface and has `tag`, including a child tag. False with no actor or interface; does not read AActor::Tags or search components.");
+		Node.Guidance = TEXT("A target with Status.Disabled.Stunned matches tag=\"Status.Disabled\".\n")
+			TEXT("Publish the host actor as an Object Input to query its tags. Tags must be registered in the project.\n")
+			TEXT("Samples every brain tick and prevents idle sleep; a GAS change subscription belongs in a provider.");
+		Node.OnSample = [](FADSKNodeContext& Context)
+		{
+			const IGameplayTagAssetInterface* Tags = Cast<IGameplayTagAssetInterface>(ReadTarget(Context));
+			Context.WritePort(1, FADSKValue::MakeBool(Tags && Tags->HasMatchingGameplayTag(Context.GetConfig<FADSKHasGameplayTagConfig>().Tag)));
 		};
 		return Node;
 	}
@@ -163,6 +182,7 @@ void FADSKHostNodes::RegisterSensors(FADSKNodeRegistry& Registry)
 	using namespace ADSKHostSensorsPrivate;
 	const EADSKRegisterResult Results[] = {
 		Registry.Register(Distance()),
+		Registry.Register(HasGameplayTag()),
 		Registry.Register(LineOfSight()),
 		Registry.Register(Grounded()),
 		Registry.Register(PlayerPawn()),

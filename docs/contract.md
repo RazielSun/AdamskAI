@@ -126,7 +126,7 @@ The core module above stays Engine-free, and no module depends on a plugin outsi
 `AdamskAIHost` (Runtime) adds the Unreal host: provider-assembled registry, world subsystem, brain
 component and the host nodes (`MoveTo`, `LookAt`, `RunEQS`, the scopes `Focus` and `MoveSpeed`, `Act` through
 `IADSKActionPerformer`, and `HoldToken` and `Radio` on the group service), the host sensors (`Distance`,
-`LineOfSight`, `Grounded`, `PlayerPawn`, `GroupTarget`) and the group service. `AdamskAIDebug` (Runtime, denied Shipping/Test) adds the
+`LineOfSight`, `Grounded`, `PlayerPawn`, `GroupTarget`, `HasGameplayTag`) and the group service. `AdamskAIDebug` (Runtime, denied Shipping/Test) adds the
 Gameplay Debugger category and world labels; see [live debugging](debugging.md). `AdamskAIEditor` (Editor)
 adds the headless `AdamskAIValidate` commandlet, the fixture runner and the behavior-root watcher. Agent-facing guidance lives in [AGENTS.md](../AGENTS.md)
 and the other pages here: [concept](concept.md), [setup](setup.md), [XML reference](xml-reference.md), the generated

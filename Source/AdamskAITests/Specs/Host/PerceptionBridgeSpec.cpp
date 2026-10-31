@@ -19,6 +19,7 @@
 #include "Perception/AISense_Sight.h"
 #include "CQTest.h"
 #include "Support/TestChecks.h"
+#include "Support/FakeHostServices.h"
 
 namespace FPerceptionBridgeSpecPrivate
 {
@@ -124,6 +125,23 @@ namespace FPerceptionBridgeSpecPrivate
 	{
 		return !Bridge.ValidateDefinitionForTest(*LoadDefinition(Xml), OutError)
 			&& OutError.StartsWith(TEXT("perception-binding: "));
+	}
+
+	FADSKPerceptionBinding FilterBinding()
+	{
+		FADSKPerceptionBinding Result = SightBinding();
+		Result.RequiredActorTag = TEXT("Source");
+		Result.RequiredStimulusTag = TEXT("Important");
+		Result.SensedInput = TEXT("Sensed");
+		Result.TargetCountInput = TEXT("Count");
+		Result.AlertInput = TEXT("Alert");
+		return Result;
+	}
+
+	FString FilterXml()
+	{
+		return RuntimeXml().Replace(TEXT("</Inputs>"), TEXT("<Input name=\"Sensed\" type=\"Bool\" default=\"false\"/>")
+			TEXT("<Input name=\"Count\" type=\"Int\" default=\"0\"/><Input name=\"Alert\" type=\"Float\" default=\"0\"/></Inputs>"));
 	}
 }
 
@@ -383,6 +401,103 @@ TEST_CLASS_WITH_FLAGS(FPerceptionBridgeSpec, "AdamskAI.Host.PerceptionBridge",
 		Runtime.Brain->TickBrain(0.1f);
 		ASSERT_THAT(AreEqual(FString(TEXT("active")), Runtime.State()));
 		ASSERT_THAT(AreEqual(1, Runtime.Bridge->GetCandidateCountForTest(UAISense_Sight::StaticClass())));
+	}
+
+	TEST_METHOD(FiltersRejectCandidatesAndStimulusEventsBeforePublication)
+	{
+		FBridgeRuntime Runtime(LoadDefinition(FilterXml()), {FilterBinding()});
+		AActor& Candidate = Runtime.Spawner.SpawnActor<AActor>();
+		Runtime.Bridge->InjectResolvedStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(10), true, TEXT("Important"));
+		Candidate.Tags.Add(TEXT("Source"));
+		Runtime.Bridge->InjectResolvedStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(20), true, TEXT("Other"));
+		ASSERT_THAT(AreEqual(0, Runtime.Bridge->GetCandidateCountForTest(UAISense_Sight::StaticClass())));
+		ASSERT_THAT(AreEqual(0, Runtime.Bridge->GetQueuedStimulusCountForTest(UAISense_Sight::StaticClass())));
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(IsFalse(Runtime.Value(TEXT("Has")).bBool));
+		ASSERT_THAT(AreEqual(0, Runtime.Value(TEXT("Count")).Int));
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("Alert")).Float == 0.f));
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("LastStimulus")) == FADSKValue::MakeVector(FVector::ZeroVector)));
+		Runtime.Bridge->InjectResolvedStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(30), true, TEXT("Important"));
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("Has")).bBool));
+		ASSERT_THAT(AreEqual(1, Runtime.Value(TEXT("Count")).Int));
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("LastStimulus")) == FADSKValue::MakeVector(FVector(30))));
+	}
+
+	TEST_METHOD(ARejectedStimulusDoesNotRefreshAnAcceptedObservation)
+	{
+		FBridgeRuntime Runtime(LoadDefinition(FilterXml()), {FilterBinding()});
+		AActor& Candidate = Runtime.Spawner.SpawnActor<AActor>();
+		Candidate.Tags.Add(TEXT("Source"));
+		Runtime.Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(10), true, TEXT("Important"));
+		Runtime.Brain->TickBrain(0.1f);
+		Runtime.Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(99), true, TEXT("Other"));
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("LastStimulus")) == FADSKValue::MakeVector(FVector(10))));
+		ASSERT_THAT(AreEqual(1, Runtime.Bridge->GetCandidateCountForTest(UAISense_Sight::StaticClass())));
+	}
+
+	TEST_METHOD(LossWithoutTheRequiredStimulusTagStillFreezesAndForgets)
+	{
+		FADSKPerceptionBinding Binding = FilterBinding();
+		Binding.ForgetAfter = 2.f;
+		FBridgeRuntime Runtime(LoadDefinition(FilterXml()), {Binding});
+		FADSKScopedFakeHostServices Services(Runtime.Spawner.GetWorld());
+		Services->Time = 0.0;
+		AActor& Candidate = Runtime.Spawner.SpawnActor<AActor>();
+		Candidate.Tags.Add(TEXT("Source"));
+		Runtime.Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(10), true, TEXT("Important"));
+		Runtime.Brain->TickBrain(0.1f);
+		Services->Time = 1.0;
+		Runtime.Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(99), false);
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("Has")).bBool));
+		ASSERT_THAT(IsFalse(Runtime.Value(TEXT("Sensed")).bBool));
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("Location")) == FADSKValue::MakeVector(FVector(10))));
+		Services->Time = 3.0;
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(IsFalse(Runtime.Value(TEXT("Has")).bBool));
+		ASSERT_THAT(AreEqual(0, Runtime.Value(TEXT("Count")).Int));
+	}
+
+	TEST_METHOD(RemovingTheRequiredActorTagInvalidatesTheSensedCandidate)
+	{
+		FBridgeRuntime Runtime(LoadDefinition(FilterXml()), {FilterBinding()});
+		AActor& Candidate = Runtime.Spawner.SpawnActor<AActor>();
+		Candidate.Tags.Add(TEXT("Source"));
+		Runtime.Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(10), true, TEXT("Important"));
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("Sensed")).bBool));
+		Candidate.Tags.Remove(TEXT("Source"));
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(IsFalse(Runtime.Value(TEXT("Has")).bBool));
+		ASSERT_THAT(IsFalse(Runtime.Value(TEXT("Sensed")).bBool));
+		ASSERT_THAT(AreEqual(0, Runtime.Value(TEXT("Count")).Int));
+		Runtime.Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(20), false);
+		ASSERT_THAT(AreEqual(0, Runtime.Bridge->GetCandidateCountForTest(UAISense_Sight::StaticClass())));
+	}
+
+	TEST_METHOD(ResyncAfterStopAndDefinitionReplacementUsesTheSameFilters)
+	{
+		FBridgeRuntime Runtime(LoadDefinition(FilterXml()), {FilterBinding()});
+		AActor& Good = Runtime.Spawner.SpawnActor<AActor>();
+		AActor& WrongTag = Runtime.Spawner.SpawnActor<AActor>();
+		AActor& Unmarked = Runtime.Spawner.SpawnActor<AActor>();
+		Good.Tags.Add(TEXT("Source"));
+		WrongTag.Tags.Add(TEXT("Source"));
+		Runtime.Bridge->SetResyncCandidatesForTest(UAISense_Sight::StaticClass(), {
+			{&Good, FVector(10), TEXT("Important")}, {&WrongTag, FVector(20), TEXT("Other")}, {&Unmarked, FVector(30), TEXT("Important")}});
+		Runtime.Brain->StopLogic(TEXT("test"));
+		Runtime.Brain->StartLogic();
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(AreEqual(1, Runtime.Bridge->GetCandidateCountForTest(UAISense_Sight::StaticClass())));
+		ASSERT_THAT(IsTrue(Runtime.Bridge->SelectTargetForTest(UAISense_Sight::StaticClass()) == &Good));
+		ASSERT_THAT(AreEqual(0, Runtime.Bridge->GetQueuedStimulusCountForTest(UAISense_Sight::StaticClass())));
+		Runtime.Brain->InitializeDefinition(LoadDefinition(FilterXml()));
+		Runtime.Brain->StartLogic();
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(AreEqual(1, Runtime.Value(TEXT("Count")).Int));
+		ASSERT_THAT(IsTrue(Runtime.Bridge->SelectTargetForTest(UAISense_Sight::StaticClass()) == &Good));
 	}
 
 	TEST_METHOD(EndPlayRemovesPerceptionNativeAndValidatorRegistrations)

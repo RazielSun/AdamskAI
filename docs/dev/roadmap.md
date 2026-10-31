@@ -78,7 +78,6 @@ Each needs a maintainer's yes or no; the recommendation is in the last column.
 | B6 | One monitor interface (recorder, Visual Logger, Insights, debugger as subscribers) and an execution gate for breakpoints such as `file:node:enter`, keeping the debugger out of the runtime | when a breakpoint is first wanted |
 | B7 | A save-and-restore round trip after every tick of every golden trace. A restore restarts the leaf state's tree, so records diverge by design; comparing state paths and Locals at quiet points is possible. `AdamskAI.Fuzz.Compiler` already restarts every mutant from snapshots | only if snapshot bugs show up |
 | B10 | `RunEQS` item counts in the trace: an empty query records how many items were generated and passed (today only the Visual Logger's `LogEQS` entry has them). Needs a reason or payload on async completions through the core | yes, at the next EQS investigation |
-| B14 | Perception bridge filters: a required actor tag, a stimulus tag, and an Input for a heard location, so "sense enemies" needs no controller code | only if a second project wants it |
 
 `Examples/chase_and_wait.xml` declares `Home` and `Reach` but nothing reads them (`note unread-input`); dropping them
 changes its golden trace and compat tables.

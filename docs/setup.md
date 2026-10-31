@@ -262,6 +262,28 @@ target is sensed (`SensedInput`), how many candidates there are (`TargetCountInp
 when it reaches 1 and returns to 0 (`AlertedEvent`, `CalmedEvent`). With a memory, `TargetLostEvent` fires when the
 target is forgotten, not when it leaves sight. Brains and bridges are authoritative only.
 
+`HasGameplayTag` samples the actor in an Object Input through `IGameplayTagAssetInterface`:
+
+```xml
+<HasGameplayTag id="target_disabled" tag="Status.Disabled" in-target="Target" out-value="TargetDisabled"/>
+```
+
+Place it in `Sensors`, declare `Target` as an Object Input and `TargetDisabled` as a Bool Input, and register the
+tag in the project first. A child tag such as `Status.Disabled.Stunned` matches `Status.Disabled`. No actor or
+interface gives false; the sensor does not search components or read `AActor::Tags`. Like every sensor it keeps
+the brain awake. A `change` event on `TargetDisabled` lets the file react without a host-raised event.
+
+Perception bindings have two optional filters: `RequiredActorTag` is an ordinary `AActor::Tags` name and
+`RequiredStimulusTag` matches `FAIStimulus::Tag` exactly. `None` means no restriction. Set them before `BeginPlay`;
+the bridge snapshots them for that lifetime. Both filters apply before a positive observation can add a candidate
+or queue a stimulus, and also on resync after a stop/reload. Losing a previously accepted stimulus still clears
+current sensing even if the loss carries no tag. Removing the required actor tag drops the candidate on the next
+sample. Target-selection policy remains in `SelectTarget` or the project.
+
+For a heard point, the existing `StimulusEvent` already carries one Vector parameter named `location`; bind it to
+a Local in the handler. A rejected stimulus neither refreshes the observation nor queues that event. Hearing is
+information, not firing permission.
+
 Behavior files can live outside BehaviorRoot: `BehaviorMounts` (project settings) maps a mount name to a directory
 relative to the project, and a Game Feature can call `FADSKBehaviorRoots::Register(Name, Directory)` on activation
 (and `Unregister` on deactivation). A file there is named `@<Name>/<file>.xml` in `BehaviorFile`, `Acquire`,

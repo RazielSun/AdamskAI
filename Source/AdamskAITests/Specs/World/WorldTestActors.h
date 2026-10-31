@@ -119,3 +119,12 @@ public:
 	UPROPERTY()
 	TObjectPtr<UADSKPerceptionBridgeComponent> Bridge;
 };
+
+/** Same sight setup, accepting only explicitly tagged actors and stimuli. */
+UCLASS(NotBlueprintable, Transient)
+class AADSKWorldFilteredSightController : public AADSKWorldSightController
+{
+	GENERATED_BODY()
+public:
+	AADSKWorldFilteredSightController();
+};

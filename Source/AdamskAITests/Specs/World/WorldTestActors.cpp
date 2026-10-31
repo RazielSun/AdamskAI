@@ -131,3 +131,9 @@ AADSKWorldSightController::AADSKWorldSightController()
 	Binding.AlertedEvent = TEXT("Alerted");
 	Bridge->Bindings.Add(Binding);
 }
+
+AADSKWorldFilteredSightController::AADSKWorldFilteredSightController()
+{
+	Bridge->Bindings[0].RequiredActorTag = TEXT("Source");
+	Bridge->Bindings[0].RequiredStimulusTag = TEXT("Important");
+}
