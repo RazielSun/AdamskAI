@@ -19,8 +19,8 @@ ImGui panel leaving); run `adsk_all_win64.ps1 -World` and the strict includes th
 
 None open. Record a defect here with its owner, a reproduction and the regression that closes it; P1 is a crash or a
 completion applied to the wrong lifetime, P2 incorrect behavior or validation, P3 documentation. Delete it only after
-its regression passes and the affected contract is documented. The review of 0.5.0 (`0488ef4`, 2026-10-31) found
-BUG-001 to BUG-007 and DOC-001; all are closed with regressions (CHANGELOG, Unreleased).
+its regression passes and the affected contract is documented. The review of a 0.5.0 candidate (`0488ef4`, 2026-10-31)
+found BUG-001 to BUG-007 and DOC-001; all are closed in 0.5.0 with regressions (CHANGELOG, Fixed).
 
 ## Performance against Behavior Trees and StateTree
 

@@ -331,8 +331,6 @@ plugin catalogue fingerprint changes because `Radio` now takes arguments):
   `ADSK::ParallelThreshold` turns a policy into a child count.
 - `FADSKInstance::GetActiveNodes` reports the `Parallel` node for its own lane and each running child for its lane.
 
-## After 0.5.0
-
 2026-10-31, the review fixes (no XML change):
 
 - `UADSKWorldSubsystem::CommitPendingReloads` publishes the definition before stopping the brains, skips a brain whose

@@ -5,7 +5,11 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow the `VersionName` in
 `AdamskAI.uplugin`. XML v1 stays compatible across all of them: a file that compiled still compiles.
 
-## Unreleased
+## 0.5.0 — 2026-10-31
+
+The first release from its own repository: new nodes (`Parallel`, `Set`, `Retry`), sensors, actions, groups and
+tokens, node arguments, live reload that keeps state, brains that sleep while nothing is due, a benchmark against
+Behavior Trees and StateTree, and a demo map.
 
 ### Added
 - Brains sleep while nothing is due (`UADSKSettings::bSleepWhenIdle`, on by default, as Behavior Trees and StateTree
@@ -15,25 +19,6 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
   `OnUpdate` keeps its brain awake.
 - `Tools/adsk_bench.sh`: the same behavior as AdamskAI, a Behavior Tree and a StateTree on 1000 agents; the numbers
   are in the README.
-
-### Changed
-- The README is a short overview with the comparison and the measured numbers; its runtime contract (ownership, XML
-  bounds, tick order, recorder, modules) moved to [docs/contract.md](docs/contract.md).
-
-### Fixed
-- A reload commit no longer crashes when a stop callback acquires files, no longer overwrites a file a stop callback
-  gave the brain, and keeps a paused brain paused.
-- A completion ticket from before `Cleanup` and a re-initialization is stale for the next lifetime's leaf.
-- Nested `HoldToken` scopes on one target keep the token until the outer scope ends.
-- Behavior file paths that differ only in case are two files (the cache, the brain registry, the watcher).
-- A NUL byte in a behavior file is `xml-malformed`; before, the text after it was ignored, also by the hash.
-
-## 0.5.0 — 2026-10-31
-
-The first release from its own repository: new nodes (`Parallel`, `Set`, `Retry`), sensors, actions, groups and
-tokens, node arguments, live reload that keeps state, and a demo map.
-
-### Added
 - Demo: module `AdamskAIDemo`, a code-generated arena (`Content/Demo/Maps/L_AdskDemo`) and seven console scenes
   (`adsk.Demo <Scene>`: Patrol, Chase, Interrupt, Squad, Tokens, Reload, Fleet), each also a headless test
   ([docs/demo.md](docs/demo.md)).
@@ -57,6 +42,8 @@ tokens, node arguments, live reload that keeps state, and a demo map.
   `select` states; `deviation` on `TimeLimit`, `strafe` on `MoveTo`. The full list, dated: [docs/migration.md](docs/migration.md#from-04-to-05).
 
 ### Changed
+- The README is a short overview with the comparison and the measured numbers; its runtime contract (ownership, XML
+  bounds, tick order, recorder, modules) moved to [docs/contract.md](docs/contract.md).
 - The plugin lives in its own repository. Test data moved under `Fixtures/` (`world/`, `perf/`, `scenarios/`, was
   `Tests/Behaviors`, `Tests/Perf`, `Tests/Scenarios`); developer documents moved to `docs/dev/`, which a
   `BuildPlugin` package leaves out.
@@ -66,6 +53,14 @@ tokens, node arguments, live reload that keeps state, and a demo map.
 
 ### Removed
 - `IADSKNodeProvider::IsPluginKit()`, the `adsk.Debug` console variable, `ADSK_WITH_IMGUI`.
+
+### Fixed
+- A reload commit no longer crashes when a stop callback acquires files, no longer overwrites a file a stop callback
+  gave the brain, and keeps a paused brain paused.
+- A completion ticket from before `Cleanup` and a re-initialization is stale for the next lifetime's leaf.
+- Nested `HoldToken` scopes on one target keep the token until the outer scope ends.
+- Behavior file paths that differ only in case are two files (the cache, the brain registry, the watcher).
+- A NUL byte in a behavior file is `xml-malformed`; before, the text after it was ignored, also by the hash.
 
 ## 0.4.0 — 2026-10-29
 
