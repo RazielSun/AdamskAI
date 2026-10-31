@@ -1,0 +1,34 @@
+<!--
+  world_focus: AdamskAIWorld.PawnEffects. Looks at LookPoint for half a second, then walks to Goal at 2 m/s facing
+  Target; every effect must be gone once done.
+  Units: duration in seconds, speed in cm/s, acceptanceRadius in cm.
+-->
+<Agent version="1" id="world_focus">
+
+  <Inputs>
+    <Input name="Goal" type="Vector" required="true"/>
+    <Input name="LookPoint" type="Vector" required="true"/>
+    <Input name="Target" type="Object" default="none"/>
+  </Inputs>
+
+  <StateMachine id="m" initial="acting">
+    <State id="acting" tree="act">
+      <On event="tree.success" goto="done"/>
+      <On event="tree.failure" goto="failed"/>
+    </State>
+    <State id="done"/>
+    <State id="failed"/>
+  </StateMachine>
+
+  <Tree id="act">
+    <Sequence id="act_steps">
+      <LookAt id="act_look" in-point="LookPoint" duration="0.5"/>
+      <MoveSpeed id="act_slow" speed="200">
+        <FocusActor id="act_face" in-target="Target">
+          <MoveTo id="act_walk" in-goal="Goal" acceptanceRadius="50"/>
+        </FocusActor>
+      </MoveSpeed>
+    </Sequence>
+  </Tree>
+
+</Agent>

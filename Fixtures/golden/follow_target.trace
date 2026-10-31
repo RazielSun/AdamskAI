@@ -1,0 +1,82 @@
+# source 7f0f362abe22ab9949fb4b759091f6df017b9bab
+# catalogue e0fc48ef38f826d556857f9440fee7b6c7bfdd2a
+#1 t=0 instance-started reason=started
+#2 t=0 input-set slot=TargetLocation value=2000.0,0.0,0.0
+#3 t=0 input-set slot=TargetDistance value=100000.0
+#4 t=0 input-set slot=Reach value=200.0
+#5 t=0 state-entered state=mode
+#6 t=0 state-entered state=follow
+#7 t=0 node-started reason=started node=follow_or_pause handle=1.1
+#8 t=0 node-started reason=started node=follow_move handle=1.2
+#9 t=1 input-set slot=TargetDistance value=80.0
+#10 t=1 result-accepted handle=1.2
+#11 t=1 node-ended reason=succeeded node=follow_move handle=1.2
+#12 t=1 node-ended reason=succeeded node=follow_or_pause handle=1.1
+#13 t=2 event-consumed state=follow event=tree.success
+#14 t=2 transition-taken state=follow event=tree.success transition=0 target=near
+#15 t=2 state-exited state=follow
+#16 t=2 state-entered state=near
+#17 t=2 node-started reason=started node=near_in_reach handle=1.3
+#18 t=2 guard-value node=near_in_reach handle=1.3 value=80.0
+#19 t=2 node-started reason=started node=near_face handle=1.4
+#20 t=2 node-started reason=started node=near_taunt_or_watch handle=1.5
+#21 t=2 node-started reason=started node=near_taunt handle=1.6
+#22 t=2 node-started reason=started node=near_taunt_roll handle=1.7
+#23 t=2 node-ended reason=failed node=near_taunt_roll handle=1.7
+#24 t=2 node-ended reason=failed node=near_taunt handle=1.6
+#25 t=2 node-started reason=started node=near_watch handle=1.8
+#26 t=5 node-ended reason=succeeded node=near_watch handle=1.8
+#27 t=5 node-ended reason=succeeded node=near_taunt_or_watch handle=1.5
+#28 t=5 node-ended reason=succeeded node=near_face handle=1.4
+#29 t=5 node-ended reason=succeeded node=near_in_reach handle=1.3
+#30 t=6 event-consumed state=near event=tree.success
+#31 t=6 transition-taken state=near event=tree.success transition=1 target=near
+#32 t=6 state-exited state=near
+#33 t=6 state-entered state=near
+#34 t=6 node-started reason=started node=near_in_reach handle=1.9
+#35 t=6 guard-value node=near_in_reach handle=1.9 value=80.0
+#36 t=6 node-started reason=started node=near_face handle=1.10
+#37 t=6 node-started reason=started node=near_taunt_or_watch handle=1.11
+#38 t=6 node-started reason=started node=near_taunt handle=1.12
+#39 t=6 node-started reason=started node=near_taunt_roll handle=1.13
+#40 t=6 node-ended reason=failed node=near_taunt_roll handle=1.13
+#41 t=6 node-ended reason=failed node=near_taunt handle=1.12
+#42 t=6 node-started reason=started node=near_watch handle=1.14
+#43 t=8 node-ended reason=succeeded node=near_watch handle=1.14
+#44 t=8 node-ended reason=succeeded node=near_taunt_or_watch handle=1.11
+#45 t=8 node-ended reason=succeeded node=near_face handle=1.10
+#46 t=8 node-ended reason=succeeded node=near_in_reach handle=1.9
+#47 t=9 event-consumed state=near event=tree.success
+#48 t=9 transition-taken state=near event=tree.success transition=1 target=near
+#49 t=9 state-exited state=near
+#50 t=9 state-entered state=near
+#51 t=9 node-started reason=started node=near_in_reach handle=1.15
+#52 t=9 guard-value node=near_in_reach handle=1.15 value=80.0
+#53 t=9 node-started reason=started node=near_face handle=1.16
+#54 t=9 node-started reason=started node=near_taunt_or_watch handle=1.17
+#55 t=9 node-started reason=started node=near_taunt handle=1.18
+#56 t=9 node-started reason=started node=near_taunt_roll handle=1.19
+#57 t=9 node-ended reason=succeeded node=near_taunt_roll handle=1.19
+#58 t=9 node-started reason=started node=near_taunt_wait handle=1.20
+#59 t=13 node-ended reason=succeeded node=near_taunt_wait handle=1.20
+#60 t=13 node-ended reason=succeeded node=near_taunt handle=1.18
+#61 t=13 node-ended reason=succeeded node=near_taunt_or_watch handle=1.17
+#62 t=13 node-ended reason=succeeded node=near_face handle=1.16
+#63 t=13 node-ended reason=succeeded node=near_in_reach handle=1.15
+#64 t=14 input-set slot=TargetDistance value=900.0
+#65 t=14 event-consumed state=near event=tree.success
+#66 t=14 transition-taken state=near event=tree.success transition=1 target=near
+#67 t=14 state-exited state=near
+#68 t=14 state-entered state=near
+#69 t=14 node-started reason=started node=near_in_reach handle=1.21
+#70 t=14 guard-value node=near_in_reach handle=1.21 value=900.0
+#71 t=14 node-ended reason=failed node=near_in_reach handle=1.21
+#72 t=15 event-consumed state=near event=tree.failure
+#73 t=15 transition-taken state=near event=tree.failure transition=2 target=follow
+#74 t=15 state-exited state=near
+#75 t=15 state-entered state=follow
+#76 t=15 node-started reason=started node=follow_or_pause handle=1.22
+#77 t=15 node-started reason=started node=follow_move handle=1.23
+#78 t=16 result-accepted handle=1.23
+#79 t=16 node-ended reason=failed node=follow_move handle=1.23
+#80 t=16 node-started reason=started node=follow_pause handle=1.24

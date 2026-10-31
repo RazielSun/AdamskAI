@@ -1,0 +1,123 @@
+# source 50f88023adee1eb7222ce9068daae79cfb58d26f
+# catalogue e0fc48ef38f826d556857f9440fee7b6c7bfdd2a
+#1 t=0 instance-started reason=started
+#2 t=0 input-set slot=PatrolPoint value=500.0,0.0,0.0
+#3 t=0 input-set slot=Enabled value=true
+#4 t=0 state-entered state=mode
+#5 t=0 state-entered state=patrol
+#6 t=0 node-started reason=started node=enabled handle=1.1
+#7 t=0 guard-value node=enabled handle=1.1 value=true
+#8 t=0 node-started reason=started node=route handle=1.2
+#9 t=0 node-started reason=started node=move handle=1.3
+#10 t=1 result-accepted handle=1.3
+#11 t=1 node-ended reason=succeeded node=move handle=1.3
+#12 t=1 node-started reason=started node=pause handle=1.4
+#13 t=5 node-ended reason=succeeded node=pause handle=1.4
+#14 t=5 node-ended reason=succeeded node=route handle=1.2
+#15 t=5 node-ended reason=succeeded node=enabled handle=1.1
+#16 t=6 event-consumed state=patrol event=tree.success
+#17 t=6 transition-taken state=patrol event=tree.success transition=0 target=patrol
+#18 t=6 state-exited state=patrol
+#19 t=6 state-entered state=patrol
+#20 t=6 node-started reason=started node=enabled handle=1.5
+#21 t=6 guard-value node=enabled handle=1.5 value=true
+#22 t=6 node-started reason=started node=route handle=1.6
+#23 t=6 node-started reason=started node=move handle=1.7
+#24 t=7 input-set slot=Enabled value=false
+#25 t=7 guard-value node=enabled handle=1.5 value=false
+#26 t=7 node-ended reason=cancelled node=move handle=1.7
+#27 t=7 node-ended reason=cancelled node=route handle=1.6
+#28 t=7 node-ended reason=failed node=enabled handle=1.5
+#29 t=8 event-consumed state=patrol event=tree.failure
+#30 t=8 transition-taken state=patrol event=tree.failure transition=1 target=rest
+#31 t=8 state-exited state=patrol
+#32 t=8 state-entered state=rest
+#33 t=8 node-started reason=started node=rest_wait handle=1.8
+#34 t=12 node-ended reason=succeeded node=rest_wait handle=1.8
+#35 t=13 event-consumed state=rest event=tree.success
+#36 t=13 transition-taken state=rest event=tree.success transition=2 target=patrol
+#37 t=13 state-exited state=rest
+#38 t=13 state-entered state=patrol
+#39 t=13 node-started reason=started node=enabled handle=1.9
+#40 t=13 guard-value node=enabled handle=1.9 value=false
+#41 t=13 node-ended reason=failed node=enabled handle=1.9
+#42 t=14 event-consumed state=patrol event=tree.failure
+#43 t=14 transition-taken state=patrol event=tree.failure transition=1 target=rest
+#44 t=14 state-exited state=patrol
+#45 t=14 state-entered state=rest
+#46 t=14 node-started reason=started node=rest_wait handle=1.10
+#47 t=18 node-ended reason=succeeded node=rest_wait handle=1.10
+#48 t=19 event-consumed state=rest event=tree.success
+#49 t=19 transition-taken state=rest event=tree.success transition=2 target=patrol
+#50 t=19 state-exited state=rest
+#51 t=19 state-entered state=patrol
+#52 t=19 node-started reason=started node=enabled handle=1.11
+#53 t=19 guard-value node=enabled handle=1.11 value=false
+#54 t=19 node-ended reason=failed node=enabled handle=1.11
+#55 t=20 event-consumed state=patrol event=tree.failure
+#56 t=20 transition-taken state=patrol event=tree.failure transition=1 target=rest
+#57 t=20 state-exited state=patrol
+#58 t=20 state-entered state=rest
+#59 t=20 node-started reason=started node=rest_wait handle=1.12
+#60 t=24 node-ended reason=succeeded node=rest_wait handle=1.12
+#61 t=25 event-consumed state=rest event=tree.success
+#62 t=25 transition-taken state=rest event=tree.success transition=2 target=patrol
+#63 t=25 state-exited state=rest
+#64 t=25 state-entered state=patrol
+#65 t=25 node-started reason=started node=enabled handle=1.13
+#66 t=25 guard-value node=enabled handle=1.13 value=false
+#67 t=25 node-ended reason=failed node=enabled handle=1.13
+#68 t=26 event-consumed state=patrol event=tree.failure
+#69 t=26 transition-taken state=patrol event=tree.failure transition=1 target=rest
+#70 t=26 state-exited state=patrol
+#71 t=26 state-entered state=rest
+#72 t=26 node-started reason=started node=rest_wait handle=1.14
+#73 t=30 node-ended reason=succeeded node=rest_wait handle=1.14
+#74 t=31 event-consumed state=rest event=tree.success
+#75 t=31 transition-taken state=rest event=tree.success transition=2 target=patrol
+#76 t=31 state-exited state=rest
+#77 t=31 state-entered state=patrol
+#78 t=31 node-started reason=started node=enabled handle=1.15
+#79 t=31 guard-value node=enabled handle=1.15 value=false
+#80 t=31 node-ended reason=failed node=enabled handle=1.15
+#81 t=32 event-consumed state=patrol event=tree.failure
+#82 t=32 transition-taken state=patrol event=tree.failure transition=1 target=rest
+#83 t=32 state-exited state=patrol
+#84 t=32 state-entered state=rest
+#85 t=32 node-started reason=started node=rest_wait handle=1.16
+#86 t=36 node-ended reason=succeeded node=rest_wait handle=1.16
+#87 t=37 event-consumed state=rest event=tree.success
+#88 t=37 transition-taken state=rest event=tree.success transition=2 target=patrol
+#89 t=37 state-exited state=rest
+#90 t=37 state-entered state=patrol
+#91 t=37 node-started reason=started node=enabled handle=1.17
+#92 t=37 guard-value node=enabled handle=1.17 value=false
+#93 t=37 node-ended reason=failed node=enabled handle=1.17
+#94 t=38 event-consumed state=patrol event=tree.failure
+#95 t=38 transition-taken state=patrol event=tree.failure transition=1 target=rest
+#96 t=38 state-exited state=patrol
+#97 t=38 state-entered state=rest
+#98 t=38 node-started reason=started node=rest_wait handle=1.18
+#99 t=42 node-ended reason=succeeded node=rest_wait handle=1.18
+#100 t=43 event-consumed state=rest event=tree.success
+#101 t=43 transition-taken state=rest event=tree.success transition=2 target=patrol
+#102 t=43 state-exited state=rest
+#103 t=43 state-entered state=patrol
+#104 t=43 node-started reason=started node=enabled handle=1.19
+#105 t=43 guard-value node=enabled handle=1.19 value=false
+#106 t=43 node-ended reason=failed node=enabled handle=1.19
+#107 t=44 event-consumed state=patrol event=tree.failure
+#108 t=44 transition-taken state=patrol event=tree.failure transition=1 target=rest
+#109 t=44 state-exited state=patrol
+#110 t=44 state-entered state=rest
+#111 t=44 node-started reason=started node=rest_wait handle=1.20
+#112 t=48 node-ended reason=succeeded node=rest_wait handle=1.20
+#113 t=49 input-set slot=Enabled value=true
+#114 t=49 event-consumed state=rest event=tree.success
+#115 t=49 transition-taken state=rest event=tree.success transition=2 target=patrol
+#116 t=49 state-exited state=rest
+#117 t=49 state-entered state=patrol
+#118 t=49 node-started reason=started node=enabled handle=1.21
+#119 t=49 guard-value node=enabled handle=1.21 value=true
+#120 t=49 node-started reason=started node=route handle=1.22
+#121 t=49 node-started reason=started node=move handle=1.23

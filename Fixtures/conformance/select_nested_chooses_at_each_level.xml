@@ -1,0 +1,26 @@
+<!-- A select whose winner selects too chooses at each level, outermost first; neither initial is entered. -->
+<Agent version="1" id="select-nested-chooses-at-each-level">
+  <Events>
+    <Event name="Go"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="Go" goto="outer"/>
+    </State>
+    <State id="outer" initial="low" select="best">
+      <State id="low" initial="fail" weight="1">
+        <State id="fail"/>
+      </State>
+      <State id="high" initial="wrong" select="best" weight="2">
+        <State id="wrong" weight="1"/>
+        <State id="pass" weight="3"/>
+      </State>
+    </State>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-then-wait">
+      <Emit id="emit-go" event="Go"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

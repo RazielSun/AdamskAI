@@ -1,0 +1,47 @@
+agent follow_target version=1
+[slots]
+0 TargetLocation Vector input required=true default=0,0,0
+1 TargetDistance Float input required=false default=100000
+2 Reach Float input required=false default=200
+[events]
+0 tree.success priority=0 reserved=true params=0+0
+1 tree.failure priority=0 reserved=true params=0+0
+[params]
+[states]
+0 mode parent=-1 children=0+2 initial=1 depth=1 root=-1 transitions=0+0
+1 follow parent=0 children=2+0 initial=-1 depth=2 root=0 transitions=0+1
+2 near parent=0 children=2+0 initial=-1 depth=2 root=3 transitions=1+2
+[state-children]
+1,2
+[transitions]
+0 source=1 event=0 target=2 binds=0+0
+1 source=2 event=0 target=2 binds=0+0
+2 source=2 event=1 target=1 binds=0+0
+[binds]
+[trees]
+0 follow root=0
+1 near root=3
+[nodes]
+0 follow_or_pause Selector parent=-1 children=0+2 ports=0+0
+1 follow_move MoveTo parent=0 children=2+0 ports=0+1
+  port goal Vector in slot=0
+  config acceptanceRadius=100
+  config repathDistance=150
+2 follow_pause Wait parent=0 children=2+0 ports=1+0
+  config duration=0.5
+3 near_in_reach Guard parent=-1 children=2+1 ports=1+1
+  compare below slot=2
+  port condition Bool in slot=1
+4 near_face Focus parent=3 children=3+1 ports=2+1
+  port point Vector in slot=0
+5 near_taunt_or_watch Selector parent=4 children=4+2 ports=3+0
+6 near_taunt Sequence parent=5 children=6+2 ports=3+0
+7 near_taunt_roll Chance parent=6 children=8+0 ports=3+0
+  config probability=0.300000012
+8 near_taunt_wait Wait parent=6 children=8+0 ports=3+0
+  config duration=1
+9 near_watch Wait parent=5 children=8+0 ports=3+0
+  config duration=0.5
+  config deviation=0.25
+[node-children]
+1,2,4,5,6,9,7,8

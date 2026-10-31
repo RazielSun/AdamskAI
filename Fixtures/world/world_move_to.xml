@@ -1,0 +1,31 @@
+<!--
+  world_move_to: AdamskAIWorld.Navigation, Lifecycle, Debug. One MoveTo to the Goal input, re-pathing when Goal moves
+  more than 1 m; the Stop event leaves it mid-move. The outcome is the state it ends in.
+  Units: acceptanceRadius and repathDistance in cm.
+-->
+<Agent version="1" id="world_move_to">
+
+  <Inputs>
+    <Input name="Goal" type="Vector" required="true"/>
+  </Inputs>
+
+  <Events>
+    <Event name="Stop"/>
+  </Events>
+
+  <StateMachine id="m" initial="moving">
+    <State id="moving" tree="move">
+      <On event="tree.success" goto="arrived"/>
+      <On event="tree.failure" goto="failed"/>
+      <On event="Stop" goto="stopped"/>
+    </State>
+    <State id="arrived"/>
+    <State id="failed"/>
+    <State id="stopped"/>
+  </StateMachine>
+
+  <Tree id="move">
+    <MoveTo id="move_goal" in-goal="Goal" acceptanceRadius="50" repathDistance="100"/>
+  </Tree>
+
+</Agent>

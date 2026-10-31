@@ -1,0 +1,15 @@
+<Agent version="1" id="a">
+<Inputs>
+<Input name="Target" type="Object" default="none"/><Input name="Range" type="Float" default="0"/>
+</Inputs>
+<Sensors>
+<Distance id="d" in-target="Target" out-value="Range"/>
+<Distance id="e" in-target="Target" out-value="Range"/>
+</Sensors>
+<StateMachine id="m" initial="s">
+<State id="s" tree="t"/>
+</StateMachine>
+<Tree id="t">
+<Wait id="w" duration="1"/>
+</Tree>
+</Agent>

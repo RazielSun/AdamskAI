@@ -1,0 +1,13 @@
+<!-- Copyright (c) 2026 Aleksandr Kardakov. Licensed under the MIT License. See LICENSE. -->
+<Agent version="1" id="unknown-enum-value">
+  <Enums>
+    <Enum name="Intent"><Value name="None"/><Value name="Engage"/></Enum>
+  </Enums>
+  <Inputs>
+    <Input name="Intent" type="Intent" default="engage"/>
+  </Inputs>
+  <StateMachine id="mode" initial="idle">
+    <State id="idle" tree="idle-tree"/>
+  </StateMachine>
+  <Tree id="idle-tree"><Wait id="idle-wait" duration="1"/></Tree>
+</Agent>

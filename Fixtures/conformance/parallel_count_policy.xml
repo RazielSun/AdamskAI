@@ -1,0 +1,25 @@
+<!-- success="2" of three children: the Parallel succeeds when the second child succeeds, before the third ends. -->
+<Agent version="1" id="parallel-count-policy">
+  <Locals>
+    <Local name="Late" type="Bool"/>
+  </Locals>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="two">
+      <On event="tree.success" goto="fail" if="Late"/>
+      <On event="tree.success" goto="pass"/>
+      <On event="tree.failure" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="two">
+    <Parallel id="pair" success="2">
+      <Wait id="first" duration="0.2"/>
+      <Sequence id="third">
+        <Wait id="third-wait" duration="5"/>
+        <Set id="third-mark" to="Late" value="true"/>
+      </Sequence>
+      <Wait id="second" duration="0.4"/>
+    </Parallel>
+  </Tree>
+</Agent>

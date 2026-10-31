@@ -1,0 +1,19 @@
+<!--
+  world_wait: AdamskAIWorld.Tick. One Wait of a second, then done; the brain keeps ticking in done, so its tick count
+  shows how often it is ticked.
+  Units: duration in seconds.
+-->
+<Agent version="1" id="world_wait">
+
+  <StateMachine id="m" initial="waiting">
+    <State id="waiting" tree="wait">
+      <On event="tree.success" goto="done"/>
+    </State>
+    <State id="done"/>
+  </StateMachine>
+
+  <Tree id="wait">
+    <Wait id="wait_second" duration="1"/>
+  </Tree>
+
+</Agent>

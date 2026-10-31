@@ -1,0 +1,73 @@
+<!--
+  hunt_actor: chase an actor, not a point. The host publishes Target (an Object: the actor, or none) and raises
+  Mark with an actor to single it out. TargetChanged is a change event: the file reacts to a new or lost target
+  itself. The move and the facing follow the actor; a destroyed target fails them and the agent searches again.
+  Units: radii in cm, durations in seconds.
+-->
+<Agent version="1" id="hunt_actor">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="Target" type="Object" default="none"/>
+  </Inputs>
+
+  <!-- ========== Locals ========== -->
+  <Locals>
+    <Local name="Marked" type="Object"/>
+  </Locals>
+
+  <!-- ========== Events ========== -->
+  <Events>
+    <Event name="TargetChanged" priority="10" change="Target"/>
+    <Event name="Mark">
+      <Param name="who" type="Object"/>
+    </Event>
+  </Events>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="search">
+
+    <!-- Look around; a target appearing starts the chase at once. Every state remembers the marked actor. -->
+    <State id="search" tree="search">
+      <On event="Mark"><Bind param="who" to="Marked"/></On>
+      <On event="TargetChanged" goto="chase" unless="Target" is="none"/>
+      <On event="tree.success" goto="search" if="Target" is="none"/>
+      <On event="tree.success" goto="chase"/>
+    </State>
+
+    <!-- Run at the actor; losing it searches again. -->
+    <State id="chase" tree="chase">
+      <On event="Mark"><Bind param="who" to="Marked"/></On>
+      <On event="TargetChanged" goto="search" if="Target" is="none"/>
+      <On event="tree.success" goto="strike"/>
+      <On event="tree.failure" goto="search"/>
+    </State>
+
+    <!-- Stare it down; keep at the marked actor, chase any other again. -->
+    <State id="strike" tree="strike">
+      <On event="Mark"><Bind param="who" to="Marked"/></On>
+      <On event="TargetChanged" goto="search" if="Target" is="none"/>
+      <On event="tree.success" goto="strike" if="Target" is="Marked"/>
+      <On event="tree.success" goto="chase"/>
+      <On event="tree.failure" goto="search"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="search">
+    <Wait id="search_wait" duration="1"/>
+  </Tree>
+
+  <Tree id="chase">
+    <FocusActor id="chase_face" in-target="Target">
+      <MoveToActor id="chase_move" in-target="Target" acceptanceRadius="100"/>
+    </FocusActor>
+  </Tree>
+
+  <Tree id="strike">
+    <LookAtActor id="strike_look" in-target="Target" duration="0.5"/>
+  </Tree>
+
+</Agent>

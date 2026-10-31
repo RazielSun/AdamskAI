@@ -1,0 +1,69 @@
+<!--
+  patrol (demo scene Patrol): walk the four corners the host publishes once (P1..P4), pausing at each. The scene
+  rotates the points per guard, so three guards share the square without walking in a line.
+  Units: radii in cm, durations in seconds.
+-->
+<Agent version="1" id="patrol">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="P1" type="Vector" required="true"/>
+    <Input name="P2" type="Vector" required="true"/>
+    <Input name="P3" type="Vector" required="true"/>
+    <Input name="P4" type="Vector" required="true"/>
+  </Inputs>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="patrol" initial="leg1">
+
+    <!-- One leg per corner; a blocked path goes on to the next corner rather than retrying the same one. -->
+    <State id="leg1" tree="leg1">
+      <On event="tree.success" goto="leg2"/>
+      <On event="tree.failure" goto="leg2"/>
+    </State>
+    <State id="leg2" tree="leg2">
+      <On event="tree.success" goto="leg3"/>
+      <On event="tree.failure" goto="leg3"/>
+    </State>
+    <State id="leg3" tree="leg3">
+      <On event="tree.success" goto="leg4"/>
+      <On event="tree.failure" goto="leg4"/>
+    </State>
+    <State id="leg4" tree="leg4">
+      <On event="tree.success" goto="leg1"/>
+      <On event="tree.failure" goto="leg1"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="leg1">
+    <Sequence id="leg1_steps">
+      <MoveTo id="leg1_move" in-goal="P1" acceptanceRadius="60"/>
+      <Wait id="leg1_pause" duration="1.5" deviation="0.5"/>
+    </Sequence>
+  </Tree>
+
+  <Tree id="leg2">
+    <Sequence id="leg2_steps">
+      <MoveTo id="leg2_move" in-goal="P2" acceptanceRadius="60"/>
+      <Wait id="leg2_pause" duration="1.5" deviation="0.5"/>
+    </Sequence>
+  </Tree>
+
+  <Tree id="leg3">
+    <Sequence id="leg3_steps">
+      <MoveTo id="leg3_move" in-goal="P3" acceptanceRadius="60"/>
+      <Wait id="leg3_pause" duration="1.5" deviation="0.5"/>
+    </Sequence>
+  </Tree>
+
+  <Tree id="leg4">
+    <Sequence id="leg4_steps">
+      <MoveTo id="leg4_move" in-goal="P4" acceptanceRadius="60"/>
+      <Wait id="leg4_pause" duration="1.5" deviation="0.5"/>
+    </Sequence>
+  </Tree>
+
+</Agent>

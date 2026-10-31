@@ -1,0 +1,7 @@
+<!-- A select with no child scoring above 0 enters initial. -->
+<Agent version="1" id="select-no-score-enters-initial">
+  <StateMachine id="m" initial="pass" select="best">
+    <State id="fail" bias="-1"/>
+    <State id="pass"/>
+  </StateMachine>
+</Agent>

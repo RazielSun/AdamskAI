@@ -1,0 +1,74 @@
+# source 0fdd0f1222a2233be67f0362ffe05d6c73e710a7
+# catalogue e0fc48ef38f826d556857f9440fee7b6c7bfdd2a
+#1 t=0 instance-started reason=started
+#2 t=0 input-set slot=Home value=0.0,0.0,0.0
+#3 t=0 input-set slot=Reach value=120.0
+#4 t=0 state-entered state=mode
+#5 t=0 state-entered state=idle
+#6 t=0 node-started reason=started node=rest_wait handle=1.1
+#7 t=8 node-ended reason=succeeded node=rest_wait handle=1.1
+#8 t=9 event-consumed state=idle event=tree.success
+#9 t=9 transition-taken state=idle event=tree.success transition=1 target=idle
+#10 t=9 state-exited state=idle
+#11 t=9 state-entered state=idle
+#12 t=9 node-started reason=started node=rest_wait handle=1.2
+#13 t=17 node-ended reason=succeeded node=rest_wait handle=1.2
+#14 t=18 event-consumed state=idle event=tree.success
+#15 t=18 transition-taken state=idle event=tree.success transition=1 target=idle
+#16 t=18 state-exited state=idle
+#17 t=18 state-entered state=idle
+#18 t=18 node-started reason=started node=rest_wait handle=1.3
+#19 t=20 event-enqueued event=Spotted
+#20 t=21 event-consumed state=idle event=Spotted
+#21 t=21 transition-taken state=idle event=Spotted transition=0 target=chase
+#22 t=21 slot-written event=Spotted transition=0 target=chase slot=Seen value=1.0,2.0,3.0
+#23 t=21 node-ended reason=cancelled node=rest_wait handle=1.3
+#24 t=21 state-exited state=idle
+#25 t=21 state-entered state=chase
+#26 t=21 node-started reason=started node=approach handle=1.4
+#27 t=21 node-started reason=started node=face handle=1.5
+#28 t=22 result-accepted handle=1.5
+#29 t=22 node-ended reason=succeeded node=face handle=1.5
+#30 t=22 node-started reason=started node=close handle=1.6
+#31 t=23 result-accepted handle=1.6
+#32 t=23 node-ended reason=succeeded node=close handle=1.6
+#33 t=23 node-started reason=started node=hold handle=1.7
+#34 t=27 node-ended reason=succeeded node=hold handle=1.7
+#35 t=27 node-ended reason=succeeded node=approach handle=1.4
+#36 t=28 event-consumed state=chase event=tree.success
+#37 t=28 transition-taken state=chase event=tree.success transition=3 target=idle
+#38 t=28 state-exited state=chase
+#39 t=28 state-entered state=idle
+#40 t=28 node-started reason=started node=rest_wait handle=1.8
+#41 t=28 event-enqueued event=Spotted
+#42 t=29 event-consumed state=idle event=Spotted
+#43 t=29 transition-taken state=idle event=Spotted transition=0 target=chase
+#44 t=29 node-ended reason=cancelled node=rest_wait handle=1.8
+#45 t=29 state-exited state=idle
+#46 t=29 state-entered state=chase
+#47 t=29 node-started reason=started node=approach handle=1.9
+#48 t=29 node-started reason=started node=face handle=1.10
+#49 t=30 result-accepted handle=1.10
+#50 t=30 node-ended reason=failed node=face handle=1.10
+#51 t=30 node-ended reason=failed node=approach handle=1.9
+#52 t=31 event-consumed state=chase event=tree.failure
+#53 t=31 transition-taken state=chase event=tree.failure transition=4 target=idle
+#54 t=31 state-exited state=chase
+#55 t=31 state-entered state=idle
+#56 t=31 node-started reason=started node=rest_wait handle=1.11
+#57 t=31 event-enqueued event=Spotted
+#58 t=32 event-consumed state=idle event=Spotted
+#59 t=32 transition-taken state=idle event=Spotted transition=0 target=chase
+#60 t=32 node-ended reason=cancelled node=rest_wait handle=1.11
+#61 t=32 state-exited state=idle
+#62 t=32 state-entered state=chase
+#63 t=32 node-started reason=started node=approach handle=1.12
+#64 t=32 node-started reason=started node=face handle=1.13
+#65 t=32 event-enqueued event=Lost
+#66 t=33 event-consumed state=chase event=Lost
+#67 t=33 transition-taken state=chase event=Lost transition=2 target=idle
+#68 t=33 node-ended reason=cancelled node=face handle=1.13
+#69 t=33 node-ended reason=cancelled node=approach handle=1.12
+#70 t=33 state-exited state=chase
+#71 t=33 state-entered state=idle
+#72 t=33 node-started reason=started node=rest_wait handle=1.14

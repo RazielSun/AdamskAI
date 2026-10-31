@@ -1,0 +1,76 @@
+<!-- An Any holds when one of its When children holds; a handler with two Any groups needs one term from each. -->
+<Agent version="1" id="when-any-needs-one">
+  <Locals>
+    <Local name="A" type="Bool"/>
+    <Local name="B" type="Bool"/>
+    <Local name="Count" type="Int"/>
+  </Locals>
+  <Events>
+    <Event name="Set">
+      <Param name="A" type="Bool"/>
+      <Param name="B" type="Bool"/>
+      <Param name="N" type="Int"/>
+    </Event>
+    <Event name="Go"/>
+  </Events>
+  <StateMachine id="m" initial="none">
+    <!-- A and B false: the first Any fails. -->
+    <State id="none" tree="neither">
+      <On event="Set">
+        <Bind param="A" to="A"/>
+        <Bind param="B" to="B"/>
+        <Bind param="N" to="Count"/>
+      </On>
+      <On event="Go" goto="fail">
+        <Any>
+          <When if="A"/>
+          <When if="B"/>
+        </Any>
+      </On>
+      <On event="Go" goto="one"/>
+    </State>
+    <!-- B true and Count 3: each group has a holding term. -->
+    <State id="one" tree="b-only">
+      <On event="Set">
+        <Bind param="A" to="A"/>
+        <Bind param="B" to="B"/>
+        <Bind param="N" to="Count"/>
+      </On>
+      <On event="Go" goto="pass">
+        <Any>
+          <When if="A"/>
+          <When if="B"/>
+        </Any>
+        <Any>
+          <When if="Count" is="3"/>
+          <When if="Count" above="10"/>
+        </Any>
+      </On>
+      <On event="Go" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="neither">
+    <Sequence id="neither-steps">
+      <Emit id="neither-set" event="Set">
+        <Param name="A" value="false"/>
+        <Param name="B" value="false"/>
+        <Param name="N" value="3"/>
+      </Emit>
+      <Emit id="neither-go" event="Go"/>
+      <Wait id="neither-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="b-only">
+    <Sequence id="b-steps">
+      <Emit id="b-set" event="Set">
+        <Param name="A" value="false"/>
+        <Param name="B" value="true"/>
+        <Param name="N" value="3"/>
+      </Emit>
+      <Emit id="b-go" event="Go"/>
+      <Wait id="b-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

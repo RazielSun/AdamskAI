@@ -1,0 +1,21 @@
+<!-- A SimpleParallel starts its background child beside the main one. -->
+<Agent version="1" id="parallel-background-runs">
+  <Events>
+    <Event name="Beat"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="both">
+      <On event="Beat" goto="pass"/>
+    </State>
+    <State id="pass"/>
+  </StateMachine>
+  <Tree id="both">
+    <SimpleParallel id="main-and-beat">
+      <Wait id="main-wait" duration="100"/>
+      <Sequence id="beat-once">
+        <Emit id="emit-beat" event="Beat"/>
+        <Wait id="beat-hold" duration="100"/>
+      </Sequence>
+    </SimpleParallel>
+  </Tree>
+</Agent>

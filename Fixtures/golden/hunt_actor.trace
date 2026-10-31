@@ -1,0 +1,88 @@
+# source 8a4eaba155384fc7ee314ba3aad703896e13f805
+# catalogue e0fc48ef38f826d556857f9440fee7b6c7bfdd2a
+#1 t=0 instance-started reason=started
+#2 t=0 input-set slot=Target value=none
+#3 t=0 state-entered state=mode
+#4 t=0 state-entered state=search
+#5 t=0 node-started reason=started node=search_wait handle=1.1
+#6 t=4 node-ended reason=succeeded node=search_wait handle=1.1
+#7 t=5 event-consumed state=search event=tree.success
+#8 t=5 transition-taken state=search event=tree.success transition=2 target=search slot=Target value=none
+#9 t=5 state-exited state=search
+#10 t=5 state-entered state=search
+#11 t=5 node-started reason=started node=search_wait handle=1.2
+#12 t=9 node-ended reason=succeeded node=search_wait handle=1.2
+#13 t=10 event-consumed state=search event=tree.success
+#14 t=10 transition-taken state=search event=tree.success transition=2 target=search slot=Target value=none
+#15 t=10 state-exited state=search
+#16 t=10 state-entered state=search
+#17 t=10 node-started reason=started node=search_wait handle=1.3
+#18 t=13 input-set slot=Target value=Object#3
+#19 t=13 event-enqueued event=TargetChanged
+#20 t=13 event-consumed state=search event=TargetChanged
+#21 t=13 transition-taken state=search event=TargetChanged transition=1 target=chase slot=Target value=Object#3
+#22 t=13 node-ended reason=cancelled node=search_wait handle=1.3
+#23 t=13 state-exited state=search
+#24 t=13 state-entered state=chase
+#25 t=13 node-started reason=started node=chase_face handle=1.4
+#26 t=13 node-started reason=started node=chase_move handle=1.5
+#27 t=14 result-accepted handle=1.5
+#28 t=14 node-ended reason=succeeded node=chase_move handle=1.5
+#29 t=14 node-ended reason=succeeded node=chase_face handle=1.4
+#30 t=15 event-consumed state=chase event=tree.success
+#31 t=15 transition-taken state=chase event=tree.success transition=6 target=strike
+#32 t=15 state-exited state=chase
+#33 t=15 state-entered state=strike
+#34 t=15 node-started reason=started node=strike_look handle=1.6
+#35 t=16 result-accepted handle=1.6
+#36 t=16 node-ended reason=succeeded node=strike_look handle=1.6
+#37 t=17 event-consumed state=strike event=tree.success
+#38 t=17 transition-taken state=strike event=tree.success transition=11 target=chase
+#39 t=17 state-exited state=strike
+#40 t=17 state-entered state=chase
+#41 t=17 node-started reason=started node=chase_face handle=1.7
+#42 t=17 node-started reason=started node=chase_move handle=1.8
+#43 t=17 event-enqueued event=Mark
+#44 t=18 result-accepted handle=1.8
+#45 t=18 node-ended reason=succeeded node=chase_move handle=1.8
+#46 t=18 node-ended reason=succeeded node=chase_face handle=1.7
+#47 t=18 event-consumed state=chase event=Mark
+#48 t=18 transition-taken state=chase event=Mark transition=4
+#49 t=18 slot-written event=Mark transition=4 slot=Marked value=Object#3
+#50 t=19 event-consumed state=chase event=tree.success
+#51 t=19 transition-taken state=chase event=tree.success transition=6 target=strike
+#52 t=19 state-exited state=chase
+#53 t=19 state-entered state=strike
+#54 t=19 node-started reason=started node=strike_look handle=1.9
+#55 t=20 result-accepted handle=1.9
+#56 t=20 node-ended reason=succeeded node=strike_look handle=1.9
+#57 t=21 event-consumed state=strike event=tree.success
+#58 t=21 transition-taken state=strike event=tree.success transition=10 target=strike slot=Target value=Object#3
+#59 t=21 state-exited state=strike
+#60 t=21 state-entered state=strike
+#61 t=21 node-started reason=started node=strike_look handle=1.10
+#62 t=22 result-accepted handle=1.10
+#63 t=22 node-ended reason=failed node=strike_look handle=1.10
+#64 t=23 event-consumed state=strike event=tree.failure
+#65 t=23 transition-taken state=strike event=tree.failure transition=12 target=search
+#66 t=23 state-exited state=strike
+#67 t=23 state-entered state=search
+#68 t=23 node-started reason=started node=search_wait handle=1.11
+#69 t=24 input-set slot=Target value=Object#4
+#70 t=24 event-enqueued event=TargetChanged
+#71 t=24 event-consumed state=search event=TargetChanged
+#72 t=24 transition-taken state=search event=TargetChanged transition=1 target=chase slot=Target value=Object#4
+#73 t=24 node-ended reason=cancelled node=search_wait handle=1.11
+#74 t=24 state-exited state=search
+#75 t=24 state-entered state=chase
+#76 t=24 node-started reason=started node=chase_face handle=1.12
+#77 t=24 node-started reason=started node=chase_move handle=1.13
+#78 t=25 input-set slot=Target value=none
+#79 t=25 event-enqueued event=TargetChanged
+#80 t=25 event-consumed state=chase event=TargetChanged
+#81 t=25 transition-taken state=chase event=TargetChanged transition=5 target=search slot=Target value=none
+#82 t=25 node-ended reason=cancelled node=chase_move handle=1.13
+#83 t=25 node-ended reason=cancelled node=chase_face handle=1.12
+#84 t=25 state-exited state=chase
+#85 t=25 state-entered state=search
+#86 t=25 node-started reason=started node=search_wait handle=1.14

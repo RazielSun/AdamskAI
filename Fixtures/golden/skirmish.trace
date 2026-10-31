@@ -1,0 +1,688 @@
+# source 62c0d0b8ddf536aa141847f521f65e1d65c136cc
+# catalogue e0fc48ef38f826d556857f9440fee7b6c7bfdd2a
+#1 t=0 instance-started reason=started
+#2 t=0 input-set slot=TargetLocation value=1000.0,0.0,0.0
+#3 t=0 input-set slot=TargetDistance value=100000.0
+#4 t=0 input-set slot=StrafePoint value=0.0,0.0,0.0
+#5 t=0 input-set slot=Reach value=150.0
+#6 t=0 state-entered state=fight
+#7 t=0 state-entered state=decide
+#8 t=0 node-started reason=started node=decide_roll handle=1.1
+#9 t=0 slot-written node=decide_roll handle=1.1 slot=Plan value=1
+#10 t=0 node-ended reason=succeeded node=decide_roll handle=1.1
+#11 t=1 event-consumed state=decide event=tree.success
+#12 t=1 transition-taken state=decide event=tree.success transition=0 target=close slot=TargetDistance value=100000.0
+#13 t=1 state-exited state=decide
+#14 t=1 state-entered state=close
+#15 t=1 node-started reason=started node=close_speed handle=1.2
+#16 t=1 node-started reason=started node=close_move handle=1.3
+#17 t=2 input-set slot=TargetDistance value=50.0
+#18 t=2 result-accepted handle=1.3
+#19 t=2 node-ended reason=succeeded node=close_move handle=1.3
+#20 t=2 node-ended reason=succeeded node=close_speed handle=1.2
+#21 t=3 event-consumed state=close event=tree.success
+#22 t=3 transition-taken state=close event=tree.success transition=3 target=decide
+#23 t=3 state-exited state=close
+#24 t=3 state-entered state=decide
+#25 t=3 node-started reason=started node=decide_roll handle=1.4
+#26 t=3 node-ended reason=succeeded node=decide_roll handle=1.4
+#27 t=4 event-consumed state=decide event=tree.success
+#28 t=4 transition-taken state=decide event=tree.success transition=2 target=hold
+#29 t=4 state-exited state=decide
+#30 t=4 state-entered state=hold
+#31 t=4 node-started reason=started node=hold_face handle=1.5
+#32 t=4 node-started reason=started node=hold_wait handle=1.6
+#33 t=9 node-ended reason=succeeded node=hold_wait handle=1.6
+#34 t=9 node-ended reason=succeeded node=hold_face handle=1.5
+#35 t=10 event-consumed state=hold event=tree.success
+#36 t=10 transition-taken state=hold event=tree.success transition=7 target=decide
+#37 t=10 state-exited state=hold
+#38 t=10 state-entered state=decide
+#39 t=10 node-started reason=started node=decide_roll handle=1.7
+#40 t=10 slot-written node=decide_roll handle=1.7 slot=Plan value=0
+#41 t=10 node-ended reason=succeeded node=decide_roll handle=1.7
+#42 t=11 event-consumed state=decide event=tree.success
+#43 t=11 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#44 t=11 state-exited state=decide
+#45 t=11 state-entered state=strafe
+#46 t=11 node-started reason=started node=strafe_speed handle=1.8
+#47 t=11 node-started reason=started node=strafe_face handle=1.9
+#48 t=11 node-started reason=started node=strafe_move handle=1.10
+#49 t=12 result-accepted handle=1.10
+#50 t=12 node-ended reason=succeeded node=strafe_move handle=1.10
+#51 t=12 node-ended reason=succeeded node=strafe_face handle=1.9
+#52 t=12 node-ended reason=succeeded node=strafe_speed handle=1.8
+#53 t=13 event-consumed state=strafe event=tree.success
+#54 t=13 transition-taken state=strafe event=tree.success transition=5 target=decide
+#55 t=13 state-exited state=strafe
+#56 t=13 state-entered state=decide
+#57 t=13 node-started reason=started node=decide_roll handle=1.11
+#58 t=13 node-ended reason=succeeded node=decide_roll handle=1.11
+#59 t=14 event-consumed state=decide event=tree.success
+#60 t=14 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#61 t=14 state-exited state=decide
+#62 t=14 state-entered state=strafe
+#63 t=14 node-started reason=started node=strafe_speed handle=1.12
+#64 t=14 node-started reason=started node=strafe_face handle=1.13
+#65 t=14 node-started reason=started node=strafe_move handle=1.14
+#66 t=15 result-accepted handle=1.14
+#67 t=15 node-ended reason=succeeded node=strafe_move handle=1.14
+#68 t=15 node-ended reason=succeeded node=strafe_face handle=1.13
+#69 t=15 node-ended reason=succeeded node=strafe_speed handle=1.12
+#70 t=16 event-consumed state=strafe event=tree.success
+#71 t=16 transition-taken state=strafe event=tree.success transition=5 target=decide
+#72 t=16 state-exited state=strafe
+#73 t=16 state-entered state=decide
+#74 t=16 node-started reason=started node=decide_roll handle=1.15
+#75 t=16 node-ended reason=succeeded node=decide_roll handle=1.15
+#76 t=17 event-consumed state=decide event=tree.success
+#77 t=17 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#78 t=17 state-exited state=decide
+#79 t=17 state-entered state=strafe
+#80 t=17 node-started reason=started node=strafe_speed handle=1.16
+#81 t=17 node-started reason=started node=strafe_face handle=1.17
+#82 t=17 node-started reason=started node=strafe_move handle=1.18
+#83 t=18 result-accepted handle=1.18
+#84 t=18 node-ended reason=succeeded node=strafe_move handle=1.18
+#85 t=18 node-ended reason=succeeded node=strafe_face handle=1.17
+#86 t=18 node-ended reason=succeeded node=strafe_speed handle=1.16
+#87 t=19 event-consumed state=strafe event=tree.success
+#88 t=19 transition-taken state=strafe event=tree.success transition=5 target=decide
+#89 t=19 state-exited state=strafe
+#90 t=19 state-entered state=decide
+#91 t=19 node-started reason=started node=decide_roll handle=1.19
+#92 t=19 slot-written node=decide_roll handle=1.19 slot=Plan value=1
+#93 t=19 node-ended reason=succeeded node=decide_roll handle=1.19
+#94 t=20 event-consumed state=decide event=tree.success
+#95 t=20 transition-taken state=decide event=tree.success transition=2 target=hold
+#96 t=20 state-exited state=decide
+#97 t=20 state-entered state=hold
+#98 t=20 node-started reason=started node=hold_face handle=1.20
+#99 t=20 node-started reason=started node=hold_wait handle=1.21
+#100 t=23 node-ended reason=succeeded node=hold_wait handle=1.21
+#101 t=23 node-ended reason=succeeded node=hold_face handle=1.20
+#102 t=24 event-consumed state=hold event=tree.success
+#103 t=24 transition-taken state=hold event=tree.success transition=7 target=decide
+#104 t=24 state-exited state=hold
+#105 t=24 state-entered state=decide
+#106 t=24 node-started reason=started node=decide_roll handle=1.22
+#107 t=24 slot-written node=decide_roll handle=1.22 slot=Plan value=0
+#108 t=24 node-ended reason=succeeded node=decide_roll handle=1.22
+#109 t=25 event-consumed state=decide event=tree.success
+#110 t=25 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#111 t=25 state-exited state=decide
+#112 t=25 state-entered state=strafe
+#113 t=25 node-started reason=started node=strafe_speed handle=1.23
+#114 t=25 node-started reason=started node=strafe_face handle=1.24
+#115 t=25 node-started reason=started node=strafe_move handle=1.25
+#116 t=26 result-accepted handle=1.25
+#117 t=26 node-ended reason=succeeded node=strafe_move handle=1.25
+#118 t=26 node-ended reason=succeeded node=strafe_face handle=1.24
+#119 t=26 node-ended reason=succeeded node=strafe_speed handle=1.23
+#120 t=27 event-consumed state=strafe event=tree.success
+#121 t=27 transition-taken state=strafe event=tree.success transition=5 target=decide
+#122 t=27 state-exited state=strafe
+#123 t=27 state-entered state=decide
+#124 t=27 node-started reason=started node=decide_roll handle=1.26
+#125 t=27 node-ended reason=succeeded node=decide_roll handle=1.26
+#126 t=28 event-consumed state=decide event=tree.success
+#127 t=28 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#128 t=28 state-exited state=decide
+#129 t=28 state-entered state=strafe
+#130 t=28 node-started reason=started node=strafe_speed handle=1.27
+#131 t=28 node-started reason=started node=strafe_face handle=1.28
+#132 t=28 node-started reason=started node=strafe_move handle=1.29
+#133 t=29 result-accepted handle=1.29
+#134 t=29 node-ended reason=succeeded node=strafe_move handle=1.29
+#135 t=29 node-ended reason=succeeded node=strafe_face handle=1.28
+#136 t=29 node-ended reason=succeeded node=strafe_speed handle=1.27
+#137 t=30 event-consumed state=strafe event=tree.success
+#138 t=30 transition-taken state=strafe event=tree.success transition=5 target=decide
+#139 t=30 state-exited state=strafe
+#140 t=30 state-entered state=decide
+#141 t=30 node-started reason=started node=decide_roll handle=1.30
+#142 t=30 node-ended reason=succeeded node=decide_roll handle=1.30
+#143 t=31 event-consumed state=decide event=tree.success
+#144 t=31 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#145 t=31 state-exited state=decide
+#146 t=31 state-entered state=strafe
+#147 t=31 node-started reason=started node=strafe_speed handle=1.31
+#148 t=31 node-started reason=started node=strafe_face handle=1.32
+#149 t=31 node-started reason=started node=strafe_move handle=1.33
+#150 t=32 result-accepted handle=1.33
+#151 t=32 node-ended reason=succeeded node=strafe_move handle=1.33
+#152 t=32 node-ended reason=succeeded node=strafe_face handle=1.32
+#153 t=32 node-ended reason=succeeded node=strafe_speed handle=1.31
+#154 t=33 event-consumed state=strafe event=tree.success
+#155 t=33 transition-taken state=strafe event=tree.success transition=5 target=decide
+#156 t=33 state-exited state=strafe
+#157 t=33 state-entered state=decide
+#158 t=33 node-started reason=started node=decide_roll handle=1.34
+#159 t=33 node-ended reason=succeeded node=decide_roll handle=1.34
+#160 t=34 event-consumed state=decide event=tree.success
+#161 t=34 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#162 t=34 state-exited state=decide
+#163 t=34 state-entered state=strafe
+#164 t=34 node-started reason=started node=strafe_speed handle=1.35
+#165 t=34 node-started reason=started node=strafe_face handle=1.36
+#166 t=34 node-started reason=started node=strafe_move handle=1.37
+#167 t=35 result-accepted handle=1.37
+#168 t=35 node-ended reason=succeeded node=strafe_move handle=1.37
+#169 t=35 node-ended reason=succeeded node=strafe_face handle=1.36
+#170 t=35 node-ended reason=succeeded node=strafe_speed handle=1.35
+#171 t=36 event-consumed state=strafe event=tree.success
+#172 t=36 transition-taken state=strafe event=tree.success transition=5 target=decide
+#173 t=36 state-exited state=strafe
+#174 t=36 state-entered state=decide
+#175 t=36 node-started reason=started node=decide_roll handle=1.38
+#176 t=36 node-ended reason=succeeded node=decide_roll handle=1.38
+#177 t=37 event-consumed state=decide event=tree.success
+#178 t=37 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#179 t=37 state-exited state=decide
+#180 t=37 state-entered state=strafe
+#181 t=37 node-started reason=started node=strafe_speed handle=1.39
+#182 t=37 node-started reason=started node=strafe_face handle=1.40
+#183 t=37 node-started reason=started node=strafe_move handle=1.41
+#184 t=38 result-accepted handle=1.41
+#185 t=38 node-ended reason=succeeded node=strafe_move handle=1.41
+#186 t=38 node-ended reason=succeeded node=strafe_face handle=1.40
+#187 t=38 node-ended reason=succeeded node=strafe_speed handle=1.39
+#188 t=39 event-consumed state=strafe event=tree.success
+#189 t=39 transition-taken state=strafe event=tree.success transition=5 target=decide
+#190 t=39 state-exited state=strafe
+#191 t=39 state-entered state=decide
+#192 t=39 node-started reason=started node=decide_roll handle=1.42
+#193 t=39 node-ended reason=succeeded node=decide_roll handle=1.42
+#194 t=40 event-consumed state=decide event=tree.success
+#195 t=40 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#196 t=40 state-exited state=decide
+#197 t=40 state-entered state=strafe
+#198 t=40 node-started reason=started node=strafe_speed handle=1.43
+#199 t=40 node-started reason=started node=strafe_face handle=1.44
+#200 t=40 node-started reason=started node=strafe_move handle=1.45
+#201 t=41 result-accepted handle=1.45
+#202 t=41 node-ended reason=succeeded node=strafe_move handle=1.45
+#203 t=41 node-ended reason=succeeded node=strafe_face handle=1.44
+#204 t=41 node-ended reason=succeeded node=strafe_speed handle=1.43
+#205 t=42 event-consumed state=strafe event=tree.success
+#206 t=42 transition-taken state=strafe event=tree.success transition=5 target=decide
+#207 t=42 state-exited state=strafe
+#208 t=42 state-entered state=decide
+#209 t=42 node-started reason=started node=decide_roll handle=1.46
+#210 t=42 slot-written node=decide_roll handle=1.46 slot=Plan value=1
+#211 t=42 node-ended reason=succeeded node=decide_roll handle=1.46
+#212 t=43 event-consumed state=decide event=tree.success
+#213 t=43 transition-taken state=decide event=tree.success transition=2 target=hold
+#214 t=43 state-exited state=decide
+#215 t=43 state-entered state=hold
+#216 t=43 node-started reason=started node=hold_face handle=1.47
+#217 t=43 node-started reason=started node=hold_wait handle=1.48
+#218 t=48 node-ended reason=succeeded node=hold_wait handle=1.48
+#219 t=48 node-ended reason=succeeded node=hold_face handle=1.47
+#220 t=49 event-consumed state=hold event=tree.success
+#221 t=49 transition-taken state=hold event=tree.success transition=7 target=decide
+#222 t=49 state-exited state=hold
+#223 t=49 state-entered state=decide
+#224 t=49 node-started reason=started node=decide_roll handle=1.49
+#225 t=49 node-ended reason=succeeded node=decide_roll handle=1.49
+#226 t=50 event-consumed state=decide event=tree.success
+#227 t=50 transition-taken state=decide event=tree.success transition=2 target=hold
+#228 t=50 state-exited state=decide
+#229 t=50 state-entered state=hold
+#230 t=50 node-started reason=started node=hold_face handle=1.50
+#231 t=50 node-started reason=started node=hold_wait handle=1.51
+#232 t=54 node-ended reason=succeeded node=hold_wait handle=1.51
+#233 t=54 node-ended reason=succeeded node=hold_face handle=1.50
+#234 t=55 event-consumed state=hold event=tree.success
+#235 t=55 transition-taken state=hold event=tree.success transition=7 target=decide
+#236 t=55 state-exited state=hold
+#237 t=55 state-entered state=decide
+#238 t=55 node-started reason=started node=decide_roll handle=1.52
+#239 t=55 slot-written node=decide_roll handle=1.52 slot=Plan value=0
+#240 t=55 node-ended reason=succeeded node=decide_roll handle=1.52
+#241 t=56 event-consumed state=decide event=tree.success
+#242 t=56 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#243 t=56 state-exited state=decide
+#244 t=56 state-entered state=strafe
+#245 t=56 node-started reason=started node=strafe_speed handle=1.53
+#246 t=56 node-started reason=started node=strafe_face handle=1.54
+#247 t=56 node-started reason=started node=strafe_move handle=1.55
+#248 t=57 result-accepted handle=1.55
+#249 t=57 node-ended reason=succeeded node=strafe_move handle=1.55
+#250 t=57 node-ended reason=succeeded node=strafe_face handle=1.54
+#251 t=57 node-ended reason=succeeded node=strafe_speed handle=1.53
+#252 t=58 event-consumed state=strafe event=tree.success
+#253 t=58 transition-taken state=strafe event=tree.success transition=5 target=decide
+#254 t=58 state-exited state=strafe
+#255 t=58 state-entered state=decide
+#256 t=58 node-started reason=started node=decide_roll handle=1.56
+#257 t=58 node-ended reason=succeeded node=decide_roll handle=1.56
+#258 t=59 event-consumed state=decide event=tree.success
+#259 t=59 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#260 t=59 state-exited state=decide
+#261 t=59 state-entered state=strafe
+#262 t=59 node-started reason=started node=strafe_speed handle=1.57
+#263 t=59 node-started reason=started node=strafe_face handle=1.58
+#264 t=59 node-started reason=started node=strafe_move handle=1.59
+#265 t=60 result-accepted handle=1.59
+#266 t=60 node-ended reason=succeeded node=strafe_move handle=1.59
+#267 t=60 node-ended reason=succeeded node=strafe_face handle=1.58
+#268 t=60 node-ended reason=succeeded node=strafe_speed handle=1.57
+#269 t=61 event-consumed state=strafe event=tree.success
+#270 t=61 transition-taken state=strafe event=tree.success transition=5 target=decide
+#271 t=61 state-exited state=strafe
+#272 t=61 state-entered state=decide
+#273 t=61 node-started reason=started node=decide_roll handle=1.60
+#274 t=61 slot-written node=decide_roll handle=1.60 slot=Plan value=1
+#275 t=61 node-ended reason=succeeded node=decide_roll handle=1.60
+#276 t=62 event-consumed state=decide event=tree.success
+#277 t=62 transition-taken state=decide event=tree.success transition=2 target=hold
+#278 t=62 state-exited state=decide
+#279 t=62 state-entered state=hold
+#280 t=62 node-started reason=started node=hold_face handle=1.61
+#281 t=62 node-started reason=started node=hold_wait handle=1.62
+#282 t=68 node-ended reason=succeeded node=hold_wait handle=1.62
+#283 t=68 node-ended reason=succeeded node=hold_face handle=1.61
+#284 t=69 event-consumed state=hold event=tree.success
+#285 t=69 transition-taken state=hold event=tree.success transition=7 target=decide
+#286 t=69 state-exited state=hold
+#287 t=69 state-entered state=decide
+#288 t=69 node-started reason=started node=decide_roll handle=1.63
+#289 t=69 slot-written node=decide_roll handle=1.63 slot=Plan value=0
+#290 t=69 node-ended reason=succeeded node=decide_roll handle=1.63
+#291 t=70 event-consumed state=decide event=tree.success
+#292 t=70 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#293 t=70 state-exited state=decide
+#294 t=70 state-entered state=strafe
+#295 t=70 node-started reason=started node=strafe_speed handle=1.64
+#296 t=70 node-started reason=started node=strafe_face handle=1.65
+#297 t=70 node-started reason=started node=strafe_move handle=1.66
+#298 t=71 result-accepted handle=1.66
+#299 t=71 node-ended reason=succeeded node=strafe_move handle=1.66
+#300 t=71 node-ended reason=succeeded node=strafe_face handle=1.65
+#301 t=71 node-ended reason=succeeded node=strafe_speed handle=1.64
+#302 t=72 event-consumed state=strafe event=tree.success
+#303 t=72 transition-taken state=strafe event=tree.success transition=5 target=decide
+#304 t=72 state-exited state=strafe
+#305 t=72 state-entered state=decide
+#306 t=72 node-started reason=started node=decide_roll handle=1.67
+#307 t=72 node-ended reason=succeeded node=decide_roll handle=1.67
+#308 t=73 event-consumed state=decide event=tree.success
+#309 t=73 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#310 t=73 state-exited state=decide
+#311 t=73 state-entered state=strafe
+#312 t=73 node-started reason=started node=strafe_speed handle=1.68
+#313 t=73 node-started reason=started node=strafe_face handle=1.69
+#314 t=73 node-started reason=started node=strafe_move handle=1.70
+#315 t=74 result-accepted handle=1.70
+#316 t=74 node-ended reason=succeeded node=strafe_move handle=1.70
+#317 t=74 node-ended reason=succeeded node=strafe_face handle=1.69
+#318 t=74 node-ended reason=succeeded node=strafe_speed handle=1.68
+#319 t=75 event-consumed state=strafe event=tree.success
+#320 t=75 transition-taken state=strafe event=tree.success transition=5 target=decide
+#321 t=75 state-exited state=strafe
+#322 t=75 state-entered state=decide
+#323 t=75 node-started reason=started node=decide_roll handle=1.71
+#324 t=75 slot-written node=decide_roll handle=1.71 slot=Plan value=1
+#325 t=75 node-ended reason=succeeded node=decide_roll handle=1.71
+#326 t=76 event-consumed state=decide event=tree.success
+#327 t=76 transition-taken state=decide event=tree.success transition=2 target=hold
+#328 t=76 state-exited state=decide
+#329 t=76 state-entered state=hold
+#330 t=76 node-started reason=started node=hold_face handle=1.72
+#331 t=76 node-started reason=started node=hold_wait handle=1.73
+#332 t=80 node-ended reason=succeeded node=hold_wait handle=1.73
+#333 t=80 node-ended reason=succeeded node=hold_face handle=1.72
+#334 t=81 event-consumed state=hold event=tree.success
+#335 t=81 transition-taken state=hold event=tree.success transition=7 target=decide
+#336 t=81 state-exited state=hold
+#337 t=81 state-entered state=decide
+#338 t=81 node-started reason=started node=decide_roll handle=1.74
+#339 t=81 slot-written node=decide_roll handle=1.74 slot=Plan value=0
+#340 t=81 node-ended reason=succeeded node=decide_roll handle=1.74
+#341 t=82 event-consumed state=decide event=tree.success
+#342 t=82 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#343 t=82 state-exited state=decide
+#344 t=82 state-entered state=strafe
+#345 t=82 node-started reason=started node=strafe_speed handle=1.75
+#346 t=82 node-started reason=started node=strafe_face handle=1.76
+#347 t=82 node-started reason=started node=strafe_move handle=1.77
+#348 t=83 result-accepted handle=1.77
+#349 t=83 node-ended reason=succeeded node=strafe_move handle=1.77
+#350 t=83 node-ended reason=succeeded node=strafe_face handle=1.76
+#351 t=83 node-ended reason=succeeded node=strafe_speed handle=1.75
+#352 t=84 event-consumed state=strafe event=tree.success
+#353 t=84 transition-taken state=strafe event=tree.success transition=5 target=decide
+#354 t=84 state-exited state=strafe
+#355 t=84 state-entered state=decide
+#356 t=84 node-started reason=started node=decide_roll handle=1.78
+#357 t=84 slot-written node=decide_roll handle=1.78 slot=Plan value=1
+#358 t=84 node-ended reason=succeeded node=decide_roll handle=1.78
+#359 t=85 event-consumed state=decide event=tree.success
+#360 t=85 transition-taken state=decide event=tree.success transition=2 target=hold
+#361 t=85 state-exited state=decide
+#362 t=85 state-entered state=hold
+#363 t=85 node-started reason=started node=hold_face handle=1.79
+#364 t=85 node-started reason=started node=hold_wait handle=1.80
+#365 t=89 node-ended reason=succeeded node=hold_wait handle=1.80
+#366 t=89 node-ended reason=succeeded node=hold_face handle=1.79
+#367 t=90 event-consumed state=hold event=tree.success
+#368 t=90 transition-taken state=hold event=tree.success transition=7 target=decide
+#369 t=90 state-exited state=hold
+#370 t=90 state-entered state=decide
+#371 t=90 node-started reason=started node=decide_roll handle=1.81
+#372 t=90 slot-written node=decide_roll handle=1.81 slot=Plan value=0
+#373 t=90 node-ended reason=succeeded node=decide_roll handle=1.81
+#374 t=91 event-consumed state=decide event=tree.success
+#375 t=91 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#376 t=91 state-exited state=decide
+#377 t=91 state-entered state=strafe
+#378 t=91 node-started reason=started node=strafe_speed handle=1.82
+#379 t=91 node-started reason=started node=strafe_face handle=1.83
+#380 t=91 node-started reason=started node=strafe_move handle=1.84
+#381 t=92 result-accepted handle=1.84
+#382 t=92 node-ended reason=succeeded node=strafe_move handle=1.84
+#383 t=92 node-ended reason=succeeded node=strafe_face handle=1.83
+#384 t=92 node-ended reason=succeeded node=strafe_speed handle=1.82
+#385 t=93 event-consumed state=strafe event=tree.success
+#386 t=93 transition-taken state=strafe event=tree.success transition=5 target=decide
+#387 t=93 state-exited state=strafe
+#388 t=93 state-entered state=decide
+#389 t=93 node-started reason=started node=decide_roll handle=1.85
+#390 t=93 node-ended reason=succeeded node=decide_roll handle=1.85
+#391 t=94 event-consumed state=decide event=tree.success
+#392 t=94 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#393 t=94 state-exited state=decide
+#394 t=94 state-entered state=strafe
+#395 t=94 node-started reason=started node=strafe_speed handle=1.86
+#396 t=94 node-started reason=started node=strafe_face handle=1.87
+#397 t=94 node-started reason=started node=strafe_move handle=1.88
+#398 t=95 result-accepted handle=1.88
+#399 t=95 node-ended reason=succeeded node=strafe_move handle=1.88
+#400 t=95 node-ended reason=succeeded node=strafe_face handle=1.87
+#401 t=95 node-ended reason=succeeded node=strafe_speed handle=1.86
+#402 t=96 event-consumed state=strafe event=tree.success
+#403 t=96 transition-taken state=strafe event=tree.success transition=5 target=decide
+#404 t=96 state-exited state=strafe
+#405 t=96 state-entered state=decide
+#406 t=96 node-started reason=started node=decide_roll handle=1.89
+#407 t=96 node-ended reason=succeeded node=decide_roll handle=1.89
+#408 t=97 event-consumed state=decide event=tree.success
+#409 t=97 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#410 t=97 state-exited state=decide
+#411 t=97 state-entered state=strafe
+#412 t=97 node-started reason=started node=strafe_speed handle=1.90
+#413 t=97 node-started reason=started node=strafe_face handle=1.91
+#414 t=97 node-started reason=started node=strafe_move handle=1.92
+#415 t=98 result-accepted handle=1.92
+#416 t=98 node-ended reason=succeeded node=strafe_move handle=1.92
+#417 t=98 node-ended reason=succeeded node=strafe_face handle=1.91
+#418 t=98 node-ended reason=succeeded node=strafe_speed handle=1.90
+#419 t=99 event-consumed state=strafe event=tree.success
+#420 t=99 transition-taken state=strafe event=tree.success transition=5 target=decide
+#421 t=99 state-exited state=strafe
+#422 t=99 state-entered state=decide
+#423 t=99 node-started reason=started node=decide_roll handle=1.93
+#424 t=99 slot-written node=decide_roll handle=1.93 slot=Plan value=1
+#425 t=99 node-ended reason=succeeded node=decide_roll handle=1.93
+#426 t=100 event-consumed state=decide event=tree.success
+#427 t=100 transition-taken state=decide event=tree.success transition=2 target=hold
+#428 t=100 state-exited state=decide
+#429 t=100 state-entered state=hold
+#430 t=100 node-started reason=started node=hold_face handle=1.94
+#431 t=100 node-started reason=started node=hold_wait handle=1.95
+#432 t=103 node-ended reason=succeeded node=hold_wait handle=1.95
+#433 t=103 node-ended reason=succeeded node=hold_face handle=1.94
+#434 t=104 event-consumed state=hold event=tree.success
+#435 t=104 transition-taken state=hold event=tree.success transition=7 target=decide
+#436 t=104 state-exited state=hold
+#437 t=104 state-entered state=decide
+#438 t=104 node-started reason=started node=decide_roll handle=1.96
+#439 t=104 slot-written node=decide_roll handle=1.96 slot=Plan value=0
+#440 t=104 node-ended reason=succeeded node=decide_roll handle=1.96
+#441 t=105 event-consumed state=decide event=tree.success
+#442 t=105 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#443 t=105 state-exited state=decide
+#444 t=105 state-entered state=strafe
+#445 t=105 node-started reason=started node=strafe_speed handle=1.97
+#446 t=105 node-started reason=started node=strafe_face handle=1.98
+#447 t=105 node-started reason=started node=strafe_move handle=1.99
+#448 t=106 result-accepted handle=1.99
+#449 t=106 node-ended reason=succeeded node=strafe_move handle=1.99
+#450 t=106 node-ended reason=succeeded node=strafe_face handle=1.98
+#451 t=106 node-ended reason=succeeded node=strafe_speed handle=1.97
+#452 t=107 event-consumed state=strafe event=tree.success
+#453 t=107 transition-taken state=strafe event=tree.success transition=5 target=decide
+#454 t=107 state-exited state=strafe
+#455 t=107 state-entered state=decide
+#456 t=107 node-started reason=started node=decide_roll handle=1.100
+#457 t=107 slot-written node=decide_roll handle=1.100 slot=Plan value=1
+#458 t=107 node-ended reason=succeeded node=decide_roll handle=1.100
+#459 t=108 event-consumed state=decide event=tree.success
+#460 t=108 transition-taken state=decide event=tree.success transition=2 target=hold
+#461 t=108 state-exited state=decide
+#462 t=108 state-entered state=hold
+#463 t=108 node-started reason=started node=hold_face handle=1.101
+#464 t=108 node-started reason=started node=hold_wait handle=1.102
+#465 t=114 node-ended reason=succeeded node=hold_wait handle=1.102
+#466 t=114 node-ended reason=succeeded node=hold_face handle=1.101
+#467 t=115 event-consumed state=hold event=tree.success
+#468 t=115 transition-taken state=hold event=tree.success transition=7 target=decide
+#469 t=115 state-exited state=hold
+#470 t=115 state-entered state=decide
+#471 t=115 node-started reason=started node=decide_roll handle=1.103
+#472 t=115 slot-written node=decide_roll handle=1.103 slot=Plan value=0
+#473 t=115 node-ended reason=succeeded node=decide_roll handle=1.103
+#474 t=116 event-consumed state=decide event=tree.success
+#475 t=116 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#476 t=116 state-exited state=decide
+#477 t=116 state-entered state=strafe
+#478 t=116 node-started reason=started node=strafe_speed handle=1.104
+#479 t=116 node-started reason=started node=strafe_face handle=1.105
+#480 t=116 node-started reason=started node=strafe_move handle=1.106
+#481 t=117 result-accepted handle=1.106
+#482 t=117 node-ended reason=succeeded node=strafe_move handle=1.106
+#483 t=117 node-ended reason=succeeded node=strafe_face handle=1.105
+#484 t=117 node-ended reason=succeeded node=strafe_speed handle=1.104
+#485 t=118 event-consumed state=strafe event=tree.success
+#486 t=118 transition-taken state=strafe event=tree.success transition=5 target=decide
+#487 t=118 state-exited state=strafe
+#488 t=118 state-entered state=decide
+#489 t=118 node-started reason=started node=decide_roll handle=1.107
+#490 t=118 node-ended reason=succeeded node=decide_roll handle=1.107
+#491 t=119 event-consumed state=decide event=tree.success
+#492 t=119 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#493 t=119 state-exited state=decide
+#494 t=119 state-entered state=strafe
+#495 t=119 node-started reason=started node=strafe_speed handle=1.108
+#496 t=119 node-started reason=started node=strafe_face handle=1.109
+#497 t=119 node-started reason=started node=strafe_move handle=1.110
+#498 t=120 result-accepted handle=1.110
+#499 t=120 node-ended reason=succeeded node=strafe_move handle=1.110
+#500 t=120 node-ended reason=succeeded node=strafe_face handle=1.109
+#501 t=120 node-ended reason=succeeded node=strafe_speed handle=1.108
+#502 t=121 event-consumed state=strafe event=tree.success
+#503 t=121 transition-taken state=strafe event=tree.success transition=5 target=decide
+#504 t=121 state-exited state=strafe
+#505 t=121 state-entered state=decide
+#506 t=121 node-started reason=started node=decide_roll handle=1.111
+#507 t=121 slot-written node=decide_roll handle=1.111 slot=Plan value=1
+#508 t=121 node-ended reason=succeeded node=decide_roll handle=1.111
+#509 t=122 event-consumed state=decide event=tree.success
+#510 t=122 transition-taken state=decide event=tree.success transition=2 target=hold
+#511 t=122 state-exited state=decide
+#512 t=122 state-entered state=hold
+#513 t=122 node-started reason=started node=hold_face handle=1.112
+#514 t=122 node-started reason=started node=hold_wait handle=1.113
+#515 t=128 node-ended reason=succeeded node=hold_wait handle=1.113
+#516 t=128 node-ended reason=succeeded node=hold_face handle=1.112
+#517 t=129 event-consumed state=hold event=tree.success
+#518 t=129 transition-taken state=hold event=tree.success transition=7 target=decide
+#519 t=129 state-exited state=hold
+#520 t=129 state-entered state=decide
+#521 t=129 node-started reason=started node=decide_roll handle=1.114
+#522 t=129 node-ended reason=succeeded node=decide_roll handle=1.114
+#523 t=130 event-consumed state=decide event=tree.success
+#524 t=130 transition-taken state=decide event=tree.success transition=2 target=hold
+#525 t=130 state-exited state=decide
+#526 t=130 state-entered state=hold
+#527 t=130 node-started reason=started node=hold_face handle=1.115
+#528 t=130 node-started reason=started node=hold_wait handle=1.116
+#529 t=134 node-ended reason=succeeded node=hold_wait handle=1.116
+#530 t=134 node-ended reason=succeeded node=hold_face handle=1.115
+#531 t=135 event-consumed state=hold event=tree.success
+#532 t=135 transition-taken state=hold event=tree.success transition=7 target=decide
+#533 t=135 state-exited state=hold
+#534 t=135 state-entered state=decide
+#535 t=135 node-started reason=started node=decide_roll handle=1.117
+#536 t=135 slot-written node=decide_roll handle=1.117 slot=Plan value=0
+#537 t=135 node-ended reason=succeeded node=decide_roll handle=1.117
+#538 t=136 event-consumed state=decide event=tree.success
+#539 t=136 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#540 t=136 state-exited state=decide
+#541 t=136 state-entered state=strafe
+#542 t=136 node-started reason=started node=strafe_speed handle=1.118
+#543 t=136 node-started reason=started node=strafe_face handle=1.119
+#544 t=136 node-started reason=started node=strafe_move handle=1.120
+#545 t=137 result-accepted handle=1.120
+#546 t=137 node-ended reason=succeeded node=strafe_move handle=1.120
+#547 t=137 node-ended reason=succeeded node=strafe_face handle=1.119
+#548 t=137 node-ended reason=succeeded node=strafe_speed handle=1.118
+#549 t=138 event-consumed state=strafe event=tree.success
+#550 t=138 transition-taken state=strafe event=tree.success transition=5 target=decide
+#551 t=138 state-exited state=strafe
+#552 t=138 state-entered state=decide
+#553 t=138 node-started reason=started node=decide_roll handle=1.121
+#554 t=138 node-ended reason=succeeded node=decide_roll handle=1.121
+#555 t=139 event-consumed state=decide event=tree.success
+#556 t=139 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#557 t=139 state-exited state=decide
+#558 t=139 state-entered state=strafe
+#559 t=139 node-started reason=started node=strafe_speed handle=1.122
+#560 t=139 node-started reason=started node=strafe_face handle=1.123
+#561 t=139 node-started reason=started node=strafe_move handle=1.124
+#562 t=140 result-accepted handle=1.124
+#563 t=140 node-ended reason=succeeded node=strafe_move handle=1.124
+#564 t=140 node-ended reason=succeeded node=strafe_face handle=1.123
+#565 t=140 node-ended reason=succeeded node=strafe_speed handle=1.122
+#566 t=141 event-consumed state=strafe event=tree.success
+#567 t=141 transition-taken state=strafe event=tree.success transition=5 target=decide
+#568 t=141 state-exited state=strafe
+#569 t=141 state-entered state=decide
+#570 t=141 node-started reason=started node=decide_roll handle=1.125
+#571 t=141 slot-written node=decide_roll handle=1.125 slot=Plan value=1
+#572 t=141 node-ended reason=succeeded node=decide_roll handle=1.125
+#573 t=142 event-consumed state=decide event=tree.success
+#574 t=142 transition-taken state=decide event=tree.success transition=2 target=hold
+#575 t=142 state-exited state=decide
+#576 t=142 state-entered state=hold
+#577 t=142 node-started reason=started node=hold_face handle=1.126
+#578 t=142 node-started reason=started node=hold_wait handle=1.127
+#579 t=148 node-ended reason=succeeded node=hold_wait handle=1.127
+#580 t=148 node-ended reason=succeeded node=hold_face handle=1.126
+#581 t=149 event-consumed state=hold event=tree.success
+#582 t=149 transition-taken state=hold event=tree.success transition=7 target=decide
+#583 t=149 state-exited state=hold
+#584 t=149 state-entered state=decide
+#585 t=149 node-started reason=started node=decide_roll handle=1.128
+#586 t=149 slot-written node=decide_roll handle=1.128 slot=Plan value=0
+#587 t=149 node-ended reason=succeeded node=decide_roll handle=1.128
+#588 t=150 event-consumed state=decide event=tree.success
+#589 t=150 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#590 t=150 state-exited state=decide
+#591 t=150 state-entered state=strafe
+#592 t=150 node-started reason=started node=strafe_speed handle=1.129
+#593 t=150 node-started reason=started node=strafe_face handle=1.130
+#594 t=150 node-started reason=started node=strafe_move handle=1.131
+#595 t=151 result-accepted handle=1.131
+#596 t=151 node-ended reason=succeeded node=strafe_move handle=1.131
+#597 t=151 node-ended reason=succeeded node=strafe_face handle=1.130
+#598 t=151 node-ended reason=succeeded node=strafe_speed handle=1.129
+#599 t=152 event-consumed state=strafe event=tree.success
+#600 t=152 transition-taken state=strafe event=tree.success transition=5 target=decide
+#601 t=152 state-exited state=strafe
+#602 t=152 state-entered state=decide
+#603 t=152 node-started reason=started node=decide_roll handle=1.132
+#604 t=152 node-ended reason=succeeded node=decide_roll handle=1.132
+#605 t=153 event-consumed state=decide event=tree.success
+#606 t=153 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#607 t=153 state-exited state=decide
+#608 t=153 state-entered state=strafe
+#609 t=153 node-started reason=started node=strafe_speed handle=1.133
+#610 t=153 node-started reason=started node=strafe_face handle=1.134
+#611 t=153 node-started reason=started node=strafe_move handle=1.135
+#612 t=154 result-accepted handle=1.135
+#613 t=154 node-ended reason=succeeded node=strafe_move handle=1.135
+#614 t=154 node-ended reason=succeeded node=strafe_face handle=1.134
+#615 t=154 node-ended reason=succeeded node=strafe_speed handle=1.133
+#616 t=155 event-consumed state=strafe event=tree.success
+#617 t=155 transition-taken state=strafe event=tree.success transition=5 target=decide
+#618 t=155 state-exited state=strafe
+#619 t=155 state-entered state=decide
+#620 t=155 node-started reason=started node=decide_roll handle=1.136
+#621 t=155 node-ended reason=succeeded node=decide_roll handle=1.136
+#622 t=156 event-consumed state=decide event=tree.success
+#623 t=156 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#624 t=156 state-exited state=decide
+#625 t=156 state-entered state=strafe
+#626 t=156 node-started reason=started node=strafe_speed handle=1.137
+#627 t=156 node-started reason=started node=strafe_face handle=1.138
+#628 t=156 node-started reason=started node=strafe_move handle=1.139
+#629 t=157 result-accepted handle=1.139
+#630 t=157 node-ended reason=succeeded node=strafe_move handle=1.139
+#631 t=157 node-ended reason=succeeded node=strafe_face handle=1.138
+#632 t=157 node-ended reason=succeeded node=strafe_speed handle=1.137
+#633 t=158 event-consumed state=strafe event=tree.success
+#634 t=158 transition-taken state=strafe event=tree.success transition=5 target=decide
+#635 t=158 state-exited state=strafe
+#636 t=158 state-entered state=decide
+#637 t=158 node-started reason=started node=decide_roll handle=1.140
+#638 t=158 slot-written node=decide_roll handle=1.140 slot=Plan value=1
+#639 t=158 node-ended reason=succeeded node=decide_roll handle=1.140
+#640 t=159 event-consumed state=decide event=tree.success
+#641 t=159 transition-taken state=decide event=tree.success transition=2 target=hold
+#642 t=159 state-exited state=decide
+#643 t=159 state-entered state=hold
+#644 t=159 node-started reason=started node=hold_face handle=1.141
+#645 t=159 node-started reason=started node=hold_wait handle=1.142
+#646 t=162 node-ended reason=succeeded node=hold_wait handle=1.142
+#647 t=162 node-ended reason=succeeded node=hold_face handle=1.141
+#648 t=163 event-consumed state=hold event=tree.success
+#649 t=163 transition-taken state=hold event=tree.success transition=7 target=decide
+#650 t=163 state-exited state=hold
+#651 t=163 state-entered state=decide
+#652 t=163 node-started reason=started node=decide_roll handle=1.143
+#653 t=163 slot-written node=decide_roll handle=1.143 slot=Plan value=0
+#654 t=163 node-ended reason=succeeded node=decide_roll handle=1.143
+#655 t=164 event-consumed state=decide event=tree.success
+#656 t=164 transition-taken state=decide event=tree.success transition=1 target=strafe slot=Plan value=0
+#657 t=164 state-exited state=decide
+#658 t=164 state-entered state=strafe
+#659 t=164 node-started reason=started node=strafe_speed handle=1.144
+#660 t=164 node-started reason=started node=strafe_face handle=1.145
+#661 t=164 node-started reason=started node=strafe_move handle=1.146
+#662 t=165 result-accepted handle=1.146
+#663 t=165 node-ended reason=succeeded node=strafe_move handle=1.146
+#664 t=165 node-ended reason=succeeded node=strafe_face handle=1.145
+#665 t=165 node-ended reason=succeeded node=strafe_speed handle=1.144
+#666 t=166 event-consumed state=strafe event=tree.success
+#667 t=166 transition-taken state=strafe event=tree.success transition=5 target=decide
+#668 t=166 state-exited state=strafe
+#669 t=166 state-entered state=decide
+#670 t=166 node-started reason=started node=decide_roll handle=1.147
+#671 t=166 slot-written node=decide_roll handle=1.147 slot=Plan value=1
+#672 t=166 node-ended reason=succeeded node=decide_roll handle=1.147
+#673 t=167 event-consumed state=decide event=tree.success
+#674 t=167 transition-taken state=decide event=tree.success transition=2 target=hold
+#675 t=167 state-exited state=decide
+#676 t=167 state-entered state=hold
+#677 t=167 node-started reason=started node=hold_face handle=1.148
+#678 t=167 node-started reason=started node=hold_wait handle=1.149
+#679 t=172 node-ended reason=succeeded node=hold_wait handle=1.149
+#680 t=172 node-ended reason=succeeded node=hold_face handle=1.148
+#681 t=173 event-consumed state=hold event=tree.success
+#682 t=173 transition-taken state=hold event=tree.success transition=7 target=decide
+#683 t=173 state-exited state=hold
+#684 t=173 state-entered state=decide
+#685 t=173 node-started reason=started node=decide_roll handle=1.150
+#686 t=173 node-ended reason=succeeded node=decide_roll handle=1.150

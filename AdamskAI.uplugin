@@ -1,0 +1,60 @@
+{
+	"FileVersion": 3,
+	"Version": 5,
+	"VersionName": "0.5.0",
+	"FriendlyName": "AdamskAI",
+	"Description": "Deterministic XML-authored agent behavior: hierarchical state machine, node registry and bounded recorder.",
+	"Category": "AI",
+	"CreatedBy": "Aleksandr Kardakov",
+	"CreatedByURL": "https://github.com/RazielSun",
+	"DocsURL": "https://github.com/RazielSun/AdamskAI#readme",
+	"SupportURL": "https://github.com/RazielSun/AdamskAI/issues",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"Modules": [
+		{
+			"Name": "AdamskAI",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "AdamskAIHost",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "AdamskAIDebug",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"TargetConfigurationDenyList": [
+				"Shipping",
+				"Test"
+			]
+		},
+		{
+			"Name": "AdamskAIDemo",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"TargetConfigurationDenyList": [
+				"Shipping",
+				"Test"
+			]
+		},
+		{
+			"Name": "AdamskAIEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "AdamskAITests",
+			"Type": "DeveloperTool",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "CQTest",
+			"Enabled": true
+		}
+	]
+}

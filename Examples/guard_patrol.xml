@@ -1,0 +1,44 @@
+<!--
+  guard_patrol: walk to PatrolPoint, pause, repeat, while Enabled is true; rest while it is false.
+  Units: duration in seconds, acceptanceRadius in cm.
+-->
+<Agent version="1" id="guard_patrol">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="PatrolPoint" type="Vector" required="true"/>
+    <Input name="Enabled" type="Bool" default="true"/>
+  </Inputs>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="patrol">
+
+    <!-- Loop the patrol tree; a disabled or failed patrol rests first. -->
+    <State id="patrol" tree="patrol">
+      <On event="tree.success" goto="patrol"/>
+      <On event="tree.failure" goto="rest"/>
+    </State>
+
+    <!-- Check Enabled again in a second rather than every tick. -->
+    <State id="rest" tree="rest">
+      <On event="tree.success" goto="patrol"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="rest">
+    <Wait id="rest_wait" duration="1"/>
+  </Tree>
+
+  <Tree id="patrol">
+    <Guard id="enabled" in-condition="Enabled">
+      <Sequence id="route">
+        <MoveTo id="move" in-goal="PatrolPoint" acceptanceRadius="50"/>
+        <Wait id="pause" duration="1"/>
+      </Sequence>
+    </Guard>
+  </Tree>
+
+</Agent>

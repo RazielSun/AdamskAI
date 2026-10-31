@@ -1,0 +1,46 @@
+<!--
+  retreat_watching: fall back to cover without turning away from the threat. The host publishes Cover (a point)
+  and Threat (an Object: the actor, or none). The move and the watch run side by side in a SimpleParallel: the
+  move decides when the retreat ends; the watch loops beside it and only looks while there is a threat.
+  Units: radii in cm, durations in seconds.
+-->
+<Agent version="1" id="retreat_watching">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="Cover" type="Vector" required="true"/>
+    <Input name="Threat" type="Object" default="none"/>
+  </Inputs>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="retreat">
+
+    <!-- Back off to cover, eyes on the threat; a blocked path holds where it is. -->
+    <State id="retreat" tree="retreat">
+      <On event="tree.success" goto="hold"/>
+      <On event="tree.failure" goto="hold"/>
+    </State>
+
+    <!-- In cover: wait, then check the cover point again. -->
+    <State id="hold" tree="hold">
+      <On event="tree.success" goto="retreat"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="retreat">
+    <SimpleParallel id="retreat_together">
+      <MoveTo id="retreat_move" in-goal="Cover" acceptanceRadius="50"/>
+      <Guard id="retreat_has_threat" in-condition="Threat" is="none" invert="true">
+        <LookAtActor id="retreat_look" in-target="Threat" duration="0.5"/>
+      </Guard>
+    </SimpleParallel>
+  </Tree>
+
+  <Tree id="hold">
+    <Wait id="hold_wait" duration="2"/>
+  </Tree>
+
+</Agent>

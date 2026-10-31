@@ -1,0 +1,10 @@
+<!--
+  A weighted select on the state machine itself draws at the start; a child with no score, weight or bias is never
+  drawn, so the only scored child is entered whatever the stream gives, never initial.
+-->
+<Agent version="1" id="select-weighted-root-at-start">
+  <StateMachine id="m" initial="fail" select="weighted">
+    <State id="fail"/>
+    <State id="pass" weight="2"/>
+  </StateMachine>
+</Agent>

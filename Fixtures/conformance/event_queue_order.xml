@@ -1,0 +1,25 @@
+<!-- Two eligible events of the same priority are dispatched in the order they were queued. -->
+<Agent version="1" id="event-queue-order">
+  <Events>
+    <Event name="A" priority="5"/>
+    <Event name="B" priority="5"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="A" goto="after-a"/>
+      <On event="B" goto="fail"/>
+    </State>
+    <State id="after-a">
+      <On event="B" goto="pass"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-both">
+      <Emit id="emit-a" event="A"/>
+      <Emit id="emit-b" event="B"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

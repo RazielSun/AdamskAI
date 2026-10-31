@@ -1,0 +1,105 @@
+<!--
+  chase (demo scenes Chase and Reload): walk between A and B; on sight of the target run at it, keeping where it was
+  last seen with Set; close enough, attack (Act, which the demo controller performs as a flash). Losing sight goes
+  to the last seen place and looks around before walking again.
+  The host publishes Target (the demo's stand-in for the player) once and TargetLocation every frame; the sight sensor
+  writes Sees before every tick.
+  Units: radii and distances in cm, durations in seconds.
+-->
+<Agent version="1" id="chase">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="Target" type="Object" default="none"/>
+    <Input name="TargetLocation" type="Vector" default="0,0,0"/>
+    <Input name="A" type="Vector" required="true"/>
+    <Input name="B" type="Vector" required="true"/>
+    <Input name="Sees" type="Bool" default="false"/>
+  </Inputs>
+
+  <!-- ========== Locals ========== -->
+  <Locals>
+    <Local name="LastSeen" type="Vector"/>
+  </Locals>
+
+  <!-- ========== Sensors ========== -->
+  <Sensors>
+    <LineOfSight id="sight" in-target="Target" out-value="Sees" cone="70" traces="3"/>
+  </Sensors>
+
+  <!-- ========== Events ========== -->
+  <Events>
+    <Event name="SightChanged" priority="10" change="Sees"/>
+  </Events>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="patrol">
+
+    <!-- Walk A to B and back; spotting the target starts the chase. -->
+    <State id="patrol" tree="patrol">
+      <On event="SightChanged" goto="chase" if="Sees"/>
+      <On event="tree.success" goto="patrol"/>
+      <On event="tree.failure" goto="patrol"/>
+    </State>
+
+    <!-- Run at the target, remembering where it is; close, attack; lost, search. -->
+    <State id="chase" tree="chase">
+      <On event="SightChanged" goto="search" unless="Sees"/>
+      <On event="tree.success" goto="attack"/>
+      <On event="tree.failure" goto="search"/>
+    </State>
+
+    <!-- One strike, then chase again (or search, if it slipped away meanwhile). -->
+    <State id="attack" tree="attack">
+      <On event="tree.success" goto="chase" if="Sees"/>
+      <On event="tree.success" goto="search"/>
+      <On event="tree.failure" goto="search"/>
+    </State>
+
+    <!-- Go where it was last seen, look around, give up. -->
+    <State id="search" tree="search">
+      <On event="SightChanged" goto="chase" if="Sees"/>
+      <On event="tree.success" goto="patrol"/>
+      <On event="tree.failure" goto="patrol"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="patrol">
+    <Sequence id="patrol_steps">
+      <MoveTo id="patrol_to_a" in-goal="A" acceptanceRadius="80"/>
+      <Wait id="patrol_wait_a" duration="1" deviation="0.5"/>
+      <MoveTo id="patrol_to_b" in-goal="B" acceptanceRadius="80"/>
+      <Wait id="patrol_wait_b" duration="1" deviation="0.5"/>
+    </Sequence>
+  </Tree>
+
+  <Tree id="chase">
+    <SimpleParallel id="chase_both">
+      <FocusActor id="chase_face" in-target="Target">
+        <MoveToActor id="chase_move" in-target="Target" acceptanceRadius="150"/>
+      </FocusActor>
+      <Sequence id="chase_remember">
+        <Set id="chase_mark" to="LastSeen" from="TargetLocation"/>
+        <Wait id="chase_mark_wait" duration="0.2"/>
+      </Sequence>
+    </SimpleParallel>
+  </Tree>
+
+  <Tree id="attack">
+    <FocusActor id="attack_face" in-target="Target">
+      <Act id="attack_strike" action="Strike" in-target="Target"/>
+    </FocusActor>
+  </Tree>
+
+  <Tree id="search">
+    <Sequence id="search_steps">
+      <MoveTo id="search_go" in-goal="LastSeen" acceptanceRadius="100"/>
+      <LookAt id="search_look_a" in-point="A" duration="1"/>
+      <LookAt id="search_look_b" in-point="B" duration="1"/>
+    </Sequence>
+  </Tree>
+
+</Agent>

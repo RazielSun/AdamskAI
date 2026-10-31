@@ -1,0 +1,60 @@
+<!--
+  chase_and_wait: rest until Spotted, then look at and walk to the spotted point, hold, return to rest.
+  Units: duration in seconds, acceptanceRadius in cm.
+-->
+<Agent version="1" id="chase_and_wait">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="Home" type="Vector" required="true"/>
+    <Input name="Reach" type="Float" default="120"/>
+  </Inputs>
+
+  <!-- ========== Locals ========== -->
+  <Locals>
+    <Local name="Seen" type="Vector"/>
+  </Locals>
+
+  <!-- ========== Events ========== -->
+  <Events>
+    <Event name="Spotted" priority="10">
+      <Param name="Where" type="Vector"/>
+    </Event>
+    <Event name="Lost" priority="5"/>
+  </Events>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="idle">
+
+    <!-- Rest in two-second rounds; remember where the target was spotted. -->
+    <State id="idle" tree="rest">
+      <On event="Spotted" goto="chase">
+        <Bind param="Where" to="Seen"/>
+      </On>
+      <On event="tree.success" goto="idle"/>
+    </State>
+
+    <!-- Approach the spotted point; any outcome returns to rest. -->
+    <State id="chase" tree="chase">
+      <On event="Lost" goto="idle"/>
+      <On event="tree.success" goto="idle"/>
+      <On event="tree.failure" goto="idle"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="rest">
+    <Wait id="rest_wait" duration="2"/>
+  </Tree>
+
+  <Tree id="chase">
+    <Sequence id="approach">
+      <LookAt id="face" in-point="Seen" duration="0.5"/>
+      <MoveTo id="close" in-goal="Seen" acceptanceRadius="100"/>
+      <Wait id="hold" duration="1"/>
+    </Sequence>
+  </Tree>
+
+</Agent>

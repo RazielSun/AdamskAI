@@ -1,0 +1,71 @@
+<!--
+  fleet (demo scene Fleet): a small mind made of core nodes only, so a whole fleet of it may tick on worker threads.
+  Rest, then roll what to do next: rest again, scan a few times with a coin flip each, or work in short bursts. No
+  host nodes and no Inputs: what it costs is the language's own cost.
+  Units: durations in seconds.
+-->
+<Agent version="1" id="fleet">
+
+  <!-- ========== Locals ========== -->
+  <Locals>
+    <Local name="Next" type="Int"/>
+  </Locals>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mind" initial="rest">
+
+    <!-- A pause, then a decision. -->
+    <State id="rest" tree="rest">
+      <On event="tree.success" goto="decide"/>
+    </State>
+
+    <!-- Draw 0..2 and go: 0 rests, 1 scans, 2 works. -->
+    <State id="decide" tree="decide">
+      <On event="tree.success" goto="rest" if="Next" is="0"/>
+      <On event="tree.success" goto="scan" if="Next" is="1"/>
+      <On event="tree.success" goto="work"/>
+    </State>
+
+    <!-- Up to three looks; a failed coin flip ends the scan early. -->
+    <State id="scan" tree="scan">
+      <On event="tree.success" goto="rest"/>
+      <On event="tree.failure" goto="rest"/>
+    </State>
+
+    <!-- Three short bursts. -->
+    <State id="work" tree="work">
+      <On event="tree.success" goto="rest"/>
+      <On event="tree.failure" goto="rest"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="rest">
+    <Wait id="rest_wait" duration="1" deviation="0.5"/>
+  </Tree>
+
+  <Tree id="decide">
+    <Roll id="decide_roll" count="3" out-value="Next"/>
+  </Tree>
+
+  <Tree id="scan">
+    <Repeat id="scan_loop" count="3">
+      <Sequence id="scan_step">
+        <Wait id="scan_wait" duration="0.3" deviation="0.1"/>
+        <Chance id="scan_flip" probability="0.7"/>
+      </Sequence>
+    </Repeat>
+  </Tree>
+
+  <Tree id="work">
+    <Sequence id="work_steps">
+      <Set id="work_mark" to="Next" value="0"/>
+      <Repeat id="work_loop" count="3">
+        <Wait id="work_wait" duration="0.2"/>
+      </Repeat>
+    </Sequence>
+  </Tree>
+
+</Agent>

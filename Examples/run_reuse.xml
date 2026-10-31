@@ -1,0 +1,41 @@
+<!--
+  run_reuse: one tree body reused at two call sites with Run, which is expanded at load time.
+  Units: duration in seconds, acceptanceRadius in cm. Run copies the target's nodes with ids
+  prefixed by the call-site id, e.g. `first/approach-move`; both call sites share the Agent's slots.
+-->
+<Agent version="1" id="run_reuse">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="Goal" type="Vector" required="true"/>
+  </Inputs>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="work">
+
+    <!-- Approach the goal twice, then start over. -->
+    <State id="work" tree="work">
+      <On event="tree.success" goto="work"/>
+      <On event="tree.failure" goto="work"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="work">
+    <Sequence id="work-steps">
+      <Run id="first" tree="approach"/>
+      <Run id="second" tree="approach"/>
+    </Sequence>
+  </Tree>
+
+  <!-- Only referenced through Run; not warned as unreferenced. -->
+  <Tree id="approach">
+    <Sequence id="approach-steps">
+      <MoveTo id="approach-move" in-goal="Goal" acceptanceRadius="50"/>
+      <Wait id="approach-pause" duration="1"/>
+    </Sequence>
+  </Tree>
+
+</Agent>

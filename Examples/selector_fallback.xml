@@ -1,0 +1,35 @@
+<!--
+  selector_fallback: go to Goal if Enabled, otherwise wait; a Selector tries its options in order.
+  Units: duration in seconds, acceptanceRadius in cm.
+-->
+<Agent version="1" id="selector_fallback">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="Goal" type="Vector" required="true"/>
+    <Input name="Enabled" type="Bool" default="true"/>
+  </Inputs>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="work">
+
+    <!-- Run the fallback tree forever. -->
+    <State id="work" tree="work">
+      <On event="tree.success" goto="work"/>
+      <On event="tree.failure" goto="work"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="work">
+    <Selector id="work-options">
+      <Guard id="work-enabled" in-condition="Enabled">
+        <MoveTo id="work-move" in-goal="Goal" acceptanceRadius="50"/>
+      </Guard>
+      <Wait id="work-idle" duration="1"/>
+    </Selector>
+  </Tree>
+
+</Agent>

@@ -1,0 +1,14 @@
+{
+  "behavior": "../../Examples/hunt_actor.xml",
+  "duration": 12,
+  "leaves": {
+    "chase_move": { "after": 2 },
+    "strike_look": { "after": 0.5 }
+  },
+  "timeline": [
+    { "at": 1.5, "inputs": { "Target": 7 } },
+    { "at": 2.0, "event": "Mark", "params": { "who": 7 } },
+    { "at": 8.0, "inputs": { "Target": "none" } }
+  ],
+  "expect": { "reach": ["search", "chase", "strike"] }
+}

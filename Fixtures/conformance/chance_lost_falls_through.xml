@@ -1,0 +1,20 @@
+<!-- A handler whose chance draw loses is skipped like one whose condition failed; the next handler is tried. -->
+<Agent version="1" id="chance-lost-falls-through">
+  <Events>
+    <Event name="Go"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="Go" goto="fail" chance="0.000001"/>
+      <On event="Go" goto="pass"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-then-wait">
+      <Emit id="emit-go" event="Go"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

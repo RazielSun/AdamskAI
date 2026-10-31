@@ -1,0 +1,31 @@
+<!-- A Local written by a Bind raises its change event on a later tick's change check. -->
+<Agent version="1" id="change-event-after-bind">
+  <Locals>
+    <Local name="W" type="Int"/>
+  </Locals>
+  <Events>
+    <Event name="Touch">
+      <Param name="V" type="Int"/>
+    </Event>
+    <Event name="Changed" change="W"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="Touch">
+        <Bind param="V" to="W"/>
+      </On>
+      <On event="Changed" goto="pass" if="W" is="3"/>
+      <On event="Changed" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-then-wait">
+      <Emit id="emit-touch" event="Touch">
+        <Param name="V" value="3"/>
+      </Emit>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

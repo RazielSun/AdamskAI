@@ -1,0 +1,22 @@
+<!-- A handler without goto leaves the procedure running: the tree is not restarted (it would emit Ping forever). -->
+<Agent version="1" id="internal-transition-keeps-tree">
+  <Events>
+    <Event name="Ping"/>
+    <Event name="Done"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="steps">
+      <On event="Ping"/>
+      <On event="Done" goto="pass"/>
+    </State>
+    <State id="pass"/>
+  </StateMachine>
+  <Tree id="steps">
+    <Sequence id="ping-wait-done">
+      <Emit id="emit-ping" event="Ping"/>
+      <Wait id="pause" duration="0.5"/>
+      <Emit id="emit-done" event="Done"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

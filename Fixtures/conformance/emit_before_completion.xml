@@ -1,0 +1,18 @@
+<!-- An Emit that is the tree's last step is queued before the tree's completion and wins at equal priority; the
+     completion of a state already left is then dropped. -->
+<Agent version="1" id="emit-before-completion">
+  <Events>
+    <Event name="Go"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="Go" goto="pass"/>
+      <On event="tree.success" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Emit id="emit-go" event="Go"/>
+  </Tree>
+</Agent>

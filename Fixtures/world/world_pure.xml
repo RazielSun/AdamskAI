@@ -1,0 +1,28 @@
+<!--
+  world_pure: AdamskAIWorld.Tick. Only thread-safe core nodes, so with bParallelManagedTick it ticks on a worker.
+  Rolls and seeded waits make its trace depend on the random seed.
+  Units: duration and deviation in seconds.
+-->
+<Agent version="1" id="world_pure">
+
+  <Locals>
+    <Local name="Pick" type="Int"/>
+  </Locals>
+
+  <StateMachine id="m" initial="a">
+    <State id="a" tree="roll">
+      <On event="tree.success" goto="b"/>
+    </State>
+    <State id="b" tree="roll">
+      <On event="tree.success" goto="a"/>
+    </State>
+  </StateMachine>
+
+  <Tree id="roll">
+    <Sequence id="roll_steps">
+      <Roll id="roll_pick" count="4" out-value="Pick"/>
+      <Wait id="roll_wait" duration="0.1" deviation="0.05"/>
+    </Sequence>
+  </Tree>
+
+</Agent>

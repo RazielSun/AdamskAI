@@ -1,0 +1,32 @@
+<!-- chance="Slot" is read each time the handler is tried, not at load: the slot's later value of 1 always takes it. -->
+<Agent version="1" id="chance-from-slot-follows-the-slot">
+  <Locals>
+    <Local name="Sure" type="Float"/>
+  </Locals>
+  <Events>
+    <Event name="Go"/>
+    <Event name="Raise">
+      <Param name="to" type="Float"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="Raise">
+        <Bind param="to" to="Sure"/>
+      </On>
+      <On event="Go" goto="pass" chance="Sure"/>
+      <On event="Go" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-then-wait">
+      <Emit id="emit-raise" event="Raise">
+        <Param name="to" value="1"/>
+      </Emit>
+      <Emit id="emit-go" event="Go"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

@@ -1,0 +1,31 @@
+<!-- AdamskAIWorld.Kit.Combat: Act runs an action until the performer ends it or the state is left. -->
+<Agent version="1" id="world_act">
+  <Inputs>
+    <Input name="Target" type="Object" default="none"/>
+  </Inputs>
+  <Events>
+    <Event name="Leave"/>
+    <Event name="Refuse"/>
+  </Events>
+  <StateMachine id="m" initial="acting">
+    <State id="acting" tree="act">
+      <On event="Leave" goto="left"/>
+      <On event="Refuse" goto="refusing"/>
+      <On event="tree.success" goto="done"/>
+      <On event="tree.failure" goto="failed"/>
+    </State>
+    <State id="refusing" tree="refuse">
+      <On event="tree.failure" goto="failed"/>
+      <On event="tree.success" goto="done"/>
+    </State>
+    <State id="done"/>
+    <State id="failed"/>
+    <State id="left"/>
+  </StateMachine>
+  <Tree id="act">
+    <Act id="act_wave" action="Wave" in-target="Target"/>
+  </Tree>
+  <Tree id="refuse">
+    <Act id="act_refused" action="Refused" in-target="Target"/>
+  </Tree>
+</Agent>

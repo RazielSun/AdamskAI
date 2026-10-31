@@ -1,0 +1,14 @@
+<Agent version="1" id="a">
+<Locals>
+<Local name="Flag" type="Bool"/><Local name="Num" type="Float"/>
+</Locals>
+<Events>
+<Event name="Ping"/>
+</Events>
+<StateMachine id="m" initial="s">
+<State id="s" tree="t"/>
+</StateMachine>
+<Tree id="t">
+<Guard id="g" in-condition="Flag"><Wait id="w" duration="1"/><When if="Flag"/></Guard>
+</Tree>
+</Agent>

@@ -1,0 +1,18 @@
+<!-- A tree completion competes like an event of priority 0: it goes before an earlier-queued event of priority -1. -->
+<Agent version="1" id="completion-has-priority-zero">
+  <Events>
+    <Event name="Late" priority="-1"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="tree.success" goto="t"/>
+    </State>
+    <State id="t">
+      <On event="Late" goto="pass"/>
+    </State>
+    <State id="pass"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Emit id="emit-late" event="Late"/>
+  </Tree>
+</Agent>

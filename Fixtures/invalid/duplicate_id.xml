@@ -1,0 +1,17 @@
+<Agent version="1" id="a">
+<Inputs>
+<Input name="In" type="Vector" required="true"/><Input name="Flag" type="Bool" default="true"/><Input name="Num" type="Float" default="1"/>
+</Inputs>
+<Locals>
+<Local name="In" type="Vector"/>
+</Locals>
+<Events>
+<Event name="Ping" priority="5"><Param name="P" type="Vector"/></Event>
+</Events>
+<StateMachine id="m" initial="s">
+<State id="s" tree="t"/>
+</StateMachine>
+<Tree id="t">
+<Wait id="w" duration="1"/>
+</Tree>
+</Agent>

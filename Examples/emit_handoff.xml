@@ -1,0 +1,38 @@
+<!--
+  emit_handoff: a tree raises an event for its own state machine. `first` emits Handoff, which is handled
+  on the next tick and moves to `second`; `second` waits, then starts over.
+  Units: duration in seconds.
+-->
+<Agent version="1" id="emit-handoff">
+
+  <!-- ========== Events ========== -->
+  <Events>
+    <Event name="Handoff"/>
+  </Events>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="first">
+
+    <!-- Hand off at once; the tree's own completion is stale by then. -->
+    <State id="first" tree="raise-handoff">
+      <On event="Handoff" goto="second"/>
+    </State>
+
+    <!-- Wait a second, then hand off again. -->
+    <State id="second" tree="wait">
+      <On event="tree.success" goto="first"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="raise-handoff">
+    <Emit id="raise-handoff-now" event="Handoff"/>
+  </Tree>
+
+  <Tree id="wait">
+    <Wait id="wait-handoff" duration="1"/>
+  </Tree>
+
+</Agent>

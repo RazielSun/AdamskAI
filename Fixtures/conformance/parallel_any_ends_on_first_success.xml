@@ -1,0 +1,24 @@
+<!-- A Parallel with success="any" succeeds with its first child and cancels the others before they finish. -->
+<Agent version="1" id="parallel-any-ends-on-first-success">
+  <Locals>
+    <Local name="Late" type="Bool"/>
+  </Locals>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="any">
+      <On event="tree.success" goto="fail" if="Late"/>
+      <On event="tree.success" goto="pass"/>
+      <On event="tree.failure" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="any">
+    <Parallel id="first" success="any">
+      <Sequence id="slow">
+        <Wait id="slow-wait" duration="5"/>
+        <Set id="slow-mark" to="Late" value="true"/>
+      </Sequence>
+      <Wait id="fast" duration="0.2"/>
+    </Parallel>
+  </Tree>
+</Agent>

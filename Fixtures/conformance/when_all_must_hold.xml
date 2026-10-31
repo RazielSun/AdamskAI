@@ -1,0 +1,60 @@
+<!-- A handler with When children is taken only when its attribute condition and every When hold: with one of them
+     false the next handler is tried. -->
+<Agent version="1" id="when-all-must-hold">
+  <Locals>
+    <Local name="Seen" type="Bool"/>
+    <Local name="Range" type="Float"/>
+  </Locals>
+  <Events>
+    <Event name="Set">
+      <Param name="S" type="Bool"/>
+      <Param name="R" type="Float"/>
+    </Event>
+    <Event name="Go"/>
+  </Events>
+  <StateMachine id="m" initial="far">
+    <State id="far" tree="set-far">
+      <On event="Set">
+        <Bind param="S" to="Seen"/>
+        <Bind param="R" to="Range"/>
+      </On>
+      <On event="Go" goto="fail">
+        <When if="Seen"/>
+        <When if="Range" below="10"/>
+      </On>
+      <On event="Go" goto="near"/>
+    </State>
+    <State id="near" tree="set-near">
+      <On event="Set">
+        <Bind param="S" to="Seen"/>
+        <Bind param="R" to="Range"/>
+      </On>
+      <On event="Go" goto="pass" if="Seen">
+        <When if="Range" below="10"/>
+      </On>
+      <On event="Go" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="set-far">
+    <Sequence id="far-steps">
+      <Emit id="far-set" event="Set">
+        <Param name="S" value="true"/>
+        <Param name="R" value="25"/>
+      </Emit>
+      <Emit id="far-go" event="Go"/>
+      <Wait id="far-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="set-near">
+    <Sequence id="near-steps">
+      <Emit id="near-set" event="Set">
+        <Param name="S" value="true"/>
+        <Param name="R" value="5"/>
+      </Emit>
+      <Emit id="near-go" event="Go"/>
+      <Wait id="near-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

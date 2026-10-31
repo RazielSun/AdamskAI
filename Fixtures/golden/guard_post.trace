@@ -1,0 +1,87 @@
+# source 8360c8fbb0964175a0122c1f0a11ea1539e89229
+# catalogue e0fc48ef38f826d556857f9440fee7b6c7bfdd2a
+#1 t=0 instance-started reason=started
+#2 t=0 input-set slot=Post value=300.0,0.0,0.0
+#3 t=0 state-entered state=mode
+#4 t=0 state-entered state=watch
+#5 t=0 node-started reason=started node=watch_shift handle=1.1
+#6 t=0 node-started reason=started node=watch_loop handle=1.2
+#7 t=0 node-started reason=started node=watch_pick handle=1.3
+#8 t=0 node-started reason=started node=watch_scan_rest handle=1.4
+#9 t=0 node-started reason=started node=watch_scan handle=1.5
+#10 t=1 result-accepted handle=1.5
+#11 t=1 node-ended reason=succeeded node=watch_scan handle=1.5
+#12 t=1 node-ended reason=succeeded node=watch_scan_rest handle=1.4
+#13 t=1 node-ended reason=succeeded node=watch_pick handle=1.3
+#14 t=1 node-started reason=started node=watch_pick handle=1.6
+#15 t=1 node-started reason=started node=watch_scan_rest handle=1.7
+#16 t=1 node-ended reason=failed node=watch_scan_rest handle=1.7
+#17 t=1 node-started reason=started node=watch_idle handle=1.8
+#18 t=6 node-ended reason=succeeded node=watch_idle handle=1.8
+#19 t=6 node-ended reason=succeeded node=watch_pick handle=1.6
+#20 t=6 node-started reason=started node=watch_pick handle=1.9
+#21 t=6 node-started reason=started node=watch_idle handle=1.10
+#22 t=9 node-ended reason=succeeded node=watch_idle handle=1.10
+#23 t=9 node-ended reason=succeeded node=watch_pick handle=1.9
+#24 t=9 node-started reason=started node=watch_pick handle=1.11
+#25 t=9 node-started reason=started node=watch_idle handle=1.12
+#26 t=15 node-ended reason=succeeded node=watch_idle handle=1.12
+#27 t=15 node-ended reason=succeeded node=watch_pick handle=1.11
+#28 t=15 node-started reason=started node=watch_pick handle=1.13
+#29 t=15 node-started reason=started node=watch_idle handle=1.14
+#30 t=18 node-ended reason=succeeded node=watch_idle handle=1.14
+#31 t=18 node-ended reason=succeeded node=watch_pick handle=1.13
+#32 t=18 node-started reason=started node=watch_pick handle=1.15
+#33 t=18 node-started reason=started node=watch_idle handle=1.16
+#34 t=21 node-ended reason=succeeded node=watch_idle handle=1.16
+#35 t=21 node-ended reason=succeeded node=watch_pick handle=1.15
+#36 t=21 node-started reason=started node=watch_pick handle=1.17
+#37 t=21 node-started reason=started node=watch_idle handle=1.18
+#38 t=25 node-ended reason=succeeded node=watch_idle handle=1.18
+#39 t=25 node-ended reason=succeeded node=watch_pick handle=1.17
+#40 t=25 node-started reason=started node=watch_pick handle=1.19
+#41 t=25 node-started reason=started node=watch_idle handle=1.20
+#42 t=30 node-ended reason=succeeded node=watch_idle handle=1.20
+#43 t=30 node-ended reason=succeeded node=watch_pick handle=1.19
+#44 t=30 node-started reason=started node=watch_pick handle=1.21
+#45 t=30 node-started reason=started node=watch_scan_rest handle=1.22
+#46 t=30 node-started reason=started node=watch_scan handle=1.23
+#47 t=31 result-accepted handle=1.23
+#48 t=31 node-ended reason=succeeded node=watch_scan handle=1.23
+#49 t=31 node-ended reason=succeeded node=watch_scan_rest handle=1.22
+#50 t=31 node-ended reason=succeeded node=watch_pick handle=1.21
+#51 t=31 node-started reason=started node=watch_pick handle=1.24
+#52 t=31 node-started reason=started node=watch_scan_rest handle=1.25
+#53 t=31 node-ended reason=failed node=watch_scan_rest handle=1.25
+#54 t=31 node-started reason=started node=watch_idle handle=1.26
+#55 t=35 node-ended reason=succeeded node=watch_idle handle=1.26
+#56 t=35 node-ended reason=succeeded node=watch_pick handle=1.24
+#57 t=35 node-started reason=started node=watch_pick handle=1.27
+#58 t=35 node-started reason=started node=watch_idle handle=1.28
+#59 t=39 node-ended reason=succeeded node=watch_idle handle=1.28
+#60 t=39 node-ended reason=succeeded node=watch_pick handle=1.27
+#61 t=39 node-started reason=started node=watch_pick handle=1.29
+#62 t=39 node-started reason=started node=watch_scan_rest handle=1.30
+#63 t=39 node-ended reason=failed node=watch_scan_rest handle=1.30
+#64 t=39 node-started reason=started node=watch_idle handle=1.31
+#65 t=42 node-ended reason=cancelled node=watch_idle handle=1.31
+#66 t=42 node-ended reason=cancelled node=watch_pick handle=1.29
+#67 t=42 node-ended reason=cancelled node=watch_loop handle=1.2
+#68 t=42 node-ended reason=failed node=watch_shift handle=1.1
+#69 t=43 event-consumed state=watch event=tree.failure
+#70 t=43 transition-taken state=watch event=tree.failure transition=1 target=return
+#71 t=43 state-exited state=watch
+#72 t=43 state-entered state=return
+#73 t=43 node-started reason=started node=return_anyway handle=1.32
+#74 t=43 node-started reason=started node=return_move handle=1.33
+#75 t=44 result-accepted handle=1.33
+#76 t=44 node-ended reason=failed node=return_move handle=1.33
+#77 t=44 node-ended reason=succeeded node=return_anyway handle=1.32
+#78 t=45 event-consumed state=return event=tree.success
+#79 t=45 transition-taken state=return event=tree.success transition=2 target=watch
+#80 t=45 state-exited state=return
+#81 t=45 state-entered state=watch
+#82 t=45 node-started reason=started node=watch_shift handle=1.34
+#83 t=45 node-started reason=started node=watch_loop handle=1.35
+#84 t=45 node-started reason=started node=watch_pick handle=1.36
+#85 t=45 node-started reason=started node=watch_idle handle=1.37

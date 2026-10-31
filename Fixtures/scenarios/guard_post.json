@@ -1,0 +1,11 @@
+{
+  "behavior": "../../Examples/guard_post.xml",
+  "seed": 3,
+  "duration": 25,
+  "inputs": { "Post": "100,200,0" },
+  "leaves": {
+    "watch_scan": { "result": "Succeeded", "after": 1 },
+    "return_move": { "result": "Failed", "after": 2 }
+  },
+  "expect": { "reach": ["watch", "return"] }
+}

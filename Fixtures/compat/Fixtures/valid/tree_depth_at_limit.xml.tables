@@ -1,0 +1,35 @@
+agent a version=1
+[slots]
+[events]
+0 tree.success priority=0 reserved=true params=0+0
+1 tree.failure priority=0 reserved=true params=0+0
+[params]
+[states]
+0 m parent=-1 children=0+1 initial=1 depth=1 root=-1 transitions=0+0
+1 s parent=0 children=1+0 initial=-1 depth=2 root=0 transitions=0+0
+[state-children]
+1
+[transitions]
+[binds]
+[trees]
+0 t root=0
+[nodes]
+0 q1 Sequence parent=-1 children=0+1 ports=0+0
+1 q2 Sequence parent=0 children=1+1 ports=0+0
+2 q3 Sequence parent=1 children=2+1 ports=0+0
+3 q4 Sequence parent=2 children=3+1 ports=0+0
+4 q5 Sequence parent=3 children=4+1 ports=0+0
+5 q6 Sequence parent=4 children=5+1 ports=0+0
+6 q7 Sequence parent=5 children=6+1 ports=0+0
+7 q8 Sequence parent=6 children=7+1 ports=0+0
+8 q9 Sequence parent=7 children=8+1 ports=0+0
+9 q10 Sequence parent=8 children=9+1 ports=0+0
+10 q11 Sequence parent=9 children=10+1 ports=0+0
+11 q12 Sequence parent=10 children=11+1 ports=0+0
+12 q13 Sequence parent=11 children=12+1 ports=0+0
+13 q14 Sequence parent=12 children=13+1 ports=0+0
+14 q15 Sequence parent=13 children=14+1 ports=0+0
+15 deep Wait parent=14 children=15+0 ports=0+0
+  config duration=1
+[node-children]
+1,2,3,4,5,6,7,8,9,10,11,12,13,14,15

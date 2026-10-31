@@ -1,0 +1,29 @@
+# source 2c457831b3d28edf167a46258ea2f517f97a5905
+# catalogue e0fc48ef38f826d556857f9440fee7b6c7bfdd2a
+#1 t=0 instance-started reason=started
+#2 t=0 input-set slot=Goal value=10.0,0.0,0.0
+#3 t=0 state-entered state=mode
+#4 t=0 state-entered state=work
+#5 t=0 node-started reason=started node=work-steps handle=1.1
+#6 t=0 node-started reason=started node=first/approach-steps handle=1.2
+#7 t=0 node-started reason=started node=first/approach-move handle=1.3
+#8 t=1 result-accepted handle=1.3
+#9 t=1 node-ended reason=succeeded node=first/approach-move handle=1.3
+#10 t=1 node-started reason=started node=first/approach-pause handle=1.4
+#11 t=5 node-ended reason=succeeded node=first/approach-pause handle=1.4
+#12 t=5 node-ended reason=succeeded node=first/approach-steps handle=1.2
+#13 t=5 node-started reason=started node=second/approach-steps handle=1.5
+#14 t=5 node-started reason=started node=second/approach-move handle=1.6
+#15 t=6 result-accepted handle=1.6
+#16 t=6 node-ended reason=succeeded node=second/approach-move handle=1.6
+#17 t=6 node-started reason=started node=second/approach-pause handle=1.7
+#18 t=10 node-ended reason=succeeded node=second/approach-pause handle=1.7
+#19 t=10 node-ended reason=succeeded node=second/approach-steps handle=1.5
+#20 t=10 node-ended reason=succeeded node=work-steps handle=1.1
+#21 t=11 event-consumed state=work event=tree.success
+#22 t=11 transition-taken state=work event=tree.success transition=0 target=work
+#23 t=11 state-exited state=work
+#24 t=11 state-entered state=work
+#25 t=11 node-started reason=started node=work-steps handle=1.8
+#26 t=11 node-started reason=started node=first/approach-steps handle=1.9
+#27 t=11 node-started reason=started node=first/approach-move handle=1.10

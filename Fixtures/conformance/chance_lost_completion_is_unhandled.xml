@@ -1,0 +1,28 @@
+<!--
+  A tree.failure handled only by a chance that loses is unhandled: the brain holds in its state, and a later event
+  in the same tick still takes it out. Later has priority -1, so it dispatches after the completion (priority 0).
+-->
+<Agent version="1" id="chance-lost-completion-is-unhandled">
+  <Locals>
+    <Local name="Off" type="Bool"/>
+  </Locals>
+  <Events>
+    <Event name="Later" priority="-1"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit-then-fail">
+      <On event="tree.failure" goto="fail" chance="0.000001"/>
+      <On event="Later" goto="pass"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit-then-fail">
+    <Sequence id="emit-then-fail-steps">
+      <Emit id="emit-later" event="Later"/>
+      <Guard id="never" in-condition="Off">
+        <Wait id="unreached" duration="1"/>
+      </Guard>
+    </Sequence>
+  </Tree>
+</Agent>

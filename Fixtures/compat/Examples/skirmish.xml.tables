@@ -1,0 +1,58 @@
+agent skirmish version=1
+[slots]
+0 TargetLocation Vector input required=true default=0,0,0
+1 TargetDistance Float input required=false default=100000
+2 StrafePoint Vector input required=false default=0,0,0
+3 Reach Float input required=false default=150
+4 Plan Int local required=false default=0
+[events]
+0 tree.success priority=0 reserved=true params=0+0
+1 tree.failure priority=0 reserved=true params=0+0
+[params]
+[states]
+0 fight parent=-1 children=0+4 initial=1 depth=1 root=-1 transitions=0+0
+1 decide parent=0 children=4+0 initial=-1 depth=2 root=0 transitions=0+3
+2 close parent=0 children=4+0 initial=-1 depth=2 root=1 transitions=3+2
+3 strafe parent=0 children=4+0 initial=-1 depth=2 root=3 transitions=5+2
+4 hold parent=0 children=4+0 initial=-1 depth=2 root=6 transitions=7+2
+[state-children]
+1,2,3,4
+[transitions]
+0 source=1 event=0 target=2 binds=0+0 condition=1 negated=true below slot=3
+1 source=1 event=0 target=3 binds=0+0 condition=4 negated=false value=0
+2 source=1 event=0 target=4 binds=0+0
+3 source=2 event=0 target=1 binds=0+0
+4 source=2 event=1 target=1 binds=0+0
+5 source=3 event=0 target=1 binds=0+0
+6 source=3 event=1 target=1 binds=0+0
+7 source=4 event=0 target=1 binds=0+0
+8 source=4 event=1 target=1 binds=0+0
+[binds]
+[trees]
+0 decide root=0
+1 close root=1
+2 strafe root=3
+3 hold root=6
+[nodes]
+0 decide_roll Roll parent=-1 children=0+0 ports=0+1
+  port value Int out slot=4
+  config count=2
+1 close_speed MoveSpeed parent=-1 children=0+1 ports=1+0
+  config speed=600
+2 close_move MoveTo parent=1 children=1+0 ports=1+1
+  port goal Vector in slot=0
+  config acceptanceRadius=100
+3 strafe_speed MoveSpeed parent=-1 children=1+1 ports=2+0
+  config speed=250
+4 strafe_face Focus parent=3 children=2+1 ports=2+1
+  port point Vector in slot=0
+5 strafe_move MoveTo parent=4 children=3+0 ports=3+1
+  port goal Vector in slot=2
+  config acceptanceRadius=20
+6 hold_face Focus parent=-1 children=3+1 ports=4+1
+  port point Vector in slot=0
+7 hold_wait Wait parent=6 children=4+0 ports=5+0
+  config duration=1
+  config deviation=0.5
+[node-children]
+2,4,5,7

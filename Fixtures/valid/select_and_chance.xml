@@ -1,0 +1,46 @@
+<Agent version="1" id="select-and-chance">
+  <Inputs>
+    <Input name="Distance" type="Float" default="500"/>
+    <Input name="Alarm" type="Int" default="0"/>
+  </Inputs>
+  <Locals>
+    <Local name="Heard" type="Float"/>
+  </Locals>
+  <Events>
+    <Event name="Hit"/>
+    <Event name="Noise">
+      <Param name="Loudness" type="Float"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="calm" select="weighted">
+    <State id="calm" tree="wait" weight="3">
+      <On event="Noise" goto="engage">
+        <Bind param="Loudness" to="Heard"/>
+      </On>
+    </State>
+    <State id="wary" tree="wait" score="Alarm" bias="1">
+      <On event="Noise" goto="engage" chance="0.5">
+        <Bind param="Loudness" to="Heard"/>
+      </On>
+    </State>
+    <State id="engage" initial="close" select="best">
+      <On event="Hit" goto="dodge" chance="0.25"/>
+      <On event="Hit" goto="dodge" if="Distance" below="100" chance="0.75"/>
+      <State id="close" tree="wait" score="Distance" weight="-0.004" bias="3">
+        <On event="tree.success" goto="engage"/>
+      </State>
+      <State id="circle" tree="wait" score="Distance" weight="0.004" bias="-0.6">
+        <On event="tree.success" goto="engage"/>
+      </State>
+      <State id="listen" tree="wait" score="Heard">
+        <On event="tree.success" goto="calm"/>
+      </State>
+      <State id="dodge" tree="wait">
+        <On event="tree.success" goto="engage"/>
+      </State>
+    </State>
+  </StateMachine>
+  <Tree id="wait">
+    <Wait id="wait_one" duration="1"/>
+  </Tree>
+</Agent>

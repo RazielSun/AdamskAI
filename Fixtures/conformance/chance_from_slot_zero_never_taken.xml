@@ -1,0 +1,23 @@
+<!-- chance="Slot" reads the Float slot when the handler is tried: 0 never takes it, so the next handler runs. -->
+<Agent version="1" id="chance-from-slot-zero-never-taken">
+  <Inputs>
+    <Input name="Odds" type="Float" default="0"/>
+  </Inputs>
+  <Events>
+    <Event name="Go"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="Go" goto="fail" chance="Odds"/>
+      <On event="Go" goto="pass"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-then-wait">
+      <Emit id="emit-go" event="Go"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

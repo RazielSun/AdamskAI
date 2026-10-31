@@ -1,0 +1,24 @@
+<!--
+  world_chase: AdamskAIWorld.Navigation. One MoveToActor after the Target input; it fails when the target goes.
+  Units: acceptanceRadius in cm.
+-->
+<Agent version="1" id="world_chase">
+
+  <Inputs>
+    <Input name="Target" type="Object" default="none"/>
+  </Inputs>
+
+  <StateMachine id="m" initial="chasing">
+    <State id="chasing" tree="chase">
+      <On event="tree.success" goto="caught"/>
+      <On event="tree.failure" goto="failed"/>
+    </State>
+    <State id="caught"/>
+    <State id="failed"/>
+  </StateMachine>
+
+  <Tree id="chase">
+    <MoveToActor id="chase_target" in-target="Target" acceptanceRadius="50"/>
+  </Tree>
+
+</Agent>

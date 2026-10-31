@@ -1,0 +1,11 @@
+<Agent version="1" id="a">
+<Inputs>
+<Input name="Flag" type="Bool" default="true"/>
+</Inputs>
+<StateMachine id="m" initial="s">
+<State id="s" tree="t"/>
+</StateMachine>
+<Tree id="t">
+<Guard id="g" in-condition="Flag" invert="true"><Wait id="w" duration="1"/></Guard>
+</Tree>
+</Agent>

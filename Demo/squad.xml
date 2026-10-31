@@ -1,0 +1,119 @@
+<!--
+  squad (demo scene Squad): each guard watches from its post. The first to see the target radios Contact with where
+  it saw it; the others hear it half a second later, go there and look around. A guard that sees the target engages
+  it, keeping its last seen place with Set, and searches there when it is lost.
+  The host puts every guard in one group, publishes Target and Post once and TargetLocation every frame; the sight
+  sensor writes Sees before every tick.
+  Units: distances in cm, durations in seconds.
+-->
+<Agent version="1" id="squad">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="Target" type="Object" default="none"/>
+    <Input name="TargetLocation" type="Vector" default="0,0,0"/>
+    <Input name="Post" type="Vector" required="true"/>
+    <Input name="Sees" type="Bool" default="false"/>
+  </Inputs>
+
+  <!-- ========== Locals ========== -->
+  <Locals>
+    <Local name="Place" type="Vector"/>
+  </Locals>
+
+  <!-- ========== Sensors ========== -->
+  <Sensors>
+    <LineOfSight id="sight" in-target="Target" out-value="Sees" cone="80" traces="3"/>
+  </Sensors>
+
+  <!-- ========== Events ========== -->
+  <Events>
+    <Event name="SightChanged" priority="20" change="Sees"/>
+    <Event name="Contact" priority="10">
+      <Param name="where" type="Vector"/>
+    </Event>
+  </Events>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="quiet">
+
+    <!-- Watch from the post; seeing the target, or hearing a call, ends the quiet. -->
+    <State id="quiet" tree="quiet">
+      <On event="SightChanged" goto="spotted" if="Sees"/>
+      <On event="Contact" goto="investigate"><Bind param="where" to="Place"/></On>
+      <On event="tree.success" goto="quiet"/>
+      <On event="tree.failure" goto="quiet"/>
+    </State>
+
+    <!-- Tell the others where, then engage. -->
+    <State id="spotted" tree="spotted">
+      <On event="tree.success" goto="engage"/>
+      <On event="tree.failure" goto="engage"/>
+    </State>
+
+    <!-- Close in on the target, remembering where it is; lost, search that place. -->
+    <State id="engage" tree="engage">
+      <On event="SightChanged" goto="investigate" unless="Sees"/>
+      <On event="tree.success" goto="engage"/>
+      <On event="tree.failure" goto="investigate"/>
+    </State>
+
+    <!-- Go to the place heard of or last seen, look around, walk back to the post. -->
+    <State id="investigate" tree="investigate">
+      <On event="SightChanged" goto="spotted" if="Sees"/>
+      <On event="tree.success" goto="return"/>
+      <On event="tree.failure" goto="return"/>
+    </State>
+
+    <!-- Back to the post. -->
+    <State id="return" tree="return">
+      <On event="SightChanged" goto="spotted" if="Sees"/>
+      <On event="Contact" goto="investigate"><Bind param="where" to="Place"/></On>
+      <On event="tree.success" goto="quiet"/>
+      <On event="tree.failure" goto="quiet"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="quiet">
+    <Sequence id="quiet_steps">
+      <LookAt id="quiet_look" in-point="TargetLocation" duration="0.5"/>
+      <Wait id="quiet_wait" duration="2" deviation="1"/>
+    </Sequence>
+  </Tree>
+
+  <Tree id="spotted">
+    <Sequence id="spotted_steps">
+      <Set id="spotted_mark" to="Place" from="TargetLocation"/>
+      <Radio id="spotted_call" event="Contact" delay="0.5">
+        <Param name="where" from="Place"/>
+      </Radio>
+    </Sequence>
+  </Tree>
+
+  <Tree id="engage">
+    <SimpleParallel id="engage_both">
+      <FocusActor id="engage_face" in-target="Target">
+        <MoveToActor id="engage_move" in-target="Target" acceptanceRadius="400"/>
+      </FocusActor>
+      <Sequence id="engage_remember">
+        <Set id="engage_mark" to="Place" from="TargetLocation"/>
+        <Wait id="engage_mark_wait" duration="0.2"/>
+      </Sequence>
+    </SimpleParallel>
+  </Tree>
+
+  <Tree id="investigate">
+    <Sequence id="investigate_steps">
+      <MoveTo id="investigate_go" in-goal="Place" acceptanceRadius="150"/>
+      <Wait id="investigate_look" duration="2" deviation="0.5"/>
+    </Sequence>
+  </Tree>
+
+  <Tree id="return">
+    <MoveTo id="return_move" in-goal="Post" acceptanceRadius="80"/>
+  </Tree>
+
+</Agent>

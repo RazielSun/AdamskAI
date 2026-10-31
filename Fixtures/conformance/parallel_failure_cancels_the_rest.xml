@@ -1,0 +1,27 @@
+<!-- One failed child fails a Parallel (failure="any", the default) and cancels the children still running. -->
+<Agent version="1" id="parallel-failure-cancels-the-rest">
+  <Locals>
+    <Local name="Late" type="Bool"/>
+  </Locals>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="fails">
+      <On event="tree.failure" goto="fail" if="Late"/>
+      <On event="tree.failure" goto="pass"/>
+      <On event="tree.success" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="fails">
+    <Parallel id="both">
+      <Sequence id="slow">
+        <Wait id="slow-wait" duration="5"/>
+        <Set id="slow-mark" to="Late" value="true"/>
+      </Sequence>
+      <Sequence id="breaks">
+        <Wait id="breaks-wait" duration="0.2"/>
+        <Chance id="breaks-never" probability="0"/>
+      </Sequence>
+    </Parallel>
+  </Tree>
+</Agent>

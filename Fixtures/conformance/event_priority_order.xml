@@ -1,0 +1,25 @@
+<!-- Of two eligible events the higher priority is dispatched first, whatever the queue order. -->
+<Agent version="1" id="event-priority-order">
+  <Events>
+    <Event name="Low" priority="1"/>
+    <Event name="High" priority="10"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="High" goto="after-high"/>
+      <On event="Low" goto="fail"/>
+    </State>
+    <State id="after-high">
+      <On event="Low" goto="pass"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-both">
+      <Emit id="emit-low" event="Low"/>
+      <Emit id="emit-high" event="High"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

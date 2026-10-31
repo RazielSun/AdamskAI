@@ -1,0 +1,26 @@
+<!--
+  A transition to a state deeper inside a select state enters the path to its target: the select state is only an
+  ancestor of the target, so it chooses nothing, although first would win a selection.
+-->
+<Agent version="1" id="select-skipped-when-only-an-ancestor">
+  <Events>
+    <Event name="Go"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="Go" goto="pass"/>
+    </State>
+    <State id="outer" initial="first" select="best">
+      <State id="first" weight="5"/>
+      <State id="second" initial="pass" weight="1">
+        <State id="pass"/>
+      </State>
+    </State>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-then-wait">
+      <Emit id="emit-go" event="Go"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

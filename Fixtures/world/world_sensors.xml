@@ -1,0 +1,20 @@
+<!-- AdamskAIWorld.Sensors: the host's sensors write these Inputs every tick; the file only waits. -->
+<Agent version="1" id="world_sensors">
+  <Inputs>
+    <Input name="Target" type="Object" default="none"/>
+    <Input name="Sees" type="Bool" default="false"/>
+    <Input name="Range" type="Float" default="0"/>
+    <Input name="Grounded" type="Bool" default="false"/>
+  </Inputs>
+  <Sensors>
+    <LineOfSight id="sight" in-target="Target" out-value="Sees" traces="3"/>
+    <Distance id="range" in-target="Target" out-value="Range"/>
+    <Grounded id="ground" out-value="Grounded"/>
+  </Sensors>
+  <StateMachine id="m" initial="idle">
+    <State id="idle" tree="idle"/>
+  </StateMachine>
+  <Tree id="idle">
+    <Wait id="idle_wait" duration="1000"/>
+  </Tree>
+</Agent>

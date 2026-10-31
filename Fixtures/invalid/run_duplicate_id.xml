@@ -1,0 +1,14 @@
+<Agent version="1" id="a">
+<StateMachine id="m" initial="s">
+<State id="s" tree="t"/>
+</StateMachine>
+<Tree id="t">
+<Sequence id="q">
+<Run id="r" tree="u"/>
+<Wait id="r/w" duration="1"/>
+</Sequence>
+</Tree>
+<Tree id="u">
+<Wait id="w" duration="1"/>
+</Tree>
+</Agent>

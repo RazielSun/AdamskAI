@@ -1,0 +1,61 @@
+<!--
+  interrupt (demo scene Interrupt): one tree, three options in a ReactiveSelector, earliest first. A target that comes
+  close and is seen interrupts anything to back off home, facing it; a cooldown that becomes ready interrupts the
+  patrol for a shout (Act, a flash); otherwise patrol between A and B. Watch the label: the running node switches
+  the moment an earlier option turns ready, without leaving the state.
+  The host publishes Target and Home once; the sensors write Sees and TargetDistance before every tick.
+  Units: distances in cm, durations in seconds.
+-->
+<Agent version="1" id="interrupt">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="Target" type="Object" default="none"/>
+    <Input name="A" type="Vector" required="true"/>
+    <Input name="B" type="Vector" required="true"/>
+    <Input name="Home" type="Vector" required="true"/>
+    <Input name="Sees" type="Bool" default="false"/>
+    <Input name="TargetDistance" type="Float" default="100000"/>
+  </Inputs>
+
+  <!-- ========== Sensors ========== -->
+  <Sensors>
+    <LineOfSight id="sight" in-target="Target" out-value="Sees" cone="90" traces="3"/>
+    <Distance id="range" in-target="Target" out-value="TargetDistance"/>
+  </Sensors>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="work">
+
+    <!-- Everything happens in the tree; a finished option starts the selector again. -->
+    <State id="work" tree="work">
+      <On event="tree.success" goto="work"/>
+      <On event="tree.failure" goto="work"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="work">
+    <ReactiveSelector id="work_pick">
+      <Guard id="danger" in-condition="Sees">
+        <When if="TargetDistance" below="700"/>
+        <FocusActor id="danger_face" in-target="Target">
+          <Sequence id="danger_steps">
+            <MoveTo id="danger_back_off" in-goal="Home" acceptanceRadius="80"/>
+            <Wait id="danger_hold" duration="1"/>
+          </Sequence>
+        </FocusActor>
+      </Guard>
+      <Cooldown id="shout_rest" duration="5">
+        <Act id="shout" action="Shout" in-target="Target"/>
+      </Cooldown>
+      <Sequence id="patrol">
+        <MoveTo id="patrol_to_a" in-goal="A" acceptanceRadius="80"/>
+        <MoveTo id="patrol_to_b" in-goal="B" acceptanceRadius="80"/>
+      </Sequence>
+    </ReactiveSelector>
+  </Tree>
+
+</Agent>

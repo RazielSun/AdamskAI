@@ -1,0 +1,22 @@
+<!-- The handler search starts at the active leaf and goes outward: the leaf's handler wins over its parent's. -->
+<Agent version="1" id="handler-search-inner-first">
+  <Events>
+    <Event name="Go"/>
+  </Events>
+  <StateMachine id="m" initial="p">
+    <State id="p" initial="c">
+      <On event="Go" goto="fail"/>
+      <State id="c" tree="emit">
+        <On event="Go" goto="pass"/>
+      </State>
+      <State id="pass"/>
+    </State>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-then-wait">
+      <Emit id="emit-go" event="Go"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

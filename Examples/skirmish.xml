@@ -1,0 +1,78 @@
+<!--
+  skirmish: a fighter that circles its target. The host publishes where the target is and how far.
+  Loop: decide (a random plan) -> close in | strafe | hold -> decide. Close in runs, strafe walks while
+  facing the target, hold watches it for a jittered pause. Thresholds live here, not in C++.
+  Units: speeds in cm/s, distances and radii in cm, durations in seconds.
+-->
+<Agent version="1" id="skirmish">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="TargetLocation" type="Vector" required="true"/>
+    <Input name="TargetDistance" type="Float" default="100000"/>
+    <Input name="StrafePoint" type="Vector" default="0,0,0"/>
+    <Input name="Reach" type="Float" default="150"/>
+  </Inputs>
+
+  <!-- ========== Locals ========== -->
+  <Locals>
+    <Local name="Plan" type="Int"/>
+  </Locals>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="fight" initial="decide">
+
+    <!-- Out of reach always closes in; in reach, one in two strafes, the other holds. -->
+    <State id="decide" tree="decide">
+      <On event="tree.success" goto="close" unless="TargetDistance" below="Reach"/>
+      <On event="tree.success" goto="strafe" if="Plan" is="0"/>
+      <On event="tree.success" goto="hold"/>
+    </State>
+
+    <State id="close" tree="close">
+      <On event="tree.success" goto="decide"/>
+      <On event="tree.failure" goto="decide"/>
+    </State>
+
+    <State id="strafe" tree="strafe">
+      <On event="tree.success" goto="decide"/>
+      <On event="tree.failure" goto="decide"/>
+    </State>
+
+    <State id="hold" tree="hold">
+      <On event="tree.success" goto="decide"/>
+      <On event="tree.failure" goto="decide"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="decide">
+    <Roll id="decide_roll" count="2" out-value="Plan"/>
+  </Tree>
+
+  <!-- Run straight at the target. -->
+  <Tree id="close">
+    <MoveSpeed id="close_speed" speed="600">
+      <MoveTo id="close_move" in-goal="TargetLocation" acceptanceRadius="100"/>
+    </MoveSpeed>
+  </Tree>
+
+  <!-- Walk sideways while facing the target: two scopes around one move. -->
+  <Tree id="strafe">
+    <MoveSpeed id="strafe_speed" speed="250">
+      <Focus id="strafe_face" in-point="TargetLocation">
+        <MoveTo id="strafe_move" in-goal="StrafePoint" acceptanceRadius="20"/>
+      </Focus>
+    </MoveSpeed>
+  </Tree>
+
+  <!-- Watch the target for 0.5 to 1.5 s. -->
+  <Tree id="hold">
+    <Focus id="hold_face" in-point="TargetLocation">
+      <Wait id="hold_wait" duration="1" deviation="0.5"/>
+    </Focus>
+  </Tree>
+
+</Agent>

@@ -1,0 +1,60 @@
+<!--
+  tokens (demo scene Tokens): six attackers around one target, at most two striking at once. Each closes in, then
+  tries to take a DemoStrike token on the target: with one it strikes (Act, a flash) and gives the token back when the
+  strike ends; without one it circles a moment and tries again. The pool size is the host's (TokenPools).
+  The host publishes Target once.
+  Units: distances in cm, durations in seconds.
+-->
+<Agent version="1" id="tokens">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="Target" type="Object" default="none"/>
+  </Inputs>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="approach">
+
+    <!-- Get within striking range. -->
+    <State id="approach" tree="approach">
+      <On event="tree.success" goto="attack"/>
+      <On event="tree.failure" goto="circle"/>
+    </State>
+
+    <!-- Strike if a token is free; none free fails at once and the attacker circles. -->
+    <State id="attack" tree="attack">
+      <On event="tree.success" goto="circle"/>
+      <On event="tree.failure" goto="circle"/>
+    </State>
+
+    <!-- Wait a beat facing the target, then try again. -->
+    <State id="circle" tree="circle">
+      <On event="tree.success" goto="approach"/>
+      <On event="tree.failure" goto="approach"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="approach">
+    <FocusActor id="approach_face" in-target="Target">
+      <MoveToActor id="approach_move" in-target="Target" acceptanceRadius="350"/>
+    </FocusActor>
+  </Tree>
+
+  <Tree id="attack">
+    <FocusActor id="attack_face" in-target="Target">
+      <HoldToken id="attack_token" pool="DemoStrike" in-target="Target">
+        <Act id="attack_strike" action="Strike" in-target="Target"/>
+      </HoldToken>
+    </FocusActor>
+  </Tree>
+
+  <Tree id="circle">
+    <FocusActor id="circle_face" in-target="Target">
+      <Wait id="circle_wait" duration="0.8" deviation="0.4"/>
+    </FocusActor>
+  </Tree>
+
+</Agent>

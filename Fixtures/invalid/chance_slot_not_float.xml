@@ -1,0 +1,17 @@
+<Agent version="1" id="a">
+<Inputs>
+<Input name="Flag" type="Bool" default="false"/>
+</Inputs>
+<Events>
+<Event name="Go"/><Event name="Run"/>
+</Events>
+<StateMachine id="m" initial="s">
+<State id="s" tree="t">
+<On event="Go" goto="s" chance="Flag"/>
+<On event="Run" goto="s" chance="Flg"/>
+</State>
+</StateMachine>
+<Tree id="t">
+<Wait id="w" duration="1"/>
+</Tree>
+</Agent>

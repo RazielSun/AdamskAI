@@ -1,0 +1,5 @@
+# Linux scripts must keep LF to run; PowerShell, C++ and docs may use either.
+*.sh text eol=lf
+*.py text eol=lf
+*.uasset binary
+*.umap binary

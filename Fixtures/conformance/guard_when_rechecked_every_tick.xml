@@ -1,0 +1,61 @@
+<!-- A Guard with When children holds while its port condition and every When hold, and is checked again every
+     tick: a Bind that turns one When false fails it, and with it the tree. -->
+<Agent version="1" id="guard-when-rechecked-every-tick">
+  <Locals>
+    <Local name="Gate" type="Bool"/>
+    <Local name="Ammo" type="Int"/>
+  </Locals>
+  <Events>
+    <Event name="Arm">
+      <Param name="N" type="Int"/>
+    </Event>
+    <Event name="Open">
+      <Param name="V" type="Bool"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="opening">
+    <State id="opening" tree="open">
+      <On event="Arm">
+        <Bind param="N" to="Ammo"/>
+      </On>
+      <On event="Open" goto="guarded">
+        <Bind param="V" to="Gate"/>
+      </On>
+    </State>
+    <State id="guarded" tree="guarded">
+      <On event="Arm">
+        <Bind param="N" to="Ammo"/>
+      </On>
+      <On event="tree.failure" goto="pass"/>
+      <On event="tree.success" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="open">
+    <Sequence id="open-steps">
+      <Emit id="emit-arm" event="Arm">
+        <Param name="N" value="5"/>
+      </Emit>
+      <Emit id="emit-open" event="Open">
+        <Param name="V" value="true"/>
+      </Emit>
+      <Wait id="open-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="guarded">
+    <SimpleParallel id="watch">
+      <Guard id="while-armed" in-condition="Gate">
+        <When if="Ammo" above="0"/>
+        <Wait id="guarded-wait" duration="100"/>
+      </Guard>
+      <Sequence id="empty-later">
+        <Wait id="empty-delay" duration="0.2"/>
+        <Emit id="emit-empty" event="Arm">
+          <Param name="N" value="0"/>
+        </Emit>
+        <Wait id="empty-hold" duration="100"/>
+      </Sequence>
+    </SimpleParallel>
+  </Tree>
+</Agent>

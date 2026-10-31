@@ -1,0 +1,56 @@
+<!--
+  follow_target: stay close to a moving target. The host publishes TargetLocation and TargetDistance every
+  tick. Follow re-paths while the target moves; inside Reach the agent faces it and sometimes taunts, and
+  leaves the moment the target steps out of Reach.
+  Units: distances and radii in cm, durations in seconds.
+-->
+<Agent version="1" id="follow_target">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="TargetLocation" type="Vector" required="true"/>
+    <Input name="TargetDistance" type="Float" default="100000"/>
+    <Input name="Reach" type="Float" default="200"/>
+  </Inputs>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="follow">
+
+    <!-- Close in; an unreachable target pauses before trying near again. -->
+    <State id="follow" tree="follow">
+      <On event="tree.success" goto="near"/>
+    </State>
+
+    <!-- In reach: repeat the near routine; out of reach: follow again. -->
+    <State id="near" tree="near">
+      <On event="tree.success" goto="near"/>
+      <On event="tree.failure" goto="follow"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="follow">
+    <Selector id="follow_or_pause">
+      <MoveTo id="follow_move" in-goal="TargetLocation" acceptanceRadius="100" repathDistance="150"/>
+      <Wait id="follow_pause" duration="0.5"/>
+    </Selector>
+  </Tree>
+
+  <!-- The Guard is rechecked every tick, so leaving Reach cancels whatever runs under it. -->
+  <Tree id="near">
+    <Guard id="near_in_reach" in-condition="TargetDistance" below="Reach">
+      <Focus id="near_face" in-point="TargetLocation">
+        <Selector id="near_taunt_or_watch">
+          <Sequence id="near_taunt">
+            <Chance id="near_taunt_roll" probability="0.3"/>
+            <Wait id="near_taunt_wait" duration="1"/>
+          </Sequence>
+          <Wait id="near_watch" duration="0.5" deviation="0.25"/>
+        </Selector>
+      </Focus>
+    </Guard>
+  </Tree>
+
+</Agent>

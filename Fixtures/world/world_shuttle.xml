@@ -1,0 +1,31 @@
+<!--
+  world_shuttle: AdamskAIWorld.Perf. Walks between A and B forever: the load of a fleet on the navmesh.
+  Units: acceptanceRadius in cm.
+-->
+<Agent version="1" id="world_shuttle">
+
+  <Inputs>
+    <Input name="A" type="Vector" required="true"/>
+    <Input name="B" type="Vector" required="true"/>
+  </Inputs>
+
+  <StateMachine id="m" initial="to_b">
+    <State id="to_b" tree="go_b">
+      <On event="tree.success" goto="to_a"/>
+      <On event="tree.failure" goto="to_a"/>
+    </State>
+    <State id="to_a" tree="go_a">
+      <On event="tree.success" goto="to_b"/>
+      <On event="tree.failure" goto="to_b"/>
+    </State>
+  </StateMachine>
+
+  <Tree id="go_b">
+    <MoveTo id="go_b_move" in-goal="B" acceptanceRadius="50"/>
+  </Tree>
+
+  <Tree id="go_a">
+    <MoveTo id="go_a_move" in-goal="A" acceptanceRadius="50"/>
+  </Tree>
+
+</Agent>

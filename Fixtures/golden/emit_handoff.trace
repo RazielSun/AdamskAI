@@ -1,0 +1,28 @@
+# source a059f7a086e6476547035475939619d0f98bf3ed
+# catalogue e0fc48ef38f826d556857f9440fee7b6c7bfdd2a
+#1 t=0 instance-started reason=started
+#2 t=0 state-entered state=mode
+#3 t=0 state-entered state=first
+#4 t=0 node-started reason=started node=raise-handoff-now handle=1.1
+#5 t=0 event-enqueued event=Handoff
+#6 t=0 node-ended reason=succeeded node=raise-handoff-now handle=1.1
+#7 t=1 event-consumed state=first event=Handoff
+#8 t=1 transition-taken state=first event=Handoff transition=0 target=second
+#9 t=1 state-exited state=first
+#10 t=1 state-entered state=second
+#11 t=1 node-started reason=started node=wait-handoff handle=1.2
+#12 t=1 completion-stale reason=stale-result state=first event=tree.success
+#13 t=5 node-ended reason=succeeded node=wait-handoff handle=1.2
+#14 t=6 event-consumed state=second event=tree.success
+#15 t=6 transition-taken state=second event=tree.success transition=1 target=first
+#16 t=6 state-exited state=second
+#17 t=6 state-entered state=first
+#18 t=6 node-started reason=started node=raise-handoff-now handle=1.3
+#19 t=6 event-enqueued event=Handoff
+#20 t=6 node-ended reason=succeeded node=raise-handoff-now handle=1.3
+#21 t=7 event-consumed state=first event=Handoff
+#22 t=7 transition-taken state=first event=Handoff transition=0 target=second
+#23 t=7 state-exited state=first
+#24 t=7 state-entered state=second
+#25 t=7 node-started reason=started node=wait-handoff handle=1.4
+#26 t=7 completion-stale reason=stale-result state=first event=tree.success

@@ -1,0 +1,12 @@
+<!-- Start enters each state's initial child down to a leaf; initial, not document order, picks it. -->
+<Agent version="1" id="entry-initial-chain">
+  <StateMachine id="m" initial="outer">
+    <State id="fail"/>
+    <State id="outer" initial="inner">
+      <State id="inner" initial="pass">
+        <State id="first"/>
+        <State id="pass"/>
+      </State>
+    </State>
+  </StateMachine>
+</Agent>

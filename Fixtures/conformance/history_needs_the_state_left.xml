@@ -1,0 +1,61 @@
+<!-- History resumes only a state that was left and entered again. A goto to it from its own child keeps it active,
+     so it enters initial (or selects) as usual, even after an earlier exit left a remembered child. Stage: 1 after a,
+     2 back from away (history resumes b), 3 after b's goto from inside (initial a again). -->
+<Agent version="1" id="history-needs-the-state-left">
+  <Locals>
+    <Local name="Stage" type="Int"/>
+  </Locals>
+  <Events>
+    <Event name="Step">
+      <Param name="V" type="Int"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="fight">
+    <State id="fight" initial="a" history="shallow">
+      <State id="a" tree="step-one">
+        <On event="Step" goto="pass" if="Stage" is="3"/>
+        <On event="Step" goto="fail" if="Stage" is="2"/>
+        <On event="Step" goto="b">
+          <Bind param="V" to="Stage"/>
+        </On>
+      </State>
+      <State id="b" tree="step-three">
+        <On event="Step" goto="away" if="Stage" is="1"/>
+        <On event="Step" goto="fight" if="Stage" is="2">
+          <Bind param="V" to="Stage"/>
+        </On>
+      </State>
+    </State>
+    <State id="away" tree="step-two">
+      <On event="Step" goto="fight">
+        <Bind param="V" to="Stage"/>
+      </On>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="step-one">
+    <Sequence id="one-then-wait">
+      <Emit id="emit-one" event="Step">
+        <Param name="V" value="1"/>
+      </Emit>
+      <Wait id="one-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="step-two">
+    <Sequence id="two-then-wait">
+      <Emit id="emit-two" event="Step">
+        <Param name="V" value="2"/>
+      </Emit>
+      <Wait id="two-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="step-three">
+    <Sequence id="three-then-wait">
+      <Emit id="emit-three" event="Step">
+        <Param name="V" value="3"/>
+      </Emit>
+      <Wait id="three-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

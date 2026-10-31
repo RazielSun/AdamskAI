@@ -1,0 +1,30 @@
+<!-- A select scores its children with the slots as the entering transition's Binds left them. -->
+<Agent version="1" id="bind-before-select">
+  <Locals>
+    <Local name="Score" type="Float"/>
+  </Locals>
+  <Events>
+    <Event name="Go">
+      <Param name="V" type="Float"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="start">
+    <State id="start" tree="emit">
+      <On event="Go" goto="pick">
+        <Bind param="V" to="Score"/>
+      </On>
+    </State>
+    <State id="pick" initial="fail" select="best">
+      <State id="fail" score="Score" weight="-1" bias="1"/>
+      <State id="pass" score="Score"/>
+    </State>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-then-wait">
+      <Emit id="emit-go" event="Go">
+        <Param name="V" value="5"/>
+      </Emit>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

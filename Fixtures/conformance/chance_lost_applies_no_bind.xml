@@ -1,0 +1,40 @@
+<!-- A handler whose chance draw loses applies none of its Binds: the Local still holds its old value afterwards. -->
+<Agent version="1" id="chance-lost-applies-no-bind">
+  <Locals>
+    <Local name="Got" type="Int"/>
+  </Locals>
+  <Events>
+    <Event name="Go">
+      <Param name="N" type="Int"/>
+    </Event>
+    <Event name="Check"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit-go">
+      <On event="Go" goto="fail" chance="0.000001">
+        <Bind param="N" to="Got"/>
+      </On>
+      <On event="Go" goto="check"/>
+    </State>
+    <State id="check" tree="emit-check">
+      <On event="Check" goto="pass" if="Got" is="0"/>
+      <On event="Check" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit-go">
+    <Sequence id="emit-go-then-wait">
+      <Emit id="emit-go-node" event="Go">
+        <Param name="N" value="7"/>
+      </Emit>
+      <Wait id="go-hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="emit-check">
+    <Sequence id="emit-check-then-wait">
+      <Emit id="emit-check-node" event="Check"/>
+      <Wait id="check-hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

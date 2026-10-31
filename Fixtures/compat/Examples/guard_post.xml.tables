@@ -1,0 +1,41 @@
+agent guard_post version=1
+[slots]
+0 Post Vector input required=true default=0,0,0
+[events]
+0 tree.success priority=0 reserved=true params=0+0
+1 tree.failure priority=0 reserved=true params=0+0
+[params]
+[states]
+0 mode parent=-1 children=0+2 initial=1 depth=1 root=-1 transitions=0+0
+1 watch parent=0 children=2+0 initial=-1 depth=2 root=0 transitions=0+2
+2 return parent=0 children=2+0 initial=-1 depth=2 root=6 transitions=2+1
+[state-children]
+1,2
+[transitions]
+0 source=1 event=0 target=2 binds=0+0
+1 source=1 event=1 target=2 binds=0+0
+2 source=2 event=0 target=1 binds=0+0
+[binds]
+[trees]
+0 watch root=0
+1 return root=6
+[nodes]
+0 watch_shift TimeLimit parent=-1 children=0+1 ports=0+0
+  config duration=10
+1 watch_loop Repeat parent=0 children=1+1 ports=0+0
+  config count=0
+2 watch_pick RandomSelector parent=1 children=2+2 ports=0+0
+3 watch_scan_rest Cooldown parent=2 children=4+1 ports=0+0
+  config duration=4
+4 watch_scan LookAt parent=3 children=5+0 ports=0+1
+  port point Vector in slot=0
+  config duration=1
+5 watch_idle Wait parent=2 children=5+0 ports=1+0
+  config duration=1
+  config deviation=0.5
+6 return_anyway ForceSuccess parent=-1 children=5+1 ports=1+0
+7 return_move MoveTo parent=6 children=6+0 ports=1+1
+  port goal Vector in slot=0
+  config acceptanceRadius=50
+[node-children]
+1,2,3,5,4,7

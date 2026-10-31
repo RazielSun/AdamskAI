@@ -1,0 +1,27 @@
+<!-- When no handler of the leaf passes its condition the search continues in the parent, where handlers are tried
+     in document order and the first that passes wins. -->
+<Agent version="1" id="condition-fails-to-parent">
+  <Locals>
+    <Local name="Flag" type="Bool"/>
+  </Locals>
+  <Events>
+    <Event name="Go"/>
+  </Events>
+  <StateMachine id="m" initial="p">
+    <State id="p" initial="c">
+      <On event="Go" goto="fail" if="Flag"/>
+      <On event="Go" goto="pass"/>
+      <State id="c" tree="emit">
+        <On event="Go" goto="fail" if="Flag"/>
+      </State>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-then-wait">
+      <Emit id="emit-go" event="Go"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

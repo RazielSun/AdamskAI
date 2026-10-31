@@ -1,0 +1,25 @@
+<!-- A Parallel with success="all" ends only after its slowest child: the flag the slow child sets is there at the end. -->
+<Agent version="1" id="parallel-all-waits-for-every-child">
+  <Locals>
+    <Local name="SlowDone" type="Bool"/>
+  </Locals>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="all">
+      <On event="tree.success" goto="pass" if="SlowDone"/>
+      <On event="tree.success" goto="fail"/>
+      <On event="tree.failure" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="all">
+    <Parallel id="every" success="all">
+      <Wait id="fast" duration="0.3"/>
+      <Sequence id="slow">
+        <Wait id="slow-wait" duration="0.8"/>
+        <Set id="slow-mark" to="SlowDone" value="true"/>
+      </Sequence>
+      <Wait id="middle" duration="0.5"/>
+    </Parallel>
+  </Tree>
+</Agent>

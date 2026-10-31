@@ -1,0 +1,45 @@
+<!-- With history and select on one state, select picks on the first entry and history resumes on later ones, even
+     when the scores now favour another child. -->
+<Agent version="1" id="history-after-select">
+  <Locals>
+    <Local name="S" type="Float"/>
+  </Locals>
+  <Events>
+    <Event name="Out"/>
+    <Event name="Back">
+      <Param name="V" type="Float"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="fight">
+    <State id="fight" initial="other" select="best" history="shallow">
+      <State id="chosen" tree="out" weight="2">
+        <On event="Out" goto="pass" if="S" above="5"/>
+        <On event="Out" goto="stagger"/>
+      </State>
+      <State id="other" tree="out" score="S">
+        <On event="Out" goto="fail"/>
+      </State>
+    </State>
+    <State id="stagger" tree="back">
+      <On event="Back" goto="fight">
+        <Bind param="V" to="S"/>
+      </On>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="out">
+    <Sequence id="out-then-wait">
+      <Emit id="emit-out" event="Out"/>
+      <Wait id="out-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="back">
+    <Sequence id="back-then-wait">
+      <Emit id="emit-back" event="Back">
+        <Param name="V" value="10"/>
+      </Emit>
+      <Wait id="back-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

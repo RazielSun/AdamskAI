@@ -1,0 +1,29 @@
+<!-- A transition from a child to its select parent selects again, on the slots as they are then. -->
+<Agent version="1" id="select-reselects-on-reentry">
+  <Locals>
+    <Local name="S" type="Float"/>
+  </Locals>
+  <Events>
+    <Event name="Set">
+      <Param name="V" type="Float"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="p">
+    <State id="p" initial="first" select="best">
+      <State id="first" tree="raise" score="S" weight="-1" bias="1">
+        <On event="Set" goto="p">
+          <Bind param="V" to="S"/>
+        </On>
+      </State>
+      <State id="pass" score="S"/>
+    </State>
+  </StateMachine>
+  <Tree id="raise">
+    <Sequence id="raise-then-wait">
+      <Emit id="raise-set" event="Set">
+        <Param name="V" value="5"/>
+      </Emit>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

@@ -1,0 +1,45 @@
+# source 06a930e1d1226d390c346bef8bd5aac57a9f829c
+# catalogue e0fc48ef38f826d556857f9440fee7b6c7bfdd2a
+#1 t=0 instance-started reason=started
+#2 t=0 input-set slot=Cover value=-500.0,0.0,0.0
+#3 t=0 input-set slot=Threat value=none
+#4 t=0 state-entered state=mode
+#5 t=0 state-entered state=retreat
+#6 t=0 node-started reason=started node=retreat_together handle=1.1
+#7 t=0 node-started reason=started node=retreat_move handle=1.2
+#8 t=0 node-started reason=started node=retreat_has_threat handle=1.3
+#9 t=0 guard-value node=retreat_has_threat handle=1.3 value=none
+#10 t=0 node-ended reason=failed node=retreat_has_threat handle=1.3
+#11 t=1 node-started reason=started node=retreat_has_threat handle=1.4
+#12 t=1 guard-value node=retreat_has_threat handle=1.4 value=none
+#13 t=1 node-ended reason=failed node=retreat_has_threat handle=1.4
+#14 t=2 input-set slot=Threat value=Object#9
+#15 t=2 node-started reason=started node=retreat_has_threat handle=1.5
+#16 t=2 guard-value node=retreat_has_threat handle=1.5 value=Object#9
+#17 t=2 node-started reason=started node=retreat_look handle=1.6
+#18 t=3 result-accepted handle=1.6
+#19 t=3 node-ended reason=succeeded node=retreat_look handle=1.6
+#20 t=3 node-ended reason=succeeded node=retreat_has_threat handle=1.5
+#21 t=4 node-started reason=started node=retreat_has_threat handle=1.7
+#22 t=4 guard-value node=retreat_has_threat handle=1.7 value=Object#9
+#23 t=4 node-started reason=started node=retreat_look handle=1.8
+#24 t=5 result-accepted handle=1.2
+#25 t=5 node-ended reason=succeeded node=retreat_move handle=1.2
+#26 t=5 node-ended reason=cancelled node=retreat_look handle=1.8
+#27 t=5 node-ended reason=cancelled node=retreat_has_threat handle=1.7
+#28 t=5 node-ended reason=succeeded node=retreat_together handle=1.1
+#29 t=6 event-consumed state=retreat event=tree.success
+#30 t=6 transition-taken state=retreat event=tree.success transition=0 target=hold
+#31 t=6 state-exited state=retreat
+#32 t=6 state-entered state=hold
+#33 t=6 node-started reason=started node=hold_wait handle=1.9
+#34 t=10 node-ended reason=succeeded node=hold_wait handle=1.9
+#35 t=11 event-consumed state=hold event=tree.success
+#36 t=11 transition-taken state=hold event=tree.success transition=2 target=retreat
+#37 t=11 state-exited state=hold
+#38 t=11 state-entered state=retreat
+#39 t=11 node-started reason=started node=retreat_together handle=1.10
+#40 t=11 node-started reason=started node=retreat_move handle=1.11
+#41 t=11 node-started reason=started node=retreat_has_threat handle=1.12
+#42 t=11 guard-value node=retreat_has_threat handle=1.12 value=Object#9
+#43 t=11 node-started reason=started node=retreat_look handle=1.13

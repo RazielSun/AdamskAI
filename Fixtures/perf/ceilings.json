@@ -1,0 +1,9 @@
+{
+ "CoreFleet.serial_us_per_agent_tick": 0.5,
+ "CoreFleet.serial_us_per_agent_tick_no_recorder": 0.3,
+ "CoreFleet.records_per_agent_frame": 1.0,
+ "CoreFleet.node_memory_bytes_per_agent": 256,
+ "CoreFleet.instance_bytes_per_agent": 8192,
+ "ManagedTick.brains_1000_over_250_per_brain": 1.3,
+ "PerceptionBridge.candidates_16_us_per_brain_tick": 2.0
+}

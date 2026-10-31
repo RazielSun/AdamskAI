@@ -1,0 +1,20 @@
+<!-- An event no active state handles is dropped and does not block the events after it. -->
+<Agent version="1" id="unhandled-event-dropped">
+  <Events>
+    <Event name="Stray"/>
+    <Event name="Go"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="Go" goto="pass"/>
+    </State>
+    <State id="pass"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-both">
+      <Emit id="emit-stray" event="Stray"/>
+      <Emit id="emit-go" event="Go"/>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

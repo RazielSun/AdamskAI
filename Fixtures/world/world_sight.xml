@@ -1,0 +1,37 @@
+<!--
+  world_sight: AdamskAIWorld.Perception, with AADSKWorldSightController's perception bridge writing the Inputs and
+  raising the events. watching -> tracking on sight, tracking -> lost once the bridge forgets the target.
+-->
+<Agent version="1" id="world_sight">
+
+  <Inputs>
+    <Input name="HasTarget" type="Bool" default="false"/>
+    <Input name="TargetLocation" type="Vector" default="0,0,0"/>
+    <Input name="Target" type="Object" default="none"/>
+    <Input name="Sensed" type="Bool" default="false"/>
+    <Input name="Alert" type="Float" default="0"/>
+  </Inputs>
+
+  <Events>
+    <Event name="TargetSeen"/>
+    <Event name="TargetLost"/>
+    <Event name="Alerted"/>
+  </Events>
+
+  <StateMachine id="m" initial="watching">
+    <State id="watching" tree="idle">
+      <On event="TargetSeen" goto="tracking"/>
+      <On event="Alerted"/>
+    </State>
+    <State id="tracking" tree="idle">
+      <On event="Alerted"/>
+      <On event="TargetLost" goto="lost"/>
+    </State>
+    <State id="lost" tree="idle"/>
+  </StateMachine>
+
+  <Tree id="idle">
+    <Wait id="idle_wait" duration="1000"/>
+  </Tree>
+
+</Agent>

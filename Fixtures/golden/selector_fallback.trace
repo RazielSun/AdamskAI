@@ -1,0 +1,74 @@
+# source 951a4201fbd6989de116448077230247d70b466c
+# catalogue e0fc48ef38f826d556857f9440fee7b6c7bfdd2a
+#1 t=0 instance-started reason=started
+#2 t=0 input-set slot=Goal value=300.0,0.0,0.0
+#3 t=0 input-set slot=Enabled value=true
+#4 t=0 state-entered state=mode
+#5 t=0 state-entered state=work
+#6 t=0 node-started reason=started node=work-options handle=1.1
+#7 t=0 node-started reason=started node=work-enabled handle=1.2
+#8 t=0 guard-value node=work-enabled handle=1.2 value=true
+#9 t=0 node-started reason=started node=work-move handle=1.3
+#10 t=1 result-accepted handle=1.3
+#11 t=1 node-ended reason=failed node=work-move handle=1.3
+#12 t=1 node-ended reason=failed node=work-enabled handle=1.2
+#13 t=1 node-started reason=started node=work-idle handle=1.4
+#14 t=5 node-ended reason=succeeded node=work-idle handle=1.4
+#15 t=5 node-ended reason=succeeded node=work-options handle=1.1
+#16 t=6 event-consumed state=work event=tree.success
+#17 t=6 transition-taken state=work event=tree.success transition=0 target=work
+#18 t=6 state-exited state=work
+#19 t=6 state-entered state=work
+#20 t=6 node-started reason=started node=work-options handle=1.5
+#21 t=6 node-started reason=started node=work-enabled handle=1.6
+#22 t=6 guard-value node=work-enabled handle=1.6 value=true
+#23 t=6 node-started reason=started node=work-move handle=1.7
+#24 t=7 input-set slot=Enabled value=false
+#25 t=7 guard-value node=work-enabled handle=1.6 value=false
+#26 t=7 node-ended reason=cancelled node=work-move handle=1.7
+#27 t=7 node-ended reason=failed node=work-enabled handle=1.6
+#28 t=7 node-started reason=started node=work-idle handle=1.8
+#29 t=11 node-ended reason=succeeded node=work-idle handle=1.8
+#30 t=11 node-ended reason=succeeded node=work-options handle=1.5
+#31 t=12 event-consumed state=work event=tree.success
+#32 t=12 transition-taken state=work event=tree.success transition=0 target=work
+#33 t=12 state-exited state=work
+#34 t=12 state-entered state=work
+#35 t=12 node-started reason=started node=work-options handle=1.9
+#36 t=12 node-started reason=started node=work-enabled handle=1.10
+#37 t=12 guard-value node=work-enabled handle=1.10 value=false
+#38 t=12 node-ended reason=failed node=work-enabled handle=1.10
+#39 t=12 node-started reason=started node=work-idle handle=1.11
+#40 t=16 node-ended reason=succeeded node=work-idle handle=1.11
+#41 t=16 node-ended reason=succeeded node=work-options handle=1.9
+#42 t=17 event-consumed state=work event=tree.success
+#43 t=17 transition-taken state=work event=tree.success transition=0 target=work
+#44 t=17 state-exited state=work
+#45 t=17 state-entered state=work
+#46 t=17 node-started reason=started node=work-options handle=1.12
+#47 t=17 node-started reason=started node=work-enabled handle=1.13
+#48 t=17 guard-value node=work-enabled handle=1.13 value=false
+#49 t=17 node-ended reason=failed node=work-enabled handle=1.13
+#50 t=17 node-started reason=started node=work-idle handle=1.14
+#51 t=21 node-ended reason=succeeded node=work-idle handle=1.14
+#52 t=21 node-ended reason=succeeded node=work-options handle=1.12
+#53 t=22 event-consumed state=work event=tree.success
+#54 t=22 transition-taken state=work event=tree.success transition=0 target=work
+#55 t=22 state-exited state=work
+#56 t=22 state-entered state=work
+#57 t=22 node-started reason=started node=work-options handle=1.15
+#58 t=22 node-started reason=started node=work-enabled handle=1.16
+#59 t=22 guard-value node=work-enabled handle=1.16 value=false
+#60 t=22 node-ended reason=failed node=work-enabled handle=1.16
+#61 t=22 node-started reason=started node=work-idle handle=1.17
+#62 t=26 node-ended reason=succeeded node=work-idle handle=1.17
+#63 t=26 node-ended reason=succeeded node=work-options handle=1.15
+#64 t=27 event-consumed state=work event=tree.success
+#65 t=27 transition-taken state=work event=tree.success transition=0 target=work
+#66 t=27 state-exited state=work
+#67 t=27 state-entered state=work
+#68 t=27 node-started reason=started node=work-options handle=1.18
+#69 t=27 node-started reason=started node=work-enabled handle=1.19
+#70 t=27 guard-value node=work-enabled handle=1.19 value=false
+#71 t=27 node-ended reason=failed node=work-enabled handle=1.19
+#72 t=27 node-started reason=started node=work-idle handle=1.20

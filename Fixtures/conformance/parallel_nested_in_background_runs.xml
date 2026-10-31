@@ -1,0 +1,24 @@
+<!-- A SimpleParallel inside another's background lane starts its own background beside its main child. -->
+<Agent version="1" id="parallel-nested-in-background-runs">
+  <Events>
+    <Event name="Beat"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="nested">
+      <On event="Beat" goto="pass"/>
+    </State>
+    <State id="pass"/>
+  </StateMachine>
+  <Tree id="nested">
+    <SimpleParallel id="outer">
+      <Wait id="outer-main" duration="100"/>
+      <SimpleParallel id="inner">
+        <Wait id="inner-main" duration="100"/>
+        <Sequence id="inner-beat">
+          <Emit id="emit-beat" event="Beat"/>
+          <Wait id="inner-hold" duration="100"/>
+        </Sequence>
+      </SimpleParallel>
+    </SimpleParallel>
+  </Tree>
+</Agent>

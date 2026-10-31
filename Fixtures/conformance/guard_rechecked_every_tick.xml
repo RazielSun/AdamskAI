@@ -1,0 +1,52 @@
+<!-- A running Guard is evaluated again every tick: a Bind that turns its condition false fails it, and with it the tree. -->
+<Agent version="1" id="guard-rechecked-every-tick">
+  <Locals>
+    <Local name="Gate" type="Bool"/>
+  </Locals>
+  <Events>
+    <Event name="Open">
+      <Param name="V" type="Bool"/>
+    </Event>
+    <Event name="Close">
+      <Param name="V" type="Bool"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="opening">
+    <State id="opening" tree="open">
+      <On event="Open" goto="guarded">
+        <Bind param="V" to="Gate"/>
+      </On>
+    </State>
+    <State id="guarded" tree="guarded">
+      <On event="Close">
+        <Bind param="V" to="Gate"/>
+      </On>
+      <On event="tree.failure" goto="pass"/>
+      <On event="tree.success" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="open">
+    <Sequence id="open-then-wait">
+      <Emit id="emit-open" event="Open">
+        <Param name="V" value="true"/>
+      </Emit>
+      <Wait id="open-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="guarded">
+    <SimpleParallel id="watch">
+      <Guard id="while-open" in-condition="Gate">
+        <Wait id="guarded-wait" duration="100"/>
+      </Guard>
+      <Sequence id="close-later">
+        <Wait id="close-delay" duration="0.2"/>
+        <Emit id="emit-close" event="Close">
+          <Param name="V" value="false"/>
+        </Emit>
+        <Wait id="close-hold" duration="100"/>
+      </Sequence>
+    </SimpleParallel>
+  </Tree>
+</Agent>

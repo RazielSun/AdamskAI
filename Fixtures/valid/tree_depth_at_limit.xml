@@ -1,0 +1,38 @@
+<Agent version="1" id="a">
+<StateMachine id="m" initial="s">
+<State id="s" tree="t"/>
+</StateMachine>
+<Tree id="t">
+<Sequence id="q1">
+<Sequence id="q2">
+<Sequence id="q3">
+<Sequence id="q4">
+<Sequence id="q5">
+<Sequence id="q6">
+<Sequence id="q7">
+<Sequence id="q8">
+<Sequence id="q9">
+<Sequence id="q10">
+<Sequence id="q11">
+<Sequence id="q12">
+<Sequence id="q13">
+<Sequence id="q14">
+<Sequence id="q15">
+<Wait id="deep" duration="1"/>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Sequence>
+</Tree>
+</Agent>

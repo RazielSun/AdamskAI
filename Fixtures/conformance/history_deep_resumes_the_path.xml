@@ -1,0 +1,58 @@
+<!-- history="deep" resumes the whole path below the state as it was left, down to the leaf. -->
+<Agent version="1" id="history-deep-resumes-the-path">
+  <Locals>
+    <Local name="Returned" type="Bool"/>
+  </Locals>
+  <Events>
+    <Event name="Next"/>
+    <Event name="Out"/>
+    <Event name="Back">
+      <Param name="V" type="Bool"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="fight">
+    <State id="fight" initial="phase-one" history="deep">
+      <State id="phase-one" tree="next">
+        <On event="Next" goto="fail" if="Returned"/>
+        <On event="Next" goto="phase-two"/>
+      </State>
+      <State id="phase-two" initial="a">
+        <State id="a" tree="next">
+          <On event="Next" goto="fail" if="Returned"/>
+          <On event="Next" goto="b"/>
+        </State>
+        <State id="b" tree="out">
+          <On event="Out" goto="pass" if="Returned"/>
+          <On event="Out" goto="stagger"/>
+        </State>
+      </State>
+    </State>
+    <State id="stagger" tree="back">
+      <On event="Back" goto="fight">
+        <Bind param="V" to="Returned"/>
+      </On>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="next">
+    <Sequence id="next-then-wait">
+      <Emit id="emit-next" event="Next"/>
+      <Wait id="next-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="out">
+    <Sequence id="out-then-wait">
+      <Emit id="emit-out" event="Out"/>
+      <Wait id="out-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="back">
+    <Sequence id="back-then-wait">
+      <Emit id="emit-back" event="Back">
+        <Param name="V" value="true"/>
+      </Emit>
+      <Wait id="back-hold" duration="100"/>
+    </Sequence>
+  </Tree>
+</Agent>

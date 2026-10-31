@@ -1,0 +1,22 @@
+<!-- AdamskAIWorld.Kit.Groups: agents take turns on the target's one WorldTest token, waiting a moment when none is free. -->
+<Agent version="1" id="world_tokens">
+  <Inputs>
+    <Input name="Target" type="Object" default="none"/>
+  </Inputs>
+  <StateMachine id="m" initial="trying">
+    <State id="trying" tree="try">
+      <On event="tree.success" goto="trying"/>
+    </State>
+  </StateMachine>
+  <Tree id="try">
+    <Selector id="try_steps">
+      <Sequence id="turn">
+        <HoldToken id="token" pool="WorldTest" in-target="Target">
+          <Wait id="hold" duration="0.4"/>
+        </HoldToken>
+        <Wait id="rest" duration="0.3"/>
+      </Sequence>
+      <Wait id="later" duration="0.1"/>
+    </Selector>
+  </Tree>
+</Agent>

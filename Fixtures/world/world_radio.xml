@@ -1,0 +1,40 @@
+<!-- AdamskAIWorld.GroupNodes: the caller radios Contact, saying where (SeenAt), with a one second delay; the others
+     wait to hear it and keep the place in HeardAt. -->
+<Agent version="1" id="world_radio">
+  <Inputs>
+    <Input name="Caller" type="Bool" default="false"/>
+    <Input name="SeenAt" type="Vector" default="0,0,0"/>
+  </Inputs>
+  <Locals>
+    <Local name="HeardAt" type="Vector"/>
+  </Locals>
+  <Events>
+    <Event name="Contact">
+      <Param name="where" type="Vector"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="settle">
+    <State id="settle" tree="settle">
+      <On event="tree.success" goto="calling" if="Caller"/>
+      <On event="tree.success" goto="quiet"/>
+    </State>
+    <State id="calling" tree="call">
+      <On event="tree.success" goto="called"/>
+      <On event="tree.failure" goto="alone"/>
+    </State>
+    <State id="quiet">
+      <On event="Contact" goto="heard"><Bind param="where" to="HeardAt"/></On>
+    </State>
+    <State id="called"/>
+    <State id="alone"/>
+    <State id="heard"/>
+  </StateMachine>
+  <Tree id="settle">
+    <Wait id="settle_wait" duration="0.2"/>
+  </Tree>
+  <Tree id="call">
+    <Radio id="call_contact" event="Contact" delay="1">
+      <Param name="where" from="SeenAt"/>
+    </Radio>
+  </Tree>
+</Agent>

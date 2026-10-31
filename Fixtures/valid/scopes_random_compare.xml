@@ -1,0 +1,59 @@
+<Agent version="1" id="scopes">
+  <Inputs>
+    <Input name="Goal" type="Vector" default="0,0,0"/>
+    <Input name="Distance" type="Float" default="500"/>
+    <Input name="Reach" type="Float" default="100"/>
+  </Inputs>
+  <Locals>
+    <Local name="Plan" type="Int"/>
+    <Local name="Spot" type="Vector"/>
+  </Locals>
+  <Events>
+    <Event name="Hit"/>
+  </Events>
+  <StateMachine id="m" initial="decide">
+    <State id="decide" tree="decide">
+      <On event="tree.success" goto="close" if="Plan" is="0"/>
+      <On event="tree.success" goto="close" if="Distance" above="Reach"/>
+      <On event="tree.success" goto="hold"/>
+    </State>
+    <State id="close" tree="close">
+      <On event="Hit" goto="hold" unless="Distance" below="50"/>
+      <On event="tree.success" goto="decide"/>
+      <On event="tree.failure" goto="decide"/>
+    </State>
+    <State id="hold" tree="hold">
+      <On event="tree.success" goto="decide"/>
+    </State>
+  </StateMachine>
+  <Tree id="decide">
+    <Roll id="decide_roll" count="2" out-value="Plan"/>
+  </Tree>
+  <Tree id="close">
+    <Sequence id="close_steps">
+      <RunEQS id="close_find" query="/Game/AI/EQS_Spot.EQS_Spot" pick="RandomBest5" out-point="Spot">
+        <Param name="Min Distance" value="150"/>
+        <Param name="Max Distance" value="300"/>
+      </RunEQS>
+      <MoveSpeed id="close_speed" speed="300">
+        <Focus id="close_face" in-point="Goal">
+          <MoveTo id="close_move" in-goal="Spot" acceptanceRadius="5"/>
+        </Focus>
+      </MoveSpeed>
+    </Sequence>
+  </Tree>
+  <Tree id="hold">
+    <Selector id="hold_choose">
+      <Guard id="hold_near" in-condition="Distance" below="Reach">
+        <Focus id="hold_face" in-point="Goal">
+          <Wait id="hold_wait" duration="0.5" deviation="0.2"/>
+        </Focus>
+      </Guard>
+      <Sequence id="hold_maybe">
+        <Chance id="hold_chance" probability="0.25"/>
+        <LookAt id="hold_look" in-point="Goal" duration="0.3"/>
+      </Sequence>
+      <Wait id="hold_idle" duration="0.1"/>
+    </Selector>
+  </Tree>
+</Agent>

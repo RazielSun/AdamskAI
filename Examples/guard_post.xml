@@ -1,0 +1,52 @@
+<!--
+  guard_post: stand a ten-second watch at a post, then walk back to it and start again. During the watch the
+  guard idles or scans at random, but scans at most once every four seconds. The decorators do the timing:
+  TimeLimit ends the shift, Repeat keeps the watch going, RandomSelector picks, Cooldown spaces the scans,
+  ForceSuccess lets a blocked walk count as done.
+  Units: durations in seconds.
+-->
+<Agent version="1" id="guard_post">
+
+  <!-- ========== Inputs ========== -->
+  <Inputs>
+    <Input name="Post" type="Vector" required="true"/>
+  </Inputs>
+
+  <!-- ========== State machine ========== -->
+  <StateMachine id="mode" initial="watch">
+
+    <!-- The shift ends by its time limit (a failure); either outcome walks back to the post. -->
+    <State id="watch" tree="watch">
+      <On event="tree.success" goto="return"/>
+      <On event="tree.failure" goto="return"/>
+    </State>
+
+    <!-- Back to the post; a blocked path still starts the next shift. -->
+    <State id="return" tree="return">
+      <On event="tree.success" goto="watch"/>
+    </State>
+
+  </StateMachine>
+
+  <!-- ========== Trees ========== -->
+
+  <Tree id="watch">
+    <TimeLimit id="watch_shift" duration="10">
+      <Repeat id="watch_loop">
+        <RandomSelector id="watch_pick">
+          <Cooldown id="watch_scan_rest" duration="4">
+            <LookAt id="watch_scan" in-point="Post" duration="1"/>
+          </Cooldown>
+          <Wait id="watch_idle" duration="1" deviation="0.5"/>
+        </RandomSelector>
+      </Repeat>
+    </TimeLimit>
+  </Tree>
+
+  <Tree id="return">
+    <ForceSuccess id="return_anyway">
+      <MoveTo id="return_move" in-goal="Post" acceptanceRadius="50"/>
+    </ForceSuccess>
+  </Tree>
+
+</Agent>

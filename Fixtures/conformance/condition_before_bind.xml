@@ -1,0 +1,46 @@
+<!-- A handler's condition reads the slots before any Bind of the event; a handler not taken binds nothing, the one
+     taken binds before its transition. -->
+<Agent version="1" id="condition-before-bind">
+  <Locals>
+    <Local name="Gate" type="Bool"/>
+  </Locals>
+  <Events>
+    <Event name="Go">
+      <Param name="V" type="Bool"/>
+    </Event>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="emit">
+      <On event="Go" goto="fail" if="Gate">
+        <Bind param="V" to="Gate"/>
+      </On>
+      <On event="Go" goto="unbound"/>
+    </State>
+    <State id="unbound" tree="instant">
+      <On event="tree.success" goto="fail" if="Gate"/>
+      <On event="tree.success" goto="binding"/>
+    </State>
+    <State id="binding" tree="emit">
+      <On event="Go" goto="bound">
+        <Bind param="V" to="Gate"/>
+      </On>
+    </State>
+    <State id="bound" tree="instant">
+      <On event="tree.success" goto="pass" if="Gate"/>
+      <On event="tree.success" goto="fail"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="emit">
+    <Sequence id="emit-then-wait">
+      <Emit id="emit-go" event="Go">
+        <Param name="V" value="true"/>
+      </Emit>
+      <Wait id="hold-on" duration="100"/>
+    </Sequence>
+  </Tree>
+  <Tree id="instant">
+    <Wait id="no-time" duration="0"/>
+  </Tree>
+</Agent>

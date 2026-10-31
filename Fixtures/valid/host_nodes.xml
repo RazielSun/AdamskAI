@@ -1,0 +1,17 @@
+<Agent version="1" id="a">
+<Inputs>
+<Input name="In" type="Vector" required="true"/><Input name="Flag" type="Bool" default="true"/><Input name="Num" type="Float" default="1"/>
+</Inputs>
+<Locals>
+<Local name="L" type="Vector"/><Local name="LB" type="Bool"/>
+</Locals>
+<Events>
+<Event name="Ping" priority="5"><Param name="P" type="Vector"/></Event>
+</Events>
+<StateMachine id="m" initial="s">
+<State id="s" tree="t"/>
+</StateMachine>
+<Tree id="t">
+<Sequence id="q"><LookAt id="look" in-point="In" duration="0.5"/><MoveTo id="move" in-goal="In" acceptanceRadius="100"/></Sequence>
+</Tree>
+</Agent>

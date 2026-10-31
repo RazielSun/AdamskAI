@@ -1,0 +1,8 @@
+<Agent version="1" id="a">
+<StateMachine id="m" initial="s">
+<State id="s" tree="t" tags="AI.State.Combat, AI..Typo"/>
+</StateMachine>
+<Tree id="t">
+<Wait id="w" duration="1"/>
+</Tree>
+</Agent>

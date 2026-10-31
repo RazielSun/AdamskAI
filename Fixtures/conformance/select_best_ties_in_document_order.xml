@@ -1,0 +1,7 @@
+<!-- select="best": of children with equal scores the first in document order is entered, not initial. -->
+<Agent version="1" id="select-best-ties-in-document-order">
+  <StateMachine id="m" initial="fail" select="best">
+    <State id="pass" weight="2"/>
+    <State id="fail" weight="2"/>
+  </StateMachine>
+</Agent>

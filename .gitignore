@@ -1,0 +1,16 @@
+# Build output of the plugin inside a host project, or of RunUAT BuildPlugin next to it
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+
+# Python tooling
+__pycache__/
+*.pyc
+
+# Editors
+.vs/
+.vscode/
+.idea/
+*.swp
+.DS_Store

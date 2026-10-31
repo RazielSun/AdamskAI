@@ -1,0 +1,22 @@
+<Agent version="1" id="a">
+<StateMachine id="m" initial="s2">
+<State id="s2" initial="s3">
+<State id="s3" initial="s4">
+<State id="s4" initial="s5">
+<State id="s5" initial="s6">
+<State id="s6" initial="s7">
+<State id="s7" initial="s8">
+<State id="s8" initial="s9">
+<State id="s9" tree="t"/>
+</State>
+</State>
+</State>
+</State>
+</State>
+</State>
+</State>
+</StateMachine>
+<Tree id="t">
+<Wait id="w" duration="1"/>
+</Tree>
+</Agent>

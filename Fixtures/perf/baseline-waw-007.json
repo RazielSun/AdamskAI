@@ -1,0 +1,70 @@
+{
+ "AdamskAIWorld.Perf.ShuttlingFleet": {
+  "agents": 200,
+  "brain_pass_ms": 0.131,
+  "brain_share_of_frame": 0.026,
+  "brain_ticks": 60200,
+  "brain_ticks_per_agent_frame": 1.0,
+  "frame_ms": 5.083,
+  "frames": 301,
+  "moving_at_end": 196,
+  "parallel_ticks": 0,
+  "serial_ticks": 60200
+ },
+ "AdamskAIWorld.Perf.ShuttlingFleetTickLOD": {
+  "agents": 200,
+  "brain_pass_ms": 0.076,
+  "brain_share_of_frame": 0.016,
+  "brain_ticks": 13625,
+  "brain_ticks_per_agent_frame": 0.226,
+  "frame_ms": 4.752,
+  "frames": 301,
+  "moving_at_end": 150,
+  "parallel_ticks": 0,
+  "serial_ticks": 13625
+ },
+ "CoreFleet": {
+  "agents": 1000,
+  "frames": 300,
+  "input_set_share_of_retained": 0.2911759335341915,
+  "instance_bytes_per_agent": 6544,
+  "node_memory_bytes_per_agent": 128,
+  "parallel_ms_per_frame": 0.1365401099125544,
+  "record_bytes": 112,
+  "recorder_bytes_per_agent_at_256": 28712,
+  "recorder_bytes_per_agent_at_512": 57384,
+  "records_per_agent_frame": 0.7302766666666667,
+  "serial_ms_per_frame": 0.2096967895825704,
+  "serial_ms_per_frame_no_recorder": 0.19261193772157034,
+  "serial_us_per_agent_tick": 0.2096967895825704,
+  "serial_us_per_agent_tick_no_recorder": 0.19261193772157034
+ },
+ "ManagedTick": {
+  "brains_1000_ms_per_frame": 0.2662450075149536,
+  "brains_1000_over_250_per_brain": 1.0085038218092042,
+  "brains_1000_us_per_brain_tick": 0.2662450075149536,
+  "brains_250_ms_per_frame": 0.06599999964237213,
+  "brains_250_us_per_brain_tick": 0.2639999985694885
+ },
+ "PerceptionBridge": {
+  "candidates_0_us_per_brain_tick": 0.18830038607120514,
+  "candidates_16_us_per_brain_tick": 1.4975015074014664,
+  "candidates_4_us_per_brain_tick": 0.7757507264614105,
+  "candidates_64_us_per_brain_tick": 4.85684908926487
+ },
+ "ProjectCompile": {
+  "all_files_compile_ms_per_world": 0.4673972725868225,
+  "combat_enemy.xml_compile_ms": 0.3689974546432495,
+  "files": 2,
+  "sidescrolling_npc.xml_compile_ms": 0.098399817943573
+ },
+ "StartCost": {
+  "agents": 1000,
+  "reload_brains": 200,
+  "reload_commit_best_ms": 0.5729012191295624,
+  "reload_commit_ms": 0.6480701267719269,
+  "reload_commit_us_per_brain": 3.2403506338596344,
+  "start_us_per_instance": 0.3612896427512169,
+  "stop_us_per_instance": 0.09276531636714935
+ }
+}

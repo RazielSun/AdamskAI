@@ -1,0 +1,33 @@
+<!-- A nested SimpleParallel ends with its main child and cancels its own background, while the outer one runs on:
+     the background lane continues after it. Should the inner background outlive it, Leak reaches fail first. -->
+<Agent version="1" id="parallel-nested-ends-with-its-main">
+  <Events>
+    <Event name="Leak"/>
+    <Event name="Done"/>
+  </Events>
+  <StateMachine id="m" initial="s">
+    <State id="s" tree="nested">
+      <On event="Leak" goto="fail"/>
+      <On event="Done" goto="pass"/>
+    </State>
+    <State id="pass"/>
+    <State id="fail"/>
+  </StateMachine>
+  <Tree id="nested">
+    <SimpleParallel id="outer">
+      <Wait id="outer-main" duration="100"/>
+      <Sequence id="outer-background">
+        <SimpleParallel id="inner">
+          <Wait id="inner-main" duration="0.3"/>
+          <Sequence id="inner-background">
+            <Wait id="inner-hold" duration="0.5"/>
+            <Emit id="emit-leak" event="Leak"/>
+          </Sequence>
+        </SimpleParallel>
+        <Wait id="after-inner" duration="0.5"/>
+        <Emit id="emit-done" event="Done"/>
+        <Wait id="outer-hold" duration="100"/>
+      </Sequence>
+    </SimpleParallel>
+  </Tree>
+</Agent>
