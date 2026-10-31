@@ -46,6 +46,8 @@ TEST_CLASS_WITH_FLAGS(FWorldTickSpec, "AdamskAIWorld.Tick",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
 {
 	FADSKWorldScenario Scenario;
+	/** Counts ticks, so every brain ticks every frame. Made in BEFORE_EACH: a member would outlive UObjects at exit. */
+	TUniquePtr<FADSKScopedSleepSetting> AwakeBrains;
 	TUniquePtr<FSettingsGuard> Settings;
 	FADSKWorldAgent Near, Mid, Far, Auto, Managed;
 	TArray<FADSKWorldAgent> Batch;
@@ -58,12 +60,14 @@ TEST_CLASS_WITH_FLAGS(FWorldTickSpec, "AdamskAIWorld.Tick",
 
 	BEFORE_EACH()
 	{
+		AwakeBrains = MakeUnique<FADSKScopedSleepSetting>(false);
 		Settings = MakeUnique<FSettingsGuard>();
 		Scenario.Start(TestRunner);
 	}
 
 	AFTER_EACH()
 	{
+		AwakeBrains.Reset();
 		Lock.Reset();
 		Settings.Reset();
 	}

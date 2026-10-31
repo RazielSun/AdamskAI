@@ -293,6 +293,18 @@ using FADSKScoreFn = TFunction<float(FADSKNodeContext&)>;
 using FADSKCheckFn = TFunction<bool(FADSKNodeContext&)>;
 /** A sensor's reading: writes its out ports from the host and its in ports; the context has no memory or state. */
 using FADSKSampleFn = TFunction<void(FADSKNodeContext&)>;
+/**
+ * Seconds of tick time until the node next needs its OnUpdate (when running) or its OnCheck (as a ReactiveSelector's
+ * earlier option); ADSK::NeverWake when only a slot write, an event or a result can change what it does. The call
+ * changes nothing. A brain sleeps until the nearest of these, so a node that answers too late misses its moment.
+ */
+using FADSKNextWakeFn = TFunction<float(FADSKNodeContext&)>;
+
+namespace ADSK
+{
+	/** FADSKNextWakeFn's "not by time": an instance with nothing else due sleeps until a slot write, event or result. */
+	inline constexpr float NeverWake = TNumericLimits<float>::Max();
+}
 /** Receives the descriptor's configuration struct memory after every mapped field converted. */
 using FADSKValidateConfigFn = TFunction<bool(const void*)>;
 /**
@@ -363,6 +375,11 @@ struct ADAMSKAI_API FADSKNodeDescriptor
 	 * tick, and one turning true interrupts the running option, as a Guard's condition does (a Cooldown becoming ready).
 	 */
 	FADSKCheckFn OnCheck;
+	/**
+	 * Optional: when the node is next due (FADSKNextWakeFn). Without it a running node with OnUpdate is updated every
+	 * tick and an option with OnCheck is checked every tick, so its brain never sleeps while it runs.
+	 */
+	FADSKNextWakeFn OnNextWake;
 	/** Sensor only, required. */
 	FADSKSampleFn OnSample;
 

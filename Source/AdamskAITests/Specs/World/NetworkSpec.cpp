@@ -93,6 +93,8 @@ using namespace FNetworkSpecPrivate;
 NETWORK_TEST_CLASS(FWorldNetworkSpec, "AdamskAIWorld.Network")
 {
 	FPIENetworkComponent<FState> Network{TestRunner, TestCommandBuilder, bInitializing};
+	/** Waits for ticks or counts them, so every brain ticks every frame. Made in BEFORE_EACH: a member would outlive UObjects at exit. */
+	TUniquePtr<FADSKScopedSleepSetting> AwakeBrains;
 	FADSKWorldScenario Files;
 	TUniquePtr<FSettingsGuard> Settings;
 	FString Source;
@@ -102,6 +104,7 @@ NETWORK_TEST_CLASS(FWorldNetworkSpec, "AdamskAIWorld.Network")
 
 	BEFORE_EACH()
 	{
+		AwakeBrains = MakeUnique<FADSKScopedSleepSetting>(false);
 		// The settings are read when the worlds are created, which the component does in a later latent command.
 		Settings = MakeUnique<FSettingsGuard>();
 		Source = Files.WriteBehavior(PrewarmFile, HoldXml);
@@ -115,6 +118,7 @@ NETWORK_TEST_CLASS(FWorldNetworkSpec, "AdamskAIWorld.Network")
 
 	AFTER_EACH()
 	{
+		AwakeBrains.Reset();
 		Settings.Reset();
 	}
 
@@ -254,12 +258,15 @@ NETWORK_TEST_CLASS(FWorldNetworkSpec, "AdamskAIWorld.Network")
 NETWORK_TEST_CLASS(FWorldNetworkPrewarmOnClientsSpec, "AdamskAIWorld.Network.PrewarmOnClients")
 {
 	FPIENetworkComponent<FState> Network{TestRunner, TestCommandBuilder, bInitializing};
+	/** Waits for ticks or counts them, so every brain ticks every frame. Made in BEFORE_EACH: a member would outlive UObjects at exit. */
+	TUniquePtr<FADSKScopedSleepSetting> AwakeBrains;
 	FADSKWorldScenario Files;
 	TUniquePtr<FSettingsGuard> Settings;
 	FString Source;
 
 	BEFORE_EACH()
 	{
+		AwakeBrains = MakeUnique<FADSKScopedSleepSetting>(false);
 		Settings = MakeUnique<FSettingsGuard>();
 		Source = Files.WriteBehavior(PrewarmFile, HoldXml);
 		GetMutableDefault<UADSKSettings>()->PrewarmFiles.Add(Source);
@@ -273,6 +280,7 @@ NETWORK_TEST_CLASS(FWorldNetworkPrewarmOnClientsSpec, "AdamskAIWorld.Network.Pre
 
 	AFTER_EACH()
 	{
+		AwakeBrains.Reset();
 		Settings.Reset();
 	}
 
@@ -328,6 +336,8 @@ namespace FNetworkSpecPrivate
 NETWORK_TEST_CLASS(FWorldDedicatedServerSpec, "AdamskAIWorld.Network.Dedicated")
 {
 	FPIENetworkComponent<FState> Network{TestRunner, TestCommandBuilder, bInitializing};
+	/** Waits for ticks or counts them, so every brain ticks every frame. Made in BEFORE_EACH: a member would outlive UObjects at exit. */
+	TUniquePtr<FADSKScopedSleepSetting> AwakeBrains;
 	TArray<FADSKTickLODLevel> SavedLOD;
 	AADSKWorldTestController* Near = nullptr;
 	AADSKWorldTestController* Far = nullptr;
@@ -336,6 +346,7 @@ NETWORK_TEST_CLASS(FWorldDedicatedServerSpec, "AdamskAIWorld.Network.Dedicated")
 
 	BEFORE_EACH()
 	{
+		AwakeBrains = MakeUnique<FADSKScopedSleepSetting>(false);
 		SavedLOD = GetDefault<UADSKSettings>()->TickLOD;
 		FNetworkComponentBuilder<FState>()
 			.AsDedicatedServer()
@@ -346,6 +357,7 @@ NETWORK_TEST_CLASS(FWorldDedicatedServerSpec, "AdamskAIWorld.Network.Dedicated")
 
 	AFTER_EACH()
 	{
+		AwakeBrains.Reset();
 		GetMutableDefault<UADSKSettings>()->TickLOD = SavedLOD;
 	}
 

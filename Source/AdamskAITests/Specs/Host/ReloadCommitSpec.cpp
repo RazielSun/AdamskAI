@@ -10,6 +10,7 @@
 #include "Support/CompilerSpecSupport.h"
 #include "Support/TempTree.h"
 #include "CQTest.h"
+#include "Misc/FileHelper.h"
 
 namespace FReloadCommitSpecPrivate
 {
@@ -149,6 +150,90 @@ TEST_CLASS_WITH_FLAGS(FReloadCommitSpec, "AdamskAI.Host.ReloadCommit",
 		First->OnStopped.Clear();
 		First->Cleanup();
 		Second->Cleanup();
+	}
+
+	TEST_METHOD(AStopCallbackThatAcquiresManyFilesLeavesTheCommitIntact)
+	{
+		FFixture F;
+		UADSKBrainComponent* Brain = F.StartBrain();
+		for (int32 Index = 0; Index < 128; ++Index) F.Tree.Write(FString::Printf(TEXT("extra_%d.xml"), Index), MakeXml(TEXT("1")));
+		// Each Acquire adds a source record; enough of them reallocate the table the commit is walking.
+		UADSKWorldSubsystem* Subsystem = F.Subsystem;
+		bool bAcquired = false;
+		Brain->OnStopped.AddLambda([Subsystem, &bAcquired]
+		{
+			if (bAcquired) return;
+			bAcquired = true;
+			for (int32 Index = 0; Index < 128; ++Index)
+			{
+				FString Error;
+				ADSKTest::Expect(Subsystem->Acquire(FString::Printf(TEXT("extra_%d.xml"), Index), Error).IsValid(), Error);
+			}
+		});
+		F.QueueEdit();
+		F.Subsystem->CommitPendingReloads();
+		ASSERT_THAT(IsTrue(bAcquired, TEXT("the stop callback did not run")));
+		ASSERT_THAT(IsTrue(Brain->IsRunning(), Brain->GetLastError()));
+		ASSERT_THAT(IsTrue(&Brain->GetDefinition().Get() == F.Subsystem->GetActiveDefinition(SourceFile).Get(), TEXT("the brain and the cache disagree after the commit")));
+		Brain->OnStopped.Clear();
+		Brain->Cleanup();
+	}
+
+	TEST_METHOD(PathsThatDifferOnlyInCaseAreTwoFiles)
+	{
+		FFixture F;
+		F.Tree.Write(TEXT("Case.xml"), MakeXml(TEXT("3")));
+		F.Tree.Write(TEXT("case.xml"), MakeXml(TEXT("4")));
+		FString Upper;
+		FFileHelper::LoadFileToString(Upper, *(F.Tree.Root / TEXT("Case.xml")));
+		if (Upper.Contains(TEXT("duration=\"4\"")))
+		{
+			TestRunner->AddInfo(TEXT("skipped: this file system ignores case"));
+			return;
+		}
+		FString Error;
+		const TSharedPtr<const FADSKDefinition> First = F.Subsystem->Acquire(TEXT("Case.xml"), Error);
+		const TSharedPtr<const FADSKDefinition> Second = F.Subsystem->Acquire(TEXT("case.xml"), Error);
+		ASSERT_THAT(IsTrue(First.IsValid() && Second.IsValid(), Error));
+		ASSERT_THAT(IsTrue(First.Get() != Second.Get(), TEXT("two files share one definition")));
+		// A reload of one reaches only the brains running that one.
+		AActor& Actor = F.Spawner.SpawnActor<AActor>();
+		UADSKBrainComponent* Lower = NewObject<UADSKBrainComponent>(&Actor);
+		Actor.AddInstanceComponent(Lower);
+		Lower->RegisterComponent();
+		ASSERT_THAT(IsTrue(Lower->InitializeFromSource(TEXT("case.xml")), Lower->GetLastError()));
+		Lower->StartLogic();
+		const FADSKDefinition* LowerBefore = &Lower->GetDefinition().Get();
+		F.Tree.Write(TEXT("Case.xml"), MakeXml(TEXT("5")));
+		ASSERT_THAT(AreEqual(static_cast<int32>(EADSKReloadResult::Queued), static_cast<int32>(F.Subsystem->RequestReload(TEXT("Case.xml"), Error))));
+		F.Subsystem->CommitPendingReloads();
+		ASSERT_THAT(IsTrue(&Lower->GetDefinition().Get() == LowerBefore, TEXT("a reload of Case.xml replaced case.xml's brain")));
+		Lower->Cleanup();
+	}
+
+	TEST_METHOD(AStopCallbackThatGivesTheBrainAnotherFileKeepsIt)
+	{
+		FFixture F;
+		F.Tree.Write(TEXT("other.xml"), MakeXml(TEXT("7")));
+		FString Error;
+		ASSERT_THAT(IsTrue(F.Subsystem->Acquire(TEXT("other.xml"), Error).IsValid(), Error));
+		UADSKBrainComponent* Brain = F.StartBrain();
+		bool bSwitched = false;
+		Brain->OnStopped.AddLambda([Brain, &bSwitched]
+		{
+			if (bSwitched) return;
+			bSwitched = true;
+			ADSKTest::Expect(Brain->InitializeFromSource(TEXT("other.xml")), TEXT("the callback could not switch files"));
+			Brain->StartLogic();
+		});
+		F.QueueEdit();
+		F.Subsystem->CommitPendingReloads();
+		ASSERT_THAT(IsTrue(bSwitched, TEXT("the stop callback did not run")));
+		ASSERT_THAT(AreEqual(FString(TEXT("other.xml")), Brain->GetSourcePath()));
+		ASSERT_THAT(IsTrue(&Brain->GetDefinition().Get() == F.Subsystem->GetActiveDefinition(TEXT("other.xml")).Get(), TEXT("the reload overwrote the callback's file")));
+		ASSERT_THAT(IsTrue(Brain->IsRunning(), Brain->GetLastError()));
+		Brain->OnStopped.Clear();
+		Brain->Cleanup();
 	}
 };
 

@@ -147,6 +147,19 @@ public:
 
 	bool IsRunning() const;
 	bool IsHolding() const;
+	/**
+	 * Seconds of tick time until a Tick could do anything that time alone causes; 0 when the next tick has work
+	 * (queued inputs, events or results, a tree completion, a slot written in the last tick, a running node or option
+	 * that cannot say when it is due); ADSK::NeverWake when only SetInput, EnqueueEvent or PostActionResult can.
+	 * A host may skip ticks until then and hand the time over in one Tick: the run is the same as ticking every frame
+	 * with the same total. Asks running nodes' OnNextWake, so not from a node callback.
+	 */
+	float GetNextWake();
+	/**
+	 * Called after every accepted SetInput, SetEnumInput, EnqueueEvent and PostActionResult, whoever made it (not for
+	 * events the file's own nodes emit), so a host that skips ticks until GetNextWake knows to tick again. Game thread.
+	 */
+	void SetQueueListener(TFunction<void()> Listener);
 	uint32 GetGeneration() const;
 	uint64 GetTickCount() const;
 	TArray<FString> GetActiveStatePath() const;

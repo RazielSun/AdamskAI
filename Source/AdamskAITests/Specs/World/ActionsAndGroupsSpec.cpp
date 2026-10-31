@@ -22,13 +22,21 @@ TEST_CLASS_WITH_FLAGS(FWorldActSpec, "AdamskAIWorld.Act",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
 {
 	FADSKWorldScenario Scenario;
+	/** Waits for ticks, so every brain ticks every frame. Made in BEFORE_EACH: a member would outlive UObjects at exit. */
+	TUniquePtr<FADSKScopedSleepSetting> AwakeBrains;
 	FADSKWorldAgent Agent;
 	TWeakObjectPtr<AADSKWorldTestPawn> Target;
 	TWeakObjectPtr<AADSKWorldTestPawn> Other;
 
 	BEFORE_EACH()
 	{
+		AwakeBrains = MakeUnique<FADSKScopedSleepSetting>(false);
 		Scenario.Start(TestRunner);
+	}
+
+	AFTER_EACH()
+	{
+		AwakeBrains.Reset();
 	}
 
 	AADSKWorldActingController& Performer() const { return *CastChecked<AADSKWorldActingController>(Agent.Controller.Get()); }

@@ -99,11 +99,17 @@ void FADSKInstance::FImpl::RefreshTraceName()
 
 void FADSKInstance::FImpl::SlotWritten(int32 Node, int32 Slot, FADSKActivationHandle Handle)
 {
+	bSlotWrittenThisTick = true;
 	Record({.Kind = EADSKRecordKind::SlotWritten, .Node = Node, .Slot = Slot, .Handle = Handle, .bHasValue = true, .Value = Slots[Slot]});
 }
 
 void FADSKInstance::FImpl::ApplyPendingInputs()
 {
+	if (!bHasPendingInputs)
+	{
+		return;
+	}
+	bHasPendingInputs = false;
 	const TConstArrayView<FADSKSlotDefinition> Definitions = Definition->GetSlots();
 	for (int32 Slot = 0; Slot < PendingInputs.Num(); ++Slot)
 	{
@@ -200,6 +206,8 @@ EADSKInputResult FADSKInstance::SetInput(FADSKInputId Input, const FADSKValue& V
 		}
 	}
 	Impl->PendingInputs[Slot] = Value;
+	Impl->bHasPendingInputs = true;
+	Impl->NotifyQueued();
 	return EADSKInputResult::Accepted;
 }
 
@@ -258,7 +266,9 @@ EADSKInputResult FADSKInstance::EnqueueEvent(FADSKEventId Event, TConstArrayView
 	{
 		return Staged;
 	}
-	return Impl->EnqueueInternal(Event.Event, 0);
+	const EADSKInputResult Result = Impl->EnqueueInternal(Event.Event, 0);
+	if (Result == EADSKInputResult::Accepted) Impl->NotifyQueued();
+	return Result;
 }
 
 EADSKInputResult FADSKInstance::FImpl::EnqueueInternal(int32 Event, uint64 EligibleTick)
@@ -308,6 +318,7 @@ EADSKInputResult FADSKInstance::PostActionResult(FADSKActivationHandle Handle, E
 		}
 	}
 	Impl->Results.Add({Handle, Status});
+	Impl->NotifyQueued();
 	return EADSKInputResult::Accepted;
 }
 
@@ -427,6 +438,7 @@ EADSKInputResult FADSKInstance::FImpl::StageEventParameters(int32 Event, TConstA
 
 void FADSKInstance::FImpl::PersistPendingInputs()
 {
+	bHasPendingInputs = false;
 	for (int32 Slot = 0; Slot < PendingInputs.Num(); ++Slot)
 	{
 		if (PendingInputs[Slot].IsSet())
@@ -466,6 +478,7 @@ void FADSKInstance::FImpl::BeginGeneration(EADSKRecordReason Reason)
 	}
 	Random.Initialize(RandomSeed);
 	++Generation;
+	bSlotWrittenThisTick = false;
 	Procedure->ResetForGeneration();
 	Procedure->ResetBudget();
 	// Values at Start are the baseline: a change event means a change while running.
@@ -542,6 +555,7 @@ EADSKTickResult FADSKInstance::Tick(float Delta)
 	}
 	++Impl->TickCount;
 	Impl->Clock += Delta;
+	Impl->bSlotWrittenThisTick = false;
 	Impl->Procedure->ResetBudget();
 	Impl->ApplyPendingInputs();
 	Impl->ApplyResults();
@@ -636,6 +650,28 @@ bool FADSKInstance::IsHolding() const
 {
 	ADSK_CHECK_GAME_THREAD();
 	return Impl->bHold;
+}
+
+void FADSKInstance::SetQueueListener(TFunction<void()> Listener)
+{
+	ADSK_CHECK_GAME_THREAD();
+	Impl->QueueListener = MoveTemp(Listener);
+}
+
+float FADSKInstance::GetNextWake()
+{
+	ADSK_CHECK_OWNER(this);
+	FImpl& Owner = *Impl;
+	if (!Owner.bRunning)
+	{
+		return ADSK::NeverWake;
+	}
+	if (Owner.CallbackDepth > 0 || Owner.bStopRequested || Owner.bSlotWrittenThisTick || Owner.EventCount > 0 || !Owner.Results.IsEmpty()
+		|| Owner.Completion.IsSet() || Owner.bHasPendingInputs)
+	{
+		return 0.f;
+	}
+	return Owner.Procedure->GetNextWake();
 }
 
 uint32 FADSKInstance::GetGeneration() const

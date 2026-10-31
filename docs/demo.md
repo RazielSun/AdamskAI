@@ -47,10 +47,13 @@ is tested.
 The line on screen gives the managed pass's time per frame, µs per brain tick, ticks per brain per frame and the
 share on workers. Measured by the tests on Linux, Development editor, `-nullrhi`, 2026-10-31:
 
-| Test | Brains | Brain pass per frame | Per brain tick |
+| Test | Brains | Brain pass per frame | Ticks per brain per frame |
 |---|---|---|---|
-| `AdamskAIWorld.Demo.Fleet` (recorders on) | 1000 | 0.42 ms | 0.42 µs |
-| `AdamskAIWorld.Demo.FleetParallel` (workers, no recorders) | 1000 | 0.27 ms | 0.27 µs |
+| `AdamskAIWorld.Demo.Fleet` (recorders on) | 1000 | 0.13 ms | 0.07 |
+| `AdamskAIWorld.Demo.FleetParallel` (workers, no recorders) | 1000 | 0.10 ms | 0.07 |
+
+Brains sleep through their waits (`bSleepWhenIdle`, the default), so each ticks about once in fifteen frames; with it
+off every brain ticks every frame and the pass costs 0.40 ms and 0.23 ms.
 
 Both write `Saved/AdamskAI/perf/<test>.json`. The pass includes the managed ticker's own bookkeeping; the core alone
 is in [perf.md](dev/perf.md).

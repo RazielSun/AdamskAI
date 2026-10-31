@@ -103,10 +103,19 @@ public:
 	 */
 	bool BeginBrainTick();
 	void EndBrainTick();
+	/**
+	 * Sleep (UADSKSettings::bSleepWhenIdle): true while Elapsed seconds since the last tick are short of when the
+	 * instance is next due (FADSKInstance::GetNextWake). Any accepted input, event or result (through this component
+	 * or GetInstance()), a start or a resume wakes it. Never asleep while OnPreTick is bound or the file declares
+	 * sensors, since both publish before every tick.
+	 */
+	bool IsAsleep(float Elapsed) const;
 	const FADSKInstance* GetInstance() const { return Instance.Get(); }
 	FADSKInstance* GetInstance() { return Instance.Get(); }
 	const TSharedPtr<FADSKRecorder>& GetRecorder() const { return Recorder; }
 	const FString& GetSourcePath() const { return SourcePath; }
+	/** Counts the instances this component has made; a new definition or a re-initialization changes it, a restart does not. */
+	uint32 GetInstanceSerial() const { return InstanceSerial; }
 	const FADSKInputValues& GetCachedInputs() const { return InputCache.GetValues(); }
 	const FADSKEnumInputValues& GetCachedEnumInputs() const { return InputCache.GetEnumNames(); }
 	const FString& GetLastError() const { return LastError; }
@@ -187,6 +196,21 @@ private:
 	FADSKAsyncOps AsyncOps;
 	TUniquePtr<FADSKInstance> Instance;
 	TArray<TUniquePtr<FADSKInstance>> RetiredInstances;
+	/** The highest generation any instance of this component reached; never lowered, so Cleanup does not reset it. */
+	uint32 GenerationFloor = 0;
+	uint32 InstanceSerial = 0;
+	/** Seconds of tick time from the last tick until the instance is due; 0 awake, ADSK::NeverWake until woken. */
+	float SleepFor = 0.f;
+	/** Tick time TickBrain was handed while asleep; the next tick gets it. */
+	float SleptTime = 0.f;
+	/** World time of the last auto tick, so a tick after a longer interval gets all the time since. */
+	double LastAutoTickTime = -1.0;
+	/** BeginPlay's decision that this brain ticks itself (bAutoTick, not managed, with authority). */
+	bool bTicksItself = false;
+	/** After a tick or a start: how long the brain may sleep, and the auto tick's interval to match. */
+	void UpdateSleep();
+	void WakeUp();
+	void ApplyAutoTickRate();
 	TSharedPtr<FADSKRecorder> Recorder;
 	TWeakObjectPtr<UADSKWorldSubsystem> WorldSubsystem;
 	FString SourcePath;

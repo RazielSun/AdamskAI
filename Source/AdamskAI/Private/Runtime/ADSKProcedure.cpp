@@ -223,6 +223,71 @@ void FADSKProcedure::Step(float Delta)
 	}
 }
 
+float FADSKProcedure::GetNextWake()
+{
+	if (PendingTerminal.IsSet())
+	{
+		return 0.f;
+	}
+	float Wake = ADSK::NeverWake;
+	auto Ask = [this, &Wake](FADSKActiveNode& Node, const FADSKNodeDescriptor& Descriptor)
+	{
+		if (!Descriptor.OnNextWake)
+		{
+			Wake = 0.f;
+			return;
+		}
+		FADSKNodeContext Context = MakeContext(Node, 0.f);
+		FADSKCallbackScope Scope(Owner);
+		Wake = FMath::Min(Wake, FMath::Max(0.f, Descriptor.OnNextWake(Context)));
+	};
+	for (const TUniquePtr<FADSKLane>& Candidate : Lanes)
+	{
+		if (Candidate->RestartTick != 0 || Candidate->DeferredNode.IsSet())
+		{
+			return 0.f;
+		}
+		FLaneScope Scope(*this, *Candidate);
+		for (FADSKActiveNode& Active : Candidate->Stack)
+		{
+			const FADSKNodeDefinition& Node = NodeDef(Active);
+			const FADSKNodeDescriptor& Descriptor = *Node.Descriptor;
+			if (Descriptor.SelectorPolicy == EADSKSelectorPolicy::Reactive)
+			{
+				// Guards change with slots only; any other earlier option is checked by its OnCheck.
+				for (int32 Child = 0; Child < Active.ChildCursor; ++Child)
+				{
+					FADSKActiveNode Option;
+					Option.Node = Owner.Definition->GetNodeChildren()[Node.FirstChild + Child];
+					const FADSKNodeDescriptor& OptionDescriptor = *NodeDef(Option).Descriptor;
+					if (OptionDescriptor.Kind != EADSKNodeKind::Guard && OptionDescriptor.OnCheck)
+					{
+						Ask(Option, OptionDescriptor);
+					}
+				}
+			}
+			else if (Descriptor.SelectorPolicy == EADSKSelectorPolicy::Utility)
+			{
+				const FADSKUtilityConfig& Config = *Node.Config.GetPtr<FADSKUtilityConfig>();
+				if (Config.Reevaluate > 0.f)
+				{
+					const double Since = Owner.Clock - SelectorMemory<FADSKUtilitySelectorMemory>(Active).LastScored;
+					Wake = FMath::Min(Wake, FMath::Max(0.f, static_cast<float>(Config.Reevaluate - Since)));
+				}
+			}
+			if (Descriptor.OnUpdate && Descriptor.Kind != EADSKNodeKind::Guard)
+			{
+				Ask(Active, Descriptor);
+			}
+			if (Wake <= 0.f)
+			{
+				return 0.f;
+			}
+		}
+	}
+	return Wake;
+}
+
 void FADSKProcedure::StepLane(float Delta)
 {
 	if (Lane->RestartTick != 0)

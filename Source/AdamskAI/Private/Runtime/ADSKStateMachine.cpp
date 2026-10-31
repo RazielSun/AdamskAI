@@ -402,6 +402,7 @@ void FADSKInstance::FImpl::HandleEvent(int32 Event, const FADSKValue* Parameters
 		if (Slots[Bind.Slot] != Parameters[Bind.Param])
 		{
 			Slots[Bind.Slot] = Parameters[Bind.Param];
+			bSlotWrittenThisTick = true;
 			Record({.Kind = EADSKRecordKind::SlotWritten, .Event = Event, .Slot = Bind.Slot, .Transition = TransitionIndex, .bHasValue = true, .Value = Slots[Bind.Slot]});
 		}
 	}

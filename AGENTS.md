@@ -7,7 +7,8 @@ relative to this plugin. A host project's own `AGENTS.md` / `CLAUDE.md` rules ap
 
 A deterministic, XML-authored agent behavior plugin for Unreal Engine 5.8: a strict XML v1 compiler, a
 registry of native nodes, a hierarchical state machine with procedure trees, a bounded recorder, an
-Unreal host (`AdamskAIHost`) and a headless validator. Product and runtime contract: [README.md](README.md).
+Unreal host (`AdamskAIHost`) and a headless validator. Product: [README.md](README.md); runtime contract
+(ownership, bounds, tick order, modules): [docs/contract.md](docs/contract.md).
 Version 0.5.0 is verified on Linux; Win64 was verified on 0.4.0 and owes a re-run; Mac is not built. Status and
 everything still left: [docs/dev/roadmap.md](docs/dev/roadmap.md).
 

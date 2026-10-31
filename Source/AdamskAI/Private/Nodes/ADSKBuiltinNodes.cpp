@@ -144,6 +144,11 @@ namespace ADSKBuiltinNodesPrivate
 			Memory.Elapsed += Delta;
 			return Memory.Elapsed >= Memory.Target ? EADSKNodeStatus::Succeeded : EADSKNodeStatus::Running;
 		};
+		Descriptor.OnNextWake = [](FADSKNodeContext& Context)
+		{
+			const FADSKWaitMemory& Memory = Context.GetMemory<FADSKWaitMemory>();
+			return FMath::Max(0.f, Memory.Target - Memory.Elapsed);
+		};
 		return Descriptor;
 	}
 
@@ -284,6 +289,12 @@ namespace ADSKBuiltinNodesPrivate
 		Descriptor.OnChildFinished = [](FADSKNodeContext&, int32, EADSKNodeStatus Status) { return FADSKCompositeStep::Finish(Status); };
 		// As an option of a ReactiveSelector, becoming ready interrupts the option running after it.
 		Descriptor.OnCheck = [](FADSKNodeContext& Context) { return Context.GetTime() >= Context.GetState<FADSKCooldownState>().ReadyAt; };
+		// Ready stays ready, so only a cooldown still running has a time to be checked at.
+		Descriptor.OnNextWake = [](FADSKNodeContext& Context)
+		{
+			const double Left = Context.GetState<FADSKCooldownState>().ReadyAt - Context.GetTime();
+			return Left > 0.0 ? static_cast<float>(Left) : ADSK::NeverWake;
+		};
 		Descriptor.OnEnd = [](FADSKNodeContext& Context, EADSKEndReason)
 		{
 			if (Context.GetMemory<FADSKCooldownMemory>().bRan)
@@ -315,6 +326,11 @@ namespace ADSKBuiltinNodesPrivate
 			FADSKTimeLimitMemory& Memory = Context.GetMemory<FADSKTimeLimitMemory>();
 			Memory.Elapsed += Delta;
 			return Memory.Elapsed >= Memory.Limit ? EADSKNodeStatus::Failed : EADSKNodeStatus::Running;
+		};
+		Descriptor.OnNextWake = [](FADSKNodeContext& Context)
+		{
+			const FADSKTimeLimitMemory& Memory = Context.GetMemory<FADSKTimeLimitMemory>();
+			return FMath::Max(0.f, Memory.Limit - Memory.Elapsed);
 		};
 		Descriptor.OnChildFinished = [](FADSKNodeContext&, int32, EADSKNodeStatus Status) { return FADSKCompositeStep::Finish(Status); };
 		return Descriptor;

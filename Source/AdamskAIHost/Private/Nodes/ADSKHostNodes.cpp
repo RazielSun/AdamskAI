@@ -248,6 +248,8 @@ namespace ADSKHostNodesPrivate
 			Memory.Goal = Goal;
 			return RequestMove(*Brain, *Controller, Context.GetHandle(), Goal, Config, Context.GetNodeId());
 		};
+		// The update only repaths after the goal slot moved; the move's own end arrives as a result.
+		Node.OnNextWake = [](FADSKNodeContext&) { return ADSK::NeverWake; };
 		return Node;
 	}
 	FADSKNodeDescriptor LookAt()

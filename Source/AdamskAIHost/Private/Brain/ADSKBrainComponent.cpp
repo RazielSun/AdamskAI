@@ -3,6 +3,7 @@
 #include "Brain/ADSKBrainComponent.h"
 
 #include "AIController.h"
+#include "Settings/ADSKSettings.h"
 #include "Sources/ADSKSourcePath.h"
 #include "Brain/ADSKWorldSubsystem.h"
 #include "ADSKHostModule.h"
@@ -34,7 +35,8 @@ void UADSKBrainComponent::BeginPlay()
 	}
 	// A copy of a replicated actor on a client never runs: the server's brain is the one that acts.
 	const bool bAuthority = HasOwnerAuthority();
-	SetComponentTickEnabled(bAutoTick && !bManagedTick && bAuthority);
+	bTicksItself = bAutoTick && !bManagedTick && bAuthority;
+	SetComponentTickEnabled(bTicksItself);
 	UADSKWorldSubsystem* Subsystem = GetWorld() ? GetWorld()->GetSubsystem<UADSKWorldSubsystem>() : nullptr;
 	if (bManagedTick && bAuthority && Subsystem) Subsystem->AddManagedBrain(this);
 }
@@ -61,7 +63,13 @@ bool UADSKBrainComponent::RefuseWithoutAuthority()
 void UADSKBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	TickBrain(DeltaTime);
+	// After an interval the engine's delta can miss time (its first interval tick passes one frame); the world clock
+	// does not, scaled as the engine scales this actor's ticks.
+	const UWorld* World = GetWorld();
+	const double Now = World ? World->GetTimeSeconds() : 0.0;
+	const float Delta = LastAutoTickTime >= 0.0 && World ? static_cast<float>(Now - LastAutoTickTime) * (GetOwner() ? GetOwner()->CustomTimeDilation : 1.f) : DeltaTime;
+	LastAutoTickTime = Now;
+	TickBrain(Delta);
 }
 
 bool UADSKBrainComponent::InitializeFromSource(FStringView InSourcePath)
@@ -343,6 +351,8 @@ void UADSKBrainComponent::StartLogic()
 	// A resource lock taken before this start (or held across a stop, restart or reload) still pauses the run;
 	// the base only pauses on the unlocked-to-locked edge, which has already passed.
 	if (State == EADSKBrainState::Running && IsResourceLocked()) State = EADSKBrainState::Paused;
+	SleptTime = 0.f;
+	UpdateSleep();
 #if ENABLE_VISUAL_LOG
 	VisLogTransition();
 #endif
@@ -403,6 +413,7 @@ EAILogicResuming::Type UADSKBrainComponent::ResumeLogic(const FString& Reason)
 	// The base restarts instead when a resource lock asked for it; RestartLogic clears the pause itself.
 	const EAILogicResuming::Type Result = Super::ResumeLogic(Reason);
 	if (State == EADSKBrainState::Paused) State = EADSKBrainState::Running;
+	WakeUp();
 	return Result;
 }
 
@@ -411,6 +422,11 @@ void UADSKBrainComponent::TickBrain(float DeltaTime)
 	TRACE_CPUPROFILER_EVENT_SCOPE(UADSKBrainComponent::TickBrain);
 	SCOPE_CYCLE_COUNTER(STAT_ADSKBrainTick);
 	CSV_SCOPED_TIMING_STAT(AdamskAI, BrainTick);
+	// Asleep, the time is kept for the tick that wakes it, so every timer sees the same total as at full rate.
+	SleptTime += DeltaTime;
+	if (IsAsleep(SleptTime)) { return; }
+	DeltaTime = SleptTime;
+	SleptTime = 0.f;
 	INC_DWORD_STAT(STAT_ADSKBrainsTicked);
 	if (!BeginBrainTick()) { return; }
 	FADSKInstance* CurrentInstance = Instance.Get();
@@ -492,9 +508,41 @@ void UADSKBrainComponent::EndBrainTick()
 			*GetPathName(), Path.IsEmpty() ? TEXT("") : *Path.Last());
 	}
 	bWarnedHold = bHolding;
+	UpdateSleep();
 #if ENABLE_VISUAL_LOG
 	VisLogTransition();
 #endif
+}
+
+bool UADSKBrainComponent::IsAsleep(float Elapsed) const
+{
+	return SleepFor > 0.f && Elapsed + KINDA_SMALL_NUMBER < SleepFor && !OnPreTick.IsBound();
+}
+
+void UADSKBrainComponent::UpdateSleep()
+{
+	SleepFor = 0.f;
+	if (GetDefault<UADSKSettings>()->bSleepWhenIdle && State == EADSKBrainState::Running && Instance && InstanceCallDepth == 0
+		&& !OnPreTick.IsBound() && Instance->GetDefinition()->GetSensors().IsEmpty())
+	{
+		SleepFor = Instance->GetNextWake();
+	}
+	ApplyAutoTickRate();
+}
+
+void UADSKBrainComponent::WakeUp()
+{
+	if (SleepFor <= 0.f) { return; }
+	SleepFor = 0.f;
+	ApplyAutoTickRate();
+}
+
+void UADSKBrainComponent::ApplyAutoTickRate()
+{
+	if (!bTicksItself) { return; }
+	if (SleepFor >= ADSK::NeverWake) { SetComponentTickEnabled(false); return; }
+	SetComponentTickIntervalAndCooldown(SleepFor);
+	SetComponentTickEnabled(true);
 }
 
 #if ENABLE_VISUAL_LOG
@@ -543,6 +591,8 @@ FString UADSKBrainComponent::GetDebugInfoString() const
 
 void UADSKBrainComponent::RetireInstance()
 {
+	// The next instance starts above every generation this one issued handles in, even after Cleanup.
+	if (Instance) GenerationFloor = FMath::Max(GenerationFloor, Instance->GetGeneration());
 	if (InstanceCallDepth > 0 && Instance)
 	{
 		RetiredInstances.Add(MoveTemp(Instance));
@@ -553,10 +603,12 @@ void UADSKBrainComponent::RetireInstance()
 void UADSKBrainComponent::ReplaceInstance(const TSharedRef<const FADSKDefinition>& Definition)
 {
 	// A stopped predecessor's generation is above every generation in which it issued handles; the
-	// successor starts above that seed, so a late result for the old instance cannot match a new leaf.
-	const uint32 Seed = Instance ? Instance->GetGeneration() : 0;
+	// successor starts above it, so a late result for any earlier instance of this component cannot match a new leaf.
 	RetireInstance();
-	Instance = MakeUnique<FADSKInstance>(Definition, Recorder, this, Seed);
+	Instance = MakeUnique<FADSKInstance>(Definition, Recorder, this, GenerationFloor);
+	++InstanceSerial;
+	// Any accepted write wakes a sleeping brain, made through this component or on the instance directly.
+	Instance->SetQueueListener([this] { WakeUp(); });
 }
 
 void UADSKBrainComponent::BindMoveCompleted()

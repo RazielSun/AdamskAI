@@ -1,6 +1,6 @@
 # Roadmap: what is left
 
-The one list of everything AdamskAI still wants: checks nobody has run, open proposals and features not built.
+The one list of everything AdamskAI still wants: confirmed defects, checks nobody has run, open proposals and features not built.
 Everything that is done is described in the other documents as how the plugin works, not here. When an item lands,
 delete it from this file and describe the result where it belongs ([migration.md](../migration.md) for API changes).
 
@@ -15,11 +15,40 @@ delete it from this file and describe the result where it belongs ([migration.md
 The Win64 run predates the 2026-10-31 changes ([migration.md](../migration.md): the kit fold, node arguments, the
 ImGui panel leaving); run `adsk_all_win64.ps1 -World` and the strict includes there again.
 
+## Confirmed defects
+
+None open. Record a defect here with its owner, a reproduction and the regression that closes it; P1 is a crash or a
+completion applied to the wrong lifetime, P2 incorrect behavior or validation, P3 documentation. Delete it only after
+its regression passes and the affected contract is documented. The review of 0.5.0 (`0488ef4`, 2026-10-31) found
+BUG-001 to BUG-007 and DOC-001; all are closed with regressions (CHANGELOG, Unreleased).
+
+## Performance against Behavior Trees and StateTree
+
+`Tools/adsk_bench.sh` (Bench/AdamskAIBench) runs one behavior written three ways side by side: Linux, Development
+editor, `-nullrhi`, 1000 agents, three runs, per agent and frame over a world of bare controllers. On 2026-10-31,
+before brains slept: Behavior Tree 0.10–0.16 µs, StateTree 0.22–0.32 µs, AdamskAI managed 0.33–0.61 µs, `bAutoTick`
+0.76–1.25 µs. With `bSleepWhenIdle` (the same day): AdamskAI `bAutoTick` 0.08–0.11 µs, managed 0.09–0.15 µs,
+Behavior Tree 0.12–0.13 µs, StateTree 0.20–0.22 µs. The cores alone, ticked every frame: AdamskAI 0.13–0.15 µs,
+StateTree 1.31–1.48 µs. Delete a row when it lands and re-run the bench.
+
+- **PERF-4 — managed pass bookkeeping:** a sleeping brain still costs the pass a weak-pointer `Get` and an `IsAsleep`
+  per frame, and `RemoveAll` walks every entry per pass; a wake queue would visit only due brains. The viewer
+  distance is no longer measured without `TickLOD` levels.
+- **PERF-5 — `TickBrain` overhead:** broadcast `OnPreTick` only when bound; measure the instance-call guards.
+- **PERF-6 — a wider bench:** a behavior reacting to a value that changes every frame (where sleeping does not help),
+  memory per agent for all three, `TickLOD`, the median of several runs in `adsk_bench`; then the numbers in perf.md
+  and README.
+- **PERF-7 — sensors and bridges keep a brain awake:** a sensor could declare its interval and the perception bridge
+  could publish on change instead of in `OnPreTick`, so such brains sleep too.
+
 ## Waves
 
 The order the work is taken in now; each wave ends with `adsk_all --world`, the fuzzer, the strict includes and a
 fresh [comparison.md](../comparison.md). Delete a line when it lands.
 
+0. **Stabilize the existing contracts.** BUG-001 to BUG-007 and DOC-001 of the 2026-10-31 review are closed (CHANGELOG,
+   migration.md); brains sleep (PERF-1 to PERF-3, 2026-10-31); then PERF-6, PERF-4, PERF-5 and PERF-7. Add the engine-free CI gate
+   already listed under the release debt, then proceed to the host project pilot.
 1. **A host project pilot.** H2 roles, H3 `ReservePoint`, H5 noise and last known position, and orders with an
    answer on node arguments (H7), designed against a game's existing tactical layer and moving it onto the plugin.
    Ends with a one-hour soak of 200 agents with reloads.

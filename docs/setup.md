@@ -246,6 +246,13 @@ rate. With `bParallelManagedTick` the managed brains
 whose behavior uses only thread-safe nodes (sensors do not count) tick on workers at once; host facts are still
 published (the `OnPreTick` bridges run, then the sensors) on the game thread before.
 
+Brains sleep while nothing is due (`bSleepWhenIdle`, on by default, as Behavior Trees and StateTree do): a brain
+whose tree waits, holds or runs a `MoveTo` skips its ticks and gets the skipped time in the tick that wakes it. Any
+accepted `SetInput`, `EnqueueEvent` or async result wakes it at once, made through the brain or on its instance. A
+brain with sensors or an `OnPreTick` handler (the perception bridge) never sleeps, since both publish before every
+tick; a host that publishes facts every frame with `SetInput` keeps it awake the same way. An auto-ticking brain
+sets its component's tick interval to the sleep, or disables its tick in a hold.
+
 Place `UADSKPerceptionBridgeComponent` beside exactly one perception component and one brain on that same actor.
 Its bindings map a unique sense to Bool/Vector/Object Inputs (has a target, its location, the actor itself) and
 optional edge or stimulus events; it publishes immediately before the brain tick. A binding may also remember a

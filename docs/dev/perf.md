@@ -35,8 +35,11 @@ Where AdamskAI spends time and memory, the numbers measured on Win64, and how to
 | `AdamskAIWorld.Perf.ShuttlingFleetTickLOD` | the same fleet with `TickLOD` `{1000 cm, 0.2 s}`, `{2000 cm, 0.5 s}` and one viewer crossing it (2026-10-30) | 0.23 brain ticks per agent frame (−77%); the pass 0.076 ms (−42%): about 0.2 µs per brain per frame is the pass's own distance and interval bookkeeping, ticking or not. 150 of 200 agents walking at the end (196 without LOD): a far agent starts its next move up to one interval late |
 
 On Linux (Development editor, `-nullrhi`, 2026-10-31) the demo's fleet of 1000 core-node brains on the managed tick
-costs 0.42 ms per frame with recorders and 0.27 ms on workers without them (`AdamskAIWorld.Demo.Fleet`,
-`FleetParallel`; [demo.md](../demo.md#fleet)); the pass includes the ticker's bookkeeping beside the instance ticks.
+costs 0.13 ms per frame with recorders and 0.10 ms on workers without them, sleeping through their waits; awake every
+frame 0.40 ms and 0.23 ms (`AdamskAIWorld.Demo.Fleet`, `FleetParallel`; [demo.md](../demo.md#fleet)). The 200
+shuttling agents of `AdamskAIWorld.Perf.ShuttlingFleetSleeping` cost 0.038 ms per frame against 0.15 ms awake. Against
+a Behavior Tree and a StateTree running the same behavior: [roadmap.md](roadmap.md#performance-against-behavior-trees-and-statetree)
+(`Tools/adsk_bench.sh`).
 
 Runs differ by ±20% on the same machine; compare with the tool below, not by eye. Parallel ticking helps little
 (1.4× even when every node is thread-safe): each instance is about 0.2 µs of work against `ParallelFor`'s scheduling.
@@ -81,6 +84,8 @@ With hundreds of brains the per-instance scopes add tracing cost of their own: r
 ## Guidance
 
 - List every behavior file a level uses in `PrewarmFiles`.
+- Keep `bSleepWhenIdle` on: a brain that waits or walks costs nothing until its wait ends or its move reports.
+  Publish facts as they change, not every frame, so the brain can sleep between them.
 - Use the managed tick with `TickLOD` once a level has more than a few dozen agents.
 - `bParallelManagedTick` only pays for definitions made of core nodes; one host node makes a definition serial.
 - Profile with `RecorderCapacity=0`; Shipping never records.

@@ -423,15 +423,25 @@ void UADSKWorldSubsystem::CommitPendingReloads()
 			}
 		}
 		if (!bValid) continue;
-		// Stop callbacks are external code and may end other brains, so each one is re-resolved before it is applied.
+		// Published before any callback runs: Record points into Sources, which a callback's Acquire may grow, and a
+		// callback that acquires this file gets the new definition.
+		Record->Active = Candidate;
+		Record->ActiveRefs = MoveTemp(Refs);
+		Record = nullptr;
+		// Stop callbacks are external code: they may end other brains, give a brain another file or a new instance.
+		// Each brain is re-resolved and checked before it is applied.
 		TArray<TWeakObjectPtr<UADSKBrainComponent>> WeakBrains; WeakBrains.Reserve(Brains.Num());
 		TArray<bool> WasRunning; WasRunning.Reserve(Brains.Num());
+		TArray<bool> WasPaused; WasPaused.Reserve(Brains.Num());
+		TArray<uint32> Lifetimes; Lifetimes.Reserve(Brains.Num());
 		const bool bKeepState = GetDefault<UADSKSettings>()->bKeepStateOnReload;
 		for (int32 Index = 0; Index < Brains.Num(); ++Index)
 		{
 			UADSKBrainComponent* Brain = Brains[Index];
 			WeakBrains.Add(Brain);
 			WasRunning.Add(Brain->IsADSKRunning());
+			WasPaused.Add(Brain->IsPaused());
+			Lifetimes.Add(Brain->GetInstanceSerial());
 			FADSKSnapshot Snapshot;
 			if (bKeepState && WasRunning.Last() && Brain->CaptureSnapshot(Snapshot)) Prepared[Index].Snapshot = MoveTemp(Snapshot);
 		}
@@ -450,13 +460,14 @@ void UADSKWorldSubsystem::CommitPendingReloads()
 				Brain->StopLogic(TEXT("definition reloaded"));
 			}
 		}
-		Record->Active = Candidate;
-		Record->ActiveRefs = MoveTemp(Refs);
 		for (int32 Index = 0; Index < Brains.Num(); ++Index)
 		{
 			UADSKBrainComponent* Brain = WeakBrains[Index].Get();
 			if (!Brain || Brain->IsCleanedUp()) continue;
+			// A callback that gave this brain another file or a new instance chose for it; the reload leaves it alone.
+			if (Brain->GetInstanceSerial() != Lifetimes[Index] || !Brain->GetSourcePath().Equals(Path, ESearchCase::CaseSensitive)) continue;
 			Brain->ApplyReplacement(MoveTemp(Prepared[Index]), WasRunning[Index]);
+			if (WasPaused[Index]) Brain->PauseLogic(TEXT("paused before the reload"));
 		}
 	}
 }

@@ -43,6 +43,13 @@ restart ([reload.md](reload.md)).
 - `OnCheck` — optional; whether the node, started now, would get going. A `ReactiveSelector` calls it every tick on
   each earlier option and switches to one that turned true, as it does for a `Guard`'s condition (`Cooldown` is the
   built-in one). The context has config and state, no memory; it must change nothing.
+- `OnNextWake` — optional; seconds of tick time until the node next needs its `OnUpdate` (running) or its `OnCheck`
+  (as an option), or `ADSK::NeverWake` when only a slot write, an event or a result can change what it does. Brains
+  sleep until the nearest such time (`UADSKSettings::bSleepWhenIdle`, on by default) and hand the skipped time to the
+  waking tick. A node with `OnUpdate` and no `OnNextWake` keeps its brain ticking every frame while it runs, which is
+  always correct; add the hook when the update only counts time (`Wait`, `TimeLimit`, `Cooldown`) or only reacts to
+  its slots (`MoveTo`, `Act`). A node that polls the world (a target that may be destroyed, a focus to track) has
+  none.
 - `SelectorPolicy` — `Selector` kind only: `Ordered` (default), `Reactive` or `Utility`, the `ReactiveSelector` and
   `UtilitySelector` semantics ([xml-reference.md](xml-reference.md)). Both take at most 64 children and their own memory
   struct (`FADSKReactiveSelectorMemory` / `FADSKUtilitySelectorMemory`); `Utility` also needs `FADSKUtilityConfig`.

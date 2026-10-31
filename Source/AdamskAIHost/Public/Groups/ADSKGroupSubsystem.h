@@ -50,6 +50,8 @@ public:
 	/**
 	 * One of Pool's tokens on Target for Holder: true when Holder holds one now (taken, or already held), false when
 	 * all of them are held by others. The pool's size is UADSKSettings::TokenPools, 1 for a pool it does not name.
+	 * A holder holds one token however often it takes it, and keeps it until it has returned it as often as it took it
+	 * (nested HoldToken scopes on one brain).
 	 */
 	bool TakeToken(FName Pool, const AActor* Target, const UObject& Holder);
 	void ReturnToken(FName Pool, const AActor* Target, const UObject& Holder);
@@ -65,6 +67,12 @@ private:
 		double SightingTime = 0.0;
 	};
 	using FTokenKey = TPair<FName, TObjectKey<AActor>>;
+	struct FTokenHolder
+	{
+		TWeakObjectPtr<const UObject> Holder;
+		/** Takes not yet returned. */
+		int32 Takes = 0;
+	};
 
 	double Now() const;
 	const FGroup* FindGroupOf(const AActor& Member) const;
@@ -72,5 +80,5 @@ private:
 
 	TMap<FName, FGroup> Groups;
 	TMap<TObjectKey<AActor>, FName> MemberGroups;
-	TMap<FTokenKey, TArray<TWeakObjectPtr<const UObject>>> Tokens;
+	TMap<FTokenKey, TArray<FTokenHolder>> Tokens;
 };

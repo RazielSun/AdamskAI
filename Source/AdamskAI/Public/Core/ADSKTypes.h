@@ -99,5 +99,31 @@ namespace ADSK
 	ADAMSKAI_API FString FormatValue(const FADSKDefinition& Definition, const FADSKValue& Value);
 }
 
+/**
+ * Map key functions for exact-case string keys: XML names and behavior file paths are exact-case, and plain FString
+ * keys ignore case.
+ */
+template <typename ValueType>
+struct TADSKExactKeyFuncs : BaseKeyFuncs<TPair<FString, ValueType>, FString, false>
+{
+	static const FString& GetSetKey(const TPair<FString, ValueType>& Element) { return Element.Key; }
+	static bool Matches(const FString& A, const FString& B) { return A.Equals(B, ESearchCase::CaseSensitive); }
+	static uint32 GetKeyHash(const FString& Key) { return FCrc::StrCrc32(*Key); }
+};
+
+/** Set key functions for exact-case strings; see TADSKExactKeyFuncs. */
+struct FADSKExactSetKeyFuncs : BaseKeyFuncs<FString, FString, false>
+{
+	static const FString& GetSetKey(const FString& Element) { return Element; }
+	static bool Matches(const FString& A, const FString& B) { return A.Equals(B, ESearchCase::CaseSensitive); }
+	static uint32 GetKeyHash(const FString& Key) { return FCrc::StrCrc32(*Key); }
+};
+
+/** A set of exact-case strings. */
+using FADSKExactStringSet = TSet<FString, FADSKExactSetKeyFuncs>;
+/** A map keyed by exact-case strings. */
+template <typename ValueType>
+using TADSKExactMap = TMap<FString, ValueType, FDefaultSetAllocator, TADSKExactKeyFuncs<ValueType>>;
+
 ADAMSKAI_API const TCHAR* LexToString(EADSKValueType Type);
 ADAMSKAI_API FString LexToString(const FADSKValue& Value);

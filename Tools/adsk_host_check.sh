@@ -24,6 +24,7 @@ case "${1:-}" in
 esac
 
 . "$(dirname "${BASH_SOURCE[0]}")/lib/adsk_env.sh"
+. "$(dirname "${BASH_SOURCE[0]}")/lib/adsk_host.sh"
 
 ASSOCIATION=""
 OUT=""
@@ -58,58 +59,10 @@ fi
 cleanup() { [ "$KEEP" -eq 1 ] && echo "host kept: $HOST" || rm -rf -- "$HOST"; }
 trap cleanup EXIT
 
-NAME="AdskHost"
-mkdir -p "$HOST/Source/$NAME" "$HOST/Plugins" "$HOST/Config"
-cat >"$HOST/$NAME.uproject" <<EOF
-{
-	"FileVersion": 3,
-	"EngineAssociation": "$ASSOCIATION",
-	"Modules": [ { "Name": "$NAME", "Type": "Runtime", "LoadingPhase": "Default" } ],
-	"Plugins": [ { "Name": "AdamskAI", "Enabled": true } ]
-}
-EOF
-for TARGET in Game Editor; do
-	CLASS="$NAME"; [ "$TARGET" = "Editor" ] && CLASS="${NAME}Editor"
-	cat >"$HOST/Source/$CLASS.Target.cs" <<EOF
-using UnrealBuildTool;
-
-public class ${CLASS}Target : TargetRules
-{
-	public ${CLASS}Target(TargetInfo Target) : base(Target)
-	{
-		Type = TargetType.$TARGET;
-		DefaultBuildSettings = BuildSettingsVersion.Latest;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
-		ExtraModuleNames.Add("$NAME");
-	}
-}
-EOF
-done
-cat >"$HOST/Source/$NAME/$NAME.Build.cs" <<EOF
-using UnrealBuildTool;
-
-public class $NAME : ModuleRules
-{
-	public $NAME(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-		PrivateDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine" });
-	}
-}
-EOF
-cat >"$HOST/Source/$NAME/$NAME.cpp" <<EOF
-#include "Modules/ModuleManager.h"
-
-IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, $NAME, "$NAME");
-EOF
-rsync -a --exclude=/Binaries --exclude=/Intermediate --exclude=/Saved "$ADSK_PLUGIN_DIR/" "$HOST/Plugins/AdamskAI/" \
-	|| { adsk_err "copying the plugin failed."; exit 2; }
-
+adsk_make_host "$HOST" "$ASSOCIATION" '{ "Name": "AdamskAI", "Enabled": true }' || exit $?
+NAME="$ADSK_HOST_NAME"
 COPY="$HOST/Plugins/AdamskAI/Tools"
-ADSK_UPROJECT="$HOST/$NAME.uproject"
 adsk_resolve_engine || exit $?
-BUILD="$ADSK_UE_ROOT/Engine/Build/BatchFiles/Linux/Build.sh"
-[ -x "$BUILD" ] || { adsk_err "no Linux Build.sh at $BUILD."; exit 2; }
 echo "host: $HOST (engine $ASSOCIATION)"
 
 stage() {
@@ -124,20 +77,11 @@ stage() {
 	fi
 }
 
-LOG="$HOST/build.log"
-build_host() {
-	"$BUILD" "${NAME}Editor" Linux Development "-project=$ADSK_UPROJECT" >"$LOG" 2>&1 \
-		&& grep -q "^Result: Succeeded" "$LOG" && return 0
-	grep -E "error:|^Result:" "$LOG" | head -20
-	echo "host build failed. Log: $LOG"
-	return 1
-}
-
 # The host has no Tools/run_tests.sh and no Tools/lib/preflight.sh; pin both explicitly anyway so
 # an environment variable from the calling project cannot change what this run proves.
 export ADSK_PREFLIGHT=none
 stage "static checks" "$COPY/adsk_check.sh"
-stage "build ${NAME}Editor" build_host
+stage "build ${NAME}Editor" adsk_build_host
 stage "validate" "$COPY/adsk_validate.sh" --project "$ADSK_UPROJECT"
 stage "tests" "$COPY/adsk_test.sh" --project "$ADSK_UPROJECT" --standalone "AdamskAI."
 stage "strict includes" "$COPY/adsk_strict_includes.sh" --project "$ADSK_UPROJECT"

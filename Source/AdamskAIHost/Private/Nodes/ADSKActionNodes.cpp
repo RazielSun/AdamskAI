@@ -75,6 +75,8 @@ namespace ADSKActionNodesPrivate
 			}
 			return EADSKNodeStatus::Running;
 		};
+		// The update only retargets after the target slot changed; the action's end arrives as a result.
+		Node.OnNextWake = [](FADSKNodeContext&) { return ADSK::NeverWake; };
 		return Node;
 	}
 }

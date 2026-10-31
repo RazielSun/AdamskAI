@@ -66,6 +66,26 @@ TEST_CLASS_WITH_FLAGS(FSourceValidationSpec, "AdamskAI.Host.Validation",
 		ASSERT_THAT(IsTrue(Oversize.Text.IsEmpty(), TEXT("the oversize text was kept")));
 		IFileManager::Get().DeleteDirectory(*Root, false, true);
 	}
+
+	TEST_METHOD(AFileWithANulByteDoesNotPassAsItsPrefix)
+	{
+		TArray<FString> Errors;
+		const TSharedPtr<const FADSKNodeRegistry> Registry = FADSKRegistryAssembly::BuildPluginCatalogue(Errors);
+		ASSERT_THAT(IsTrue(Registry.IsValid(), TEXT("the catalogue did not assemble: ") + FString::Join(Errors, TEXT("; "))));
+		const FString Root = FPaths::ProjectSavedDir() / TEXT("Automation/AdamskAI") / FGuid::NewGuid().ToString();
+		IFileManager::Get().MakeDirectory(*Root, true);
+		const FTCHARToUTF8 Valid(*ValidXml());
+		TArray<uint8> Bytes(reinterpret_cast<const uint8*>(Valid.Get()), Valid.Length());
+		Bytes.Add(0);
+		const char* Tail = "<invalid/>";
+		Bytes.Append(reinterpret_cast<const uint8*>(Tail), FCStringAnsi::Strlen(Tail));
+		FFileHelper::SaveArrayToFile(Bytes, *(Root / TEXT("nul.xml")));
+		const FADSKSourceReadResult Read = FADSKValidation::ReadSource(Root, TEXT("nul.xml"), Registry.ToSharedRef());
+		IFileManager::Get().DeleteDirectory(*Root, false, true);
+		ASSERT_THAT(IsFalse(Read.bReadFailed, TEXT("nul.xml was not read")));
+		ASSERT_THAT(IsFalse(Read.Result.IsSuccess(), TEXT("a file with a NUL byte compiled")));
+		ASSERT_THAT(AreEqual(1, Read.Result.Count(EADSKDiagnosticCode::XmlMalformed), ADSKTest::FormatDiagnostics(Read.Result)));
+	}
 };
 
 #endif

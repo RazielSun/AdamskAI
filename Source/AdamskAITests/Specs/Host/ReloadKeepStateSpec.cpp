@@ -163,6 +163,26 @@ TEST_CLASS_WITH_FLAGS(FReloadKeepStateSpec, "AdamskAI.Host.ReloadKeepState",
 		Brain->Cleanup();
 	}
 
+	TEST_METHOD(APausedBrainStaysPausedWithOrWithoutKeepingState)
+	{
+		for (const bool bKeep : {true, false})
+		{
+			FFixture F;
+			GetMutableDefault<UADSKSettings>()->bKeepStateOnReload = bKeep;
+			UADSKBrainComponent* Brain = F.StartBusyBrain();
+			Brain->PauseLogic(TEXT("test"));
+			F.Reload();
+			ASSERT_THAT(IsTrue(Brain->IsPaused(), FString::Printf(TEXT("keep state %d: the reload resumed the brain"), bKeep ? 1 : 0)));
+			const FString Before = Leaf(*Brain);
+			Brain->TickBrain(1000.f);
+			ASSERT_THAT(AreEqual(Before, Leaf(*Brain)));
+			ASSERT_THAT(IsTrue(Brain->IsPaused(), TEXT("a tick resumed the brain")));
+			Brain->ResumeLogic(TEXT("test"));
+			ASSERT_THAT(IsTrue(Brain->IsRunning() && !Brain->IsPaused(), Brain->GetLastError()));
+			Brain->Cleanup();
+		}
+	}
+
 	TEST_METHOD(AStoppedBrainStaysStopped)
 	{
 		FFixture F;

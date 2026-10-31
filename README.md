@@ -1,22 +1,28 @@
-# AdamskAI — executable text and Unreal host
+# AdamskAI
 
-Deterministic, XML-authored agent behavior for Unreal Engine 5.8: a strict compiler, a hierarchical state
-machine with procedure trees, a native node registry, a bounded recorder and a headless validator.
-MIT licensed ([LICENSE](LICENSE)). Version 0.5.0, beta: XML v1 is stable, the C++ API may still change; upgrading from 0.3 or 0.4: [docs/migration.md](docs/migration.md).
-Known gaps: [docs/limitations.md](docs/limitations.md). What is verified and what is left: [docs/dev/roadmap.md](docs/dev/roadmap.md).
-Changes: [CHANGELOG.md](CHANGELOG.md). Contributing: [CONTRIBUTING.md](CONTRIBUTING.md).
+**Agent behavior for Unreal Engine 5.8, written as text.** A statechart of modes with a behavior tree in each, authored
+in strict XML, checked headlessly before the game runs, reloaded while it plays and replayed exactly from a seed.
 
-## Try the demo
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Unreal Engine 5.8](https://img.shields.io/badge/Unreal_Engine-5.8-313131.svg)
+![Platforms](https://img.shields.io/badge/platforms-Linux_%7C_Win64-lightgrey.svg)
+![Version](https://img.shields.io/badge/version-0.5.0_beta-orange.svg)
 
-Open `Plugins/AdamskAI Content/Demo/Maps/L_AdskDemo` (Content Browser, *Show Plugin Content*), press Play and type
-`adsk.Demo Chase` in the console: guards that see, chase, remember and search, drawn with engine shapes. Seven scenes
-cover patrols, interrupts, squad calls, attack tokens, live reload and a 1000-brain fleet with its cost on screen:
-[docs/demo.md](docs/demo.md).
+- **Behavior is text.** It diffs, goes through review, merges, and a coding agent can write it from the node catalogue.
+- **Errors before Play.** A strict compiler and a headless validator report typos, unknown nodes, type mismatches,
+  holds and livelocks as `path:line` diagnostics, in a CI with no renderer.
+- **Exact replay.** Randomness is seeded per agent; a run replays from its seed, inputs and events, with a bounded trace.
+- **Live reload.** Save the XML while playing and every agent keeps the state it was in.
+- **Cheap at rest.** A brain that waits or walks sleeps until its wait ends or its move reports, like a Behavior Tree;
+  1000 brains cost about 0.1 ms per frame ([Measured](#measured)).
+
+Version 0.5.0, beta: XML v1 is stable, the C++ API may still change. Changes: [CHANGELOG.md](CHANGELOG.md); upgrading:
+[docs/migration.md](docs/migration.md); known gaps: [docs/limitations.md](docs/limitations.md).
 
 ## What a behavior looks like
 
-Modes are states that change on events; each leaf state runs a tree, a procedure that ends in success or failure.
-The host publishes facts (`Target`); the file decides. An excerpt of [Examples/hunt_actor.xml](Examples/hunt_actor.xml):
+Modes are states that change on events; each leaf state runs a tree that ends in success or failure. The host
+publishes facts (`Target`); the file decides. An excerpt of [Examples/hunt_actor.xml](Examples/hunt_actor.xml):
 
 ```xml
 <StateMachine id="mode" initial="search">
@@ -42,183 +48,96 @@ The host publishes facts (`Target`); the file decides. An excerpt of [Examples/h
 </Tree>
 ```
 
-A typo, an unknown node or a state that can loop forever is reported by a headless validator before the game runs,
-with `path:line` diagnostics; a run replays exactly from its seed, inputs and events.
+To see it run, open `Plugins/AdamskAI Content/Demo/Maps/L_AdskDemo` (Content Browser, *Show Plugin Content*), press
+Play and type `adsk.Demo Chase`. Seven scenes cover patrols, interrupts, squad calls, attack tokens, live reload and a
+1000-brain fleet with its cost on screen: [docs/demo.md](docs/demo.md).
 
-## AdamskAI, Behavior Trees or StateTree?
+## AdamskAI, Behavior Tree or StateTree?
 
 | | AdamskAI | Behavior Tree | StateTree |
 |---|---|---|---|
-| Authored as | XML text, diffable and reviewable, writable by a coding agent | graph asset | graph asset |
+| Authored as | XML text | graph asset | graph asset |
 | Structure | statechart of modes, a tree per leaf mode | one tree | states with tasks |
-| Checked | strict compiler and validator, headless so a CI can run it: references, types, holds and livelocks | in the editor | in the editor |
-| Replay | deterministic from seed, inputs and events; bounded trace | — | — |
-| Reload | the XML reloads while playing; native nodes need a restart | asset edit | asset edit |
+| Data | typed Inputs and Locals; events carry typed parameters | Blackboard | property bindings |
+| Reacting to a change | `change` events, `ReactiveSelector`, `OnCheck` | decorator aborts | transitions |
+| Concurrency | `Parallel` with success and failure policies, `SimpleParallel`, scopes | Simple Parallel | parallel tasks in a state |
+| Resume the mode it left | `history` | in code | in code |
+| Checked | compiler and validator, headless: references, types, holds, livelocks | in the editor | in the editor |
+| Debugging | deterministic replay, bounded trace, `adsk_simulate` scenarios | Visual Logger, BT debugger | Rewind Debugger |
+| Reload | XML while playing; native nodes need a restart | asset edit | asset edit |
 | Nodes in | C++ only, by design | C++ or Blueprint | C++ or Blueprint |
-| Pick it when | behavior should live in text, be tested like code and replay exactly | you want the editor graph and Blueprint tasks | you want Epic's supported state-based runtime with Blueprint tasks |
 
-Feature by feature and pattern by pattern, against these and BehaviorTree.CPP, py_trees, HFSM2 and SCXML:
-[docs/comparison.md](docs/comparison.md). The terms side by side: [docs/glossary.md](docs/glossary.md). Background
-reading: [docs/references.md](docs/references.md).
+**Where they are better.** Behavior Trees and StateTree have a visual editor and Blueprint nodes, are supported by
+Epic and plug into Mass, Smart Objects and Gameplay Interactions. AdamskAI has no graph editor (`adsk_graph` draws a
+read-only diagram), no parallel regions in the state machine and no montage node yet.
+
+Pick AdamskAI when behavior should live in text, be tested like code and replay exactly. Feature by feature and
+pattern by pattern, also against BehaviorTree.CPP, py_trees, HFSM2 and SCXML: [docs/comparison.md](docs/comparison.md).
+
+## Measured
+
+One behavior written three ways and run side by side (`Tools/adsk_bench.sh`): patrol (wait 1 s, wait 1 s) and alert
+(wait 0.25 s twice), switched by a host flag that flips every 1.5 s per agent, so about 14,000 branch entries in
+every system. 1000 agents over bare controllers, 600 frames, three runs. Linux, AMD Ryzen 7 8845HS, Development
+editor, `-nullrhi`, 2026-10-31.
+
+| Per agent and frame | µs |
+|---|---|
+| AdamskAI, brain ticking itself | 0.08–0.11 |
+| AdamskAI, managed pass | 0.09–0.15 |
+| Behavior Tree (`RunBehaviorTree`, Blackboard decorator aborting both ways) | 0.12–0.13 |
+| StateTree (StateTree component, event transitions, engine Delay) | 0.20–0.22 |
+
+The cores alone, ticked every frame with no world: AdamskAI 0.13–0.15 µs per tick, StateTree 1.31–1.48 µs. This
+behavior is mostly waiting, which is where sleeping pays; a behavior reacting to a value that changes every frame is
+not measured yet.
+
+| AdamskAI on its own | Result |
+|---|---|
+| Demo fleet, 1000 brains on the managed pass (Linux) | 0.13 ms per frame with recorders, 0.10 ms on workers without |
+| 200 agents walking with `MoveTo` (Linux) | 0.038 ms per frame for the brains |
+| Core tick, every frame (Win64) | 0.20 µs per agent with a 256-record recorder, 0.17 µs without |
+| `Start` / `Stop` (Win64) | 0.36 µs / 0.09 µs |
+| Compile a 200-line file (Win64) | 0.35 ms, once per file, shared by every agent |
+| Memory (Win64) | 5.75 KB per instance plus its node memory, allocated up front |
+
+Methods, every benchmark, ceilings and how to profile your own project: [docs/dev/perf.md](docs/dev/perf.md).
 
 ## Quick start
 
-1. Clone the repository into `<Project>/Plugins/AdamskAI/`
-   (`git clone https://github.com/RazielSun/AdamskAI.git Plugins/AdamskAI`, or add it as a submodule) and enable
-   `AdamskAI` in the `.uproject`.
+1. `git clone https://github.com/RazielSun/AdamskAI.git Plugins/AdamskAI` in your project (or add it as a submodule)
+   and enable `AdamskAI` in the `.uproject`.
 2. Add `AdamskAI` and `AdamskAIHost` to your game module's dependencies.
-3. Give your `AAIController` a `UADSKBrainComponent`, call `InitializeFromSource(TEXT("guard.xml"))`,
-   publish the file's required inputs with `SetInput`, then `StartLogic()` once and `TickBrain(DeltaTime)`
-   every controller tick ([docs/setup.md](docs/setup.md)).
-4. Write `Content/AI/guard.xml`, starting from [Examples/](Examples/README.md). The directory is the
-   `BehaviorRoot` project setting.
-5. Build the editor target, then check everything headlessly. Linux:
+3. Give your `AAIController` a `UADSKBrainComponent`, call `InitializeFromSource(TEXT("guard.xml"))`, publish the
+   file's required inputs with `SetInput`, then `StartLogic()` once and `TickBrain(DeltaTime)` every controller tick.
+4. Write `Content/AI/guard.xml`, starting from [Examples/](Examples/README.md).
+5. Build the editor, then check everything headlessly:
+   `Plugins/AdamskAI/Tools/adsk_all.sh` (Windows: `Tools\adsk_all_win64.ps1`).
 
-   ```bash
-   Plugins/AdamskAI/Tools/adsk_check.sh && Plugins/AdamskAI/Tools/adsk_validate.sh && Plugins/AdamskAI/Tools/adsk_test.sh
-   ```
+The whole setup, with the controller pattern: [docs/setup.md](docs/setup.md). Project nodes come from an
+`IADSKNodeProvider` in your module: [docs/authoring-nodes.md](docs/authoring-nodes.md).
 
-   Windows, from the project root with the editor closed (each Linux script has a `_win64.ps1` twin, plus
-   `adsk_build_win64.ps1` for the build; [docs/windows.md](docs/windows.md)):
+## Documentation
 
-   ```powershell
-   foreach ($s in 'adsk_build', 'adsk_check', 'adsk_validate', 'adsk_test') {
-     powershell -ExecutionPolicy Bypass -File "Plugins\AdamskAI\Tools\${s}_win64.ps1"; if ($LASTEXITCODE) { break } }
-   ```
+| To | Read |
+|---|---|
+| Deploy it into a project | [setup](docs/setup.md), then [Linux](docs/linux.md) or [Windows](docs/windows.md) |
+| Write behavior | [XML reference](docs/xml-reference.md), [node catalogue](docs/node-catalog.md), [style](docs/xml-style.md), [Examples](Examples/README.md) |
+| Do a whole task (new NPC, a fact or event, a project node, porting a BT or StateTree) | [recipes](docs/recipes/README.md) |
+| Understand the design and the guarantees | [concept](docs/concept.md), [semantics](docs/semantics.md), [runtime contract](docs/contract.md) |
+| Reload, debug, network | [reload](docs/reload.md), [debugging](docs/debugging.md), [networking](docs/networking.md) |
+| Avoid surprises | [gotchas](docs/gotchas.md), [limitations](docs/limitations.md), [glossary](docs/glossary.md) |
+| Work on the plugin | [testing](docs/dev/testing.md), [performance](docs/dev/perf.md), [roadmap](docs/dev/roadmap.md), [CONTRIBUTING](CONTRIBUTING.md) |
 
-6. If coding agents work in the project, add a line to its own `AGENTS.md` / `CLAUDE.md` pointing at
-   `Plugins/AdamskAI/AGENTS.md` ([docs/setup.md](docs/setup.md) step 8).
+**Coding agents** start at [AGENTS.md](AGENTS.md). In a project that uses the plugin, add a line to the project's own
+`AGENTS.md` / `CLAUDE.md` pointing at `Plugins/AdamskAI/AGENTS.md` so they find it.
 
-Native nodes come from an `IADSKNodeProvider` in your module ([docs/authoring-nodes.md](docs/authoring-nodes.md)).
-Coding agents start at [AGENTS.md](AGENTS.md).
+## Status
 
-## Overview
+Verified on Linux with UE 5.8.4: the build, the plugin alone in an empty project, about 650 automation tests and 60
+world tests. Win64 was verified on 0.4.0 and owes a re-run; Mac is not built. What is left:
+[docs/dev/roadmap.md](docs/dev/roadmap.md).
 
-The core `AdamskAI` module is a world-independent runtime for compiling strict XML v1 into an
-immutable AI program and executing it deterministically (text, HSM, procedure and trace semantics).
-It has no actor, movement, perception, file or reload code; those live in `AdamskAIHost`, described
-in the last section. Unproved boundaries: feel, animation quality, cover/EQS, cooked-build reload
-and packaged execution.
+## License
 
-## Ownership and lifetime
-
-`FADSKNodeRegistry` owns native descriptors and callbacks. Registration is exact-case; freeze is
-permanent. `FADSKDefinition` retains its frozen registry and owns immutable linked tables.
-`FADSKInstance` retains one definition and owns all per-agent values, queues, HSM state and node
-memory. An optional `FADSKRecorder` is write-only from execution and cannot affect a decision. Give each
-instance its own: records carry no instance, so a shared ring mixes agents, and `FADSKParallelTick` ticks
-the instances after the first on a shared recorder on the game thread.
-
-Instances and recorders are game-thread-only. Destroy every instance, definition and non-default
-registry before unloading code that supplied registry callbacks; retained `TFunction` callbacks
-may otherwise point into an unloaded module. Normal packaged runtime modules do not unload.
-
-## XML v1
-
-One `Agent` contains optional `Enums`, `Inputs`, `Locals`, `Sensors` and `Events`, exactly one `StateMachine`, then
-zero or more `Tree` elements. Names are case-sensitive. States are hierarchical and leaf states
-may name one tree. `On` handles a declared event or `tree.success` / `tree.failure`; missing
-`goto` is internal. `Bind` copies a named event parameter to a same-typed Local. A handler may be taken with a
-`chance`, a parent state may `select` the child it enters by score or weighted at random
-([docs/xml-reference.md](docs/xml-reference.md#state-selection)) and resume the child it left with `history`. When
-each thing happens in a tick: [docs/semantics.md](docs/semantics.md).
-
-```xml
-<Agent version="1" id="patrol">
-  <Inputs>
-    <Input name="Goal" type="Vector" required="true"/>
-    <Input name="Enabled" type="Bool" default="true"/>
-  </Inputs>
-  <Events><Event name="Go" priority="10"/></Events>
-  <StateMachine id="mode" initial="idle">
-    <State id="idle" tree="patrol"><On event="tree.success" goto="idle"/></State>
-  </StateMachine>
-  <Tree id="patrol">
-    <Guard id="enabled" in-condition="Enabled">
-      <Sequence id="route">
-        <MoveTo id="move" in-goal="Goal" acceptanceRadius="50"/>
-        <Wait id="pause" duration="1"/>
-      </Sequence>
-    </Guard>
-  </Tree>
-</Agent>
-```
-
-`in-<port>` and `out-<port>` bind descriptor ports to slots. Other node attributes must be
-explicit descriptor configuration fields, such as `duration` and `acceptanceRadius`; port
-bindings are never literals. Inputs are host-written, by the controller or by the file's declared sensors. Tree
-node outputs and transition binds may write Locals only. Supported values are `Bool`, `Float`, `Int`, `Vector`, `Object` (an actor the host resolves) and definition-scoped enums (Inputs, Locals, event and tree parameters). `MoveTo` in the example is a
-host-registered exact-case descriptor; the core supplies 16 nodes (`Sequence`, `Selector`, `Guard`, `Wait`, `Emit`, `Roll`, `Chance`, `SimpleParallel` and the decorators and selectors listed in [docs/node-catalog.md](docs/node-catalog.md)); `Run` is compile-time syntax.
-
-Parsing uses bundled Expat as a private syntax boundary. DTD, processing instructions, CDATA,
-non-whitespace text, unknown syntax and external entities are rejected. Validation then rejects
-unknown names, bad arity/types/references and duplicate IDs/transitions. Diagnostics contain
-stable code, severity, source, line and authored node ID. Any error yields no definition;
-warnings may accompany one.
-
-Bounds: 256 KiB UTF-8 source, 1024 XML elements, tree depth 16, state depth 8 and 64 states.
-
-## Execution contract
-
-Set required inputs before `Start`. Inputs persist across `Stop`; Locals and all execution state
-reset at each successful start. Missing required inputs fail atomically without entering states.
-Active input writes coalesce by slot and apply on the next valid tick.
-
-Each finite non-negative tick performs, in order:
-
-1. apply inputs in slot order;
-2. classify queued action results in enqueue order;
-3. dispatch at most 16 ready events by priority, then enqueue sequence;
-4. resume or update the active leaf procedure;
-5. start at most 64 procedure nodes across all phases.
-
-External and result queues each accept 64 entries and reject the newest overflow. A deferred
-procedure start resumes next tick with zero delta. Wait consumes supplied simulation delta only.
-Node `Start` is paired with exactly one `End`; immediate failure after
-`MarkPartiallyEntered()` ends as `PartialEntry`, while interruption ends deepest-first as
-`Cancelled`. Action handles are generation-scoped; duplicate and stale results are classified
-during tick, never in the posting call. Within the documented generation range, a brain does not
-reuse an activation handle across replacement.
-
-Event handlers are searched active leaf to root. Internal transitions bind only. External
-transitions cancel the procedure, exit deepest-first through the transition domain, enter the
-target path ancestor-first, follow initial children and start the new leaf procedure. A scoped
-tree completion becomes eligible next tick; an obsolete state token makes it stale. Unhandled
-completion enters Hold once, and a later external transition escapes it.
-
-## Recorder, compatibility and rollback
-
-Recorder storage is bounded. Overflow is represented by one oldest `Gap` whose `LostCount`
-equals all records it replaces; newest records remain. Recorder absence, capacity and overflow
-never enter runtime branches.
-
-Tests live in this plugin: the `AdamskAITests` `DeveloperTool` module
-(`Source/AdamskAITests/Specs/<Area>/`, shared non-registering helpers in `Specs/Support`) registers
-`AdamskAI.<Area>.*`. Run them with `Tools/adsk_test.sh` (Windows: `adsk_test_win64.ps1`), which hands
-over to the host project's own test runner when it has one (`--standalone` forces the plugin's runner).
-Game test modules need not link this plugin.
-
-The core module's public headers expose Core/CoreUObject types only. Its dependencies are public `Core`
-and `CoreUObject`, private `Expat` and `Json`; it has no game, Engine, AIModule, StateTree or editor
-dependency. XML v1 and the public enums are the compatibility boundary. The plugin owns no assets or
-saved data, so removing it means disabling it, deleting the game module's `AdamskAI`/`AdamskAIHost`
-dependencies and the code that hosts brains; the behavior files under `Content/AI/` become inert text.
-
-## Host, debug, editor module, examples and documentation
-
-The core module above stays Engine-free, and no module depends on a plugin outside the engine.
-`AdamskAIHost` (Runtime) adds the Unreal host: provider-assembled registry, world subsystem, brain
-component and the host nodes (`MoveTo`, `LookAt`, `RunEQS`, the scopes `Focus` and `MoveSpeed`, `Act` through
-`IADSKActionPerformer`, and `HoldToken` and `Radio` on the group service), the host sensors (`Distance`,
-`LineOfSight`, `Grounded`, `PlayerPawn`, `GroupTarget`) and the group service. `AdamskAIDebug` (Runtime, denied Shipping/Test) adds the
-Gameplay Debugger category and world labels; see [live debugging](docs/debugging.md). `AdamskAIEditor` (Editor)
-adds the headless `AdamskAIValidate` commandlet, the fixture runner and the behavior-root watcher. Agent-facing guidance lives in [AGENTS.md](AGENTS.md)
-and [docs/](docs/): [concept](docs/concept.md), [setup](docs/setup.md), [XML reference](docs/xml-reference.md), the generated
-[node catalogue](docs/node-catalog.md), [XML style](docs/xml-style.md), [authoring nodes](docs/authoring-nodes.md),
-[reload](docs/reload.md), [testing](docs/dev/testing.md), [Linux](docs/linux.md), [Windows](docs/windows.md), [gotchas](docs/gotchas.md), [glossary](docs/glossary.md), [references](docs/references.md), [roadmap](docs/dev/roadmap.md)
-and [limitations](docs/limitations.md).
-
-[Examples/](Examples/README.md) are valid files; [Fixtures/](Fixtures/) holds one exact invalid case per
-diagnostic code and limit. `adsk_check`, `adsk_validate` and `adsk_test` check all of it without a renderer
-or client; `adsk_strict_includes`, `adsk_host_check` (Linux) and `adsk_buildplugin_win64` (Windows) prove
-portability. Every script is in `Tools/`, as `.sh` for Linux and `_win64.ps1` for Windows ([testing](docs/dev/testing.md)).
+MIT, see [LICENSE](LICENSE). Issues and pull requests: [CONTRIBUTING.md](CONTRIBUTING.md).

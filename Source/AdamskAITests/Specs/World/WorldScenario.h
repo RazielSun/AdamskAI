@@ -12,6 +12,7 @@
 #include "Misc/PackageName.h"
 #include "NavigationSystem.h"
 #include "Objects/ADSKObjectHandles.h"
+#include "Settings/ADSKSettings.h"
 #include "Sources/ADSKBehaviorRoots.h"
 #include "Support/TempTree.h"
 #include "Support/TestChecks.h"
@@ -100,6 +101,19 @@ struct FADSKWorldAgentOptions
 	int32 RandomSeed = 0;
 	/** False: initialize only, the test sets more and calls StartLogic. */
 	bool bStart = true;
+};
+
+/**
+ * Holds UADSKSettings::bSleepWhenIdle at a value for a test's life: tests of the tick machinery count ticks, and a
+ * sleeping brain skips them.
+ */
+struct FADSKScopedSleepSetting
+{
+	bool bSaved = GetDefault<UADSKSettings>()->bSleepWhenIdle;
+	explicit FADSKScopedSleepSetting(bool bSleep) { GetMutableDefault<UADSKSettings>()->bSleepWhenIdle = bSleep; }
+	~FADSKScopedSleepSetting() { GetMutableDefault<UADSKSettings>()->bSleepWhenIdle = bSaved; }
+	FADSKScopedSleepSetting(const FADSKScopedSleepSetting&) = delete;
+	FADSKScopedSleepSetting& operator=(const FADSKScopedSleepSetting&) = delete;
 };
 
 /**

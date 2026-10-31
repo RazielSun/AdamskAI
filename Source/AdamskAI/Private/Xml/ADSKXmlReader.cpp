@@ -171,7 +171,8 @@ const FString* FADSKXmlElement::FindAttribute(FStringView AttributeName) const
 bool ADSKXml::Read(const FString& SourceName, const FString& Text, FADSKXmlDocument& OutDocument,
 	TArray<FADSKDiagnostic>& OutDiagnostics)
 {
-	const FTCHARToUTF8 Utf8(*Text);
+	// With the length: an embedded NUL must reach the parser (which rejects it), not end the source early.
+	const FTCHARToUTF8 Utf8(*Text, Text.Len());
 	FReadState State;
 	State.SourceName = &SourceName;
 	State.Document = &OutDocument;

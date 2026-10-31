@@ -7,6 +7,7 @@
 #include "UObject/StrongObjectPtr.h"
 #include "Sources/ADSKValidation.h"
 #include "Brain/ADSKBrainRegistry.h"
+#include "Core/ADSKTypes.h"
 #include "Brain/ADSKManagedTicker.h"
 #include "Tasks/Task.h"
 #include "ADSKWorldSubsystem.generated.h"
@@ -98,7 +99,7 @@ private:
 		/** Objects the Active / Pending definition references through ObjectPath fields. */
 		TArray<TStrongObjectPtr<UObject>> ActiveRefs;
 		TArray<TStrongObjectPtr<UObject>> PendingRefs;
-		TSet<FString> WarnedMissing;
+		FADSKExactStringSet WarnedMissing;
 		TSharedPtr<FPrewarm> Prewarm;
 		/**
 		 * An asynchronous reload's compile; whether another asynchronous request arrived while it ran (it compiles
@@ -121,7 +122,8 @@ private:
 	TSharedPtr<const FADSKNodeRegistry> GetRegistry(FString& OutError) const;
 	void OnWorldPreActorTick(UWorld* World, ELevelTick TickType, float DeltaSeconds);
 
-	TMap<FString, FSourceRecord> Sources;
+	/** By exact-case path: on Linux `Guard.xml` and `guard.xml` are two files. */
+	TADSKExactMap<FSourceRecord> Sources;
 	FADSKBrainRegistry BrainRegistry;
 	FADSKManagedTicker ManagedTicker;
 	TSharedPtr<IADSKHostServices> HostServices;

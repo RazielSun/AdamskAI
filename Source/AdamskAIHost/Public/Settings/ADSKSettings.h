@@ -52,6 +52,14 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Tick")
 	bool bParallelManagedTick = false;
 
+	/**
+	 * Brains skip ticks while nothing is due (a Wait running, a hold) and get the skipped time in the tick that wakes
+	 * them, as Behavior Trees and StateTrees do; an input, event or async result wakes one at once
+	 * (UADSKBrainComponent::IsAsleep). Off ticks every running brain every frame (or at its managed rate).
+	 */
+	UPROPERTY(Config, EditAnywhere, Category = "Tick")
+	bool bSleepWhenIdle = true;
+
 	static float GetTickInterval(double Distance);
 
 	/** Tokens per target of each `HoldToken` pool, by pool name: at most this many agents hold one on the same target. A pool not named here has 1. */

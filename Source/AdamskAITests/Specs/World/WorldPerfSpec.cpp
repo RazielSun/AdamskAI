@@ -33,6 +33,8 @@ TEST_CLASS_WITH_FLAGS(FWorldPerfSpec, "AdamskAIWorld.Perf",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
 {
 	FADSKWorldScenario Scenario;
+	/** Counts ticks against the baselines measured before sleep, so every brain ticks every frame. Made in BEFORE_EACH: a member would outlive UObjects at exit. */
+	TUniquePtr<FADSKScopedSleepSetting> AwakeBrains;
 	TArray<FADSKWorldAgent> Fleet;
 	uint64 FrameMark = 0;
 	double StartSeconds = 0.0;
@@ -42,6 +44,7 @@ TEST_CLASS_WITH_FLAGS(FWorldPerfSpec, "AdamskAIWorld.Perf",
 
 	BEFORE_EACH()
 	{
+		AwakeBrains = MakeUnique<FADSKScopedSleepSetting>(false);
 		bSavedParallel = GetDefault<UADSKSettings>()->bParallelManagedTick;
 		SavedLOD = GetDefault<UADSKSettings>()->TickLOD;
 		Scenario.Start(TestRunner);
@@ -49,6 +52,7 @@ TEST_CLASS_WITH_FLAGS(FWorldPerfSpec, "AdamskAIWorld.Perf",
 
 	AFTER_EACH()
 	{
+		AwakeBrains.Reset();
 		Services.Reset();
 		GetMutableDefault<UADSKSettings>()->bParallelManagedTick = bSavedParallel;
 		GetMutableDefault<UADSKSettings>()->TickLOD = SavedLOD;
@@ -73,11 +77,13 @@ TEST_CLASS_WITH_FLAGS(FWorldPerfSpec, "AdamskAIWorld.Perf",
 
 	/**
 	 * Without TickLOD every brain ticks every frame, the most work the pass can do. With it, a viewer crossing the
-	 * fleet leaves most brains on the slower levels: the pass's share when distance does its job.
+	 * fleet leaves most brains on the slower levels: the pass's share when distance does its job. With bSleep each
+	 * brain sleeps while its MoveTo runs and wakes for the result (bSleepWhenIdle, the default).
 	 */
-	void MeasureFleet(const TCHAR* Name, bool bTickLOD)
+	void MeasureFleet(const TCHAR* Name, bool bTickLOD, bool bSleep = false)
 	{
 		GetMutableDefault<UADSKSettings>()->bParallelManagedTick = true;
+		GetMutableDefault<UADSKSettings>()->bSleepWhenIdle = bSleep;
 		GetMutableDefault<UADSKSettings>()->TickLOD = bTickLOD ? TArray<FADSKTickLODLevel>{{1000.f, 0.2f}, {2000.f, 0.5f}} : TArray<FADSKTickLODLevel>();
 		const FString Test = FString(TEXT("AdamskAIWorld.Perf.")) + Name;
 		TestCommandBuilder
@@ -116,7 +122,7 @@ TEST_CLASS_WITH_FLAGS(FWorldPerfSpec, "AdamskAIWorld.Perf",
 				MoveViewer();
 				return GFrameCounter - FrameMark >= MeasuredFrames;
 			}, Timeout)
-			.Then(TEXT("write the numbers"), [this, bTickLOD, Test]
+			.Then(TEXT("write the numbers"), [this, bTickLOD, bSleep, Test]
 			{
 				const double Seconds = FPlatformTime::Seconds() - StartSeconds;
 				const uint64 Frames = GFrameCounter - FrameMark;
@@ -130,14 +136,19 @@ TEST_CLASS_WITH_FLAGS(FWorldPerfSpec, "AdamskAIWorld.Perf",
 				const double TickShare = double(Ticks) / (double(Fleet.Num()) * double(Frames));
 				const FString Json = FString::Printf(TEXT("{\"test\":\"%s\",\"agents\":%d,\"frames\":%llu,\"frame_ms\":%.3f,")
 					TEXT("\"brain_pass_ms\":%.3f,\"brain_share_of_frame\":%.3f,\"brain_ticks\":%llu,\"brain_ticks_per_agent_frame\":%.3f,\"parallel_ticks\":%llu,\"serial_ticks\":%llu,")
-					TEXT("\"moving_at_end\":%d,\"tick_lod\":%s,\"parallel_managed_tick_setting\":true,\"rhi\":\"null\"}\n"),
+					TEXT("\"moving_at_end\":%d,\"tick_lod\":%s,\"sleep\":%s,\"parallel_managed_tick_setting\":true,\"rhi\":\"null\"}\n"),
 					*Test, Fleet.Num(), Frames, FrameMs, PassMs, FrameMs > 0.0 ? PassMs / FrameMs : 0.0, Ticks, TickShare, Pass.ParallelTicks,
-					Pass.BrainTicks - Pass.ParallelTicks, Moving, bTickLOD ? TEXT("true") : TEXT("false"));
+					Pass.BrainTicks - Pass.ParallelTicks, Moving, bTickLOD ? TEXT("true") : TEXT("false"), bSleep ? TEXT("true") : TEXT("false"));
 				const FString Path = FPaths::ProjectSavedDir() / TEXT("AdamskAI/perf") / (Test + TEXT(".json"));
 				ASSERT_THAT(IsTrue(FFileHelper::SaveStringToFile(Json, *Path, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM), TEXT("cannot write ") + Path));
 				TestRunner->AddInfo(FString::Printf(TEXT("%d agents: %.2f ms per frame over %llu frames, brain pass %.3f ms, %llu brain ticks (%.2f per agent frame, %llu on workers)"),
 					Fleet.Num(), FrameMs, Frames, PassMs, Ticks, TickShare, Pass.ParallelTicks));
-				if (bTickLOD)
+				if (bSleep)
+				{
+					// A brain ticks when its move ends and once more for the completion, not every frame.
+					ASSERT_THAT(IsTrue(TickShare < 0.25, FString::Printf(TEXT("%.2f brain ticks per agent frame asleep"), TickShare)));
+				}
+				else if (bTickLOD)
 				{
 					// Distance did its job: far brains ticked less, but every one ticked, at least once per slowest interval.
 					ASSERT_THAT(IsTrue(TickShare < 0.75, FString::Printf(TEXT("%.2f brain ticks per agent frame with TickLOD"), TickShare)));
@@ -162,6 +173,12 @@ TEST_CLASS_WITH_FLAGS(FWorldPerfSpec, "AdamskAIWorld.Perf",
 	{
 		if (!Scenario.IsOpen()) return;
 		MeasureFleet(TEXT("ShuttlingFleetTickLOD"), true);
+	}
+
+	TEST_METHOD(ShuttlingFleetSleeping)
+	{
+		if (!Scenario.IsOpen()) return;
+		MeasureFleet(TEXT("ShuttlingFleetSleeping"), false, true);
 	}
 };
 

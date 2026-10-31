@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Containers/Ticker.h"
+#include "Core/ADSKTypes.h"
 #include "CoreMinimal.h"
 
 struct FFileChangeData;
@@ -39,11 +40,11 @@ private:
 	/** Roots that did not exist when watched; their handles stay unset. */
 	TArray<FWatch> Missing;
 	double LastMissingCheck = 0.0;
-	TSet<FString> Pending;
+	FADSKExactStringSet Pending;
 	double FirstChange = 0.0;
 	double LastChange = 0.0;
 	FDelegateHandle MountsHandle;
 	FTSTicker::FDelegateHandle TickerHandle;
 	IDirectoryWatcher* Watcher = nullptr;
-	TSet<FString> Warned;
+	FADSKExactStringSet Warned;
 };

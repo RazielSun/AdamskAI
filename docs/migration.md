@@ -330,3 +330,31 @@ plugin catalogue fingerprint changes because `Radio` now takes arguments):
   needs the case. Its config and memory are `FADSKParallelConfig` and `FADSKParallelMemory`, and
   `ADSK::ParallelThreshold` turns a policy into a child count.
 - `FADSKInstance::GetActiveNodes` reports the `Parallel` node for its own lane and each running child for its lane.
+
+## After 0.5.0
+
+2026-10-31, the review fixes (no XML change):
+
+- `UADSKWorldSubsystem::CommitPendingReloads` publishes the definition before stopping the brains, skips a brain whose
+  instance or file a stop callback changed (`UADSKBrainComponent::GetInstanceSerial`, new), and pauses again a brain
+  that was paused.
+- `UADSKBrainComponent` keeps generations rising across `Cleanup` and re-initialization, so an old
+  `FADSKAsyncTicket` completes as `Stale`.
+- `UADSKGroupSubsystem::TakeToken` counts takes per holder; each take needs a `ReturnToken`, and a holder keeps its
+  token until the last one. Code that took a token twice and returned it once now still holds it.
+- Path keys are exact-case: `TADSKExactMap`, `FADSKExactStringSet` and their key functions are in `Core/ADSKTypes.h`
+  (they replace the host's `TADSKExactNameKeyFuncs`). A project that acquired `Guard.xml` as `guard.xml` on a
+  case-sensitive file system now gets a missing file.
+- `ADSKXml::Read` passes the whole string to the parser; a NUL inside it is `xml-malformed` at its line.
+
+2026-10-31, brains sleep (no XML change; on by default):
+
+- `UADSKSettings::bSleepWhenIdle` (default `true`): a brain skips ticks until `FADSKInstance::GetNextWake` and gets
+  the skipped time in one tick. Code that counted ticks (`GetTickCount`, `OnPreTick` without a handler bound) sees
+  fewer; a test of the tick itself sets the setting to `false`. An auto-ticking brain changes its component's tick
+  interval and disables its tick in a hold.
+- New: `FADSKInstance::GetNextWake`, `FADSKInstance::SetQueueListener`, `FADSKNodeDescriptor::OnNextWake`,
+  `FADSKNextWakeFn`, `ADSK::NeverWake`, `UADSKBrainComponent::IsAsleep`. `Wait`, `TimeLimit`, `Cooldown`, `MoveTo`
+  and `Act` answer `OnNextWake`; any other node with `OnUpdate`, project nodes included, keeps its brain awake while
+  it runs, as before.
+- A brain never sleeps while `OnPreTick` is bound or its file declares sensors.

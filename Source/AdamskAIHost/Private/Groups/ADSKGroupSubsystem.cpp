@@ -120,12 +120,16 @@ UADSKBrainComponent* UADSKGroupSubsystem::FindBrain(const AActor* Actor)
 bool UADSKGroupSubsystem::TakeToken(FName Pool, const AActor* Target, const UObject& Holder)
 {
 	check(IsInGameThread());
-	TArray<TWeakObjectPtr<const UObject>>& Holders = Tokens.FindOrAdd(FTokenKey(Pool, Target));
+	TArray<FTokenHolder>& Holders = Tokens.FindOrAdd(FTokenKey(Pool, Target));
 	// A holder destroyed without returning its token must not keep it.
-	Holders.RemoveAll([](const TWeakObjectPtr<const UObject>& Each) { return !Each.IsValid(); });
-	if (Holders.Contains(&Holder)) { return true; }
+	Holders.RemoveAll([](const FTokenHolder& Each) { return !Each.Holder.IsValid(); });
+	if (FTokenHolder* Own = Holders.FindByPredicate([&Holder](const FTokenHolder& Each) { return Each.Holder.Get() == &Holder; }))
+	{
+		++Own->Takes;
+		return true;
+	}
 	if (Holders.Num() >= GetPoolSize(Pool)) { return false; }
-	Holders.Add(&Holder);
+	Holders.Add({&Holder, 1});
 	return true;
 }
 
@@ -133,17 +137,17 @@ void UADSKGroupSubsystem::ReturnToken(FName Pool, const AActor* Target, const UO
 {
 	check(IsInGameThread());
 	const FTokenKey Key(Pool, Target);
-	if (TArray<TWeakObjectPtr<const UObject>>* Holders = Tokens.Find(Key))
+	if (TArray<FTokenHolder>* Holders = Tokens.Find(Key))
 	{
-		Holders->RemoveAll([&Holder](const TWeakObjectPtr<const UObject>& Each) { return !Each.IsValid() || Each.Get() == &Holder; });
+		Holders->RemoveAll([&Holder](FTokenHolder& Each) { return !Each.Holder.IsValid() || (Each.Holder.Get() == &Holder && --Each.Takes <= 0); });
 		if (Holders->IsEmpty()) { Tokens.Remove(Key); }
 	}
 }
 
 int32 UADSKGroupSubsystem::CountHolders(FName Pool, const AActor* Target) const
 {
-	const TArray<TWeakObjectPtr<const UObject>>* Holders = Tokens.Find(FTokenKey(Pool, Target));
-	return Holders ? Algo::CountIf(*Holders, [](const TWeakObjectPtr<const UObject>& Each) { return Each.IsValid(); }) : 0;
+	const TArray<FTokenHolder>* Holders = Tokens.Find(FTokenKey(Pool, Target));
+	return Holders ? Algo::CountIf(*Holders, [](const FTokenHolder& Each) { return Each.Holder.IsValid(); }) : 0;
 }
 
 int32 UADSKGroupSubsystem::GetPoolSize(FName Pool)

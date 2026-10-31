@@ -104,6 +104,17 @@ TEST_CLASS_WITH_FLAGS(FReaderAcceptedSpec, "AdamskAI.Reader.Accepted",
 TEST_CLASS_WITH_FLAGS(FReaderRejectedSpec, "AdamskAI.Reader.Rejected",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
 {
+	TEST_METHOD(AnEmbeddedNulIsRejectedNotTheEndOfTheSource)
+	{
+		// FString::AppendChar drops a NUL, so the marker character is replaced in place.
+		FString Text = FString(MinimalAgent) + TEXT("\n#<invalid/>");
+		int32 Marker = INDEX_NONE;
+		Text.FindLastChar(TEXT('#'), Marker);
+		Text[Marker] = TEXT('\0');
+		ASSERT_THAT(AreEqual(FCString::Strlen(MinimalAgent) + 12, Text.Len()));
+		ADSK_ASSERT(IsMalformedAt(Text, 2));
+	}
+
 	TEST_METHOD(ExpatRejectsMalformedStructure)
 	{
 		ADSK_ASSERT(IsMalformedAt(TEXT(""), 1));

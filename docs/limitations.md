@@ -37,9 +37,11 @@ What AdamskAI does not do today, stated so nobody has to discover it.
   plugin does not write snapshots to disk ([reload.md](reload.md)).
 - **No Blueprint, by decision.** Behavior is authored in XML and nodes in C++; there will be no Blueprint API,
   Blueprint-authored nodes or visual graph editor. Requests for one are out of scope, not backlog.
-- **No demo content.**
+- **The demo is for the editor and PIE** ([demo.md](demo.md)): its module is left out of Shipping and Test builds and
+  its behavior files are not staged.
 - **Cooked builds have no live reload**, and a packaged build must stage the behavior root itself
-  ([setup.md](setup.md)). No packaged run has been executed.
+  ([setup.md](setup.md)). Packaged Development and Shipping runs were made on Win64 for 0.4.0; the current tree owes
+  that run again ([dev/roadmap.md](dev/roadmap.md)).
 - **Platforms.** Built and tested with UE 5.8 on Linux for 0.5; on Win64 for 0.4 (a re-run is owed). Mac has not been compiled (no Mac here to build on). The headless
   scripts exist as bash (`Tools/<name>.sh`, Linux) and PowerShell (`Tools\<name>_win64.ps1`, Windows);
   `adsk_host_check` is Linux-only and `adsk_build_win64`/`adsk_buildplugin_win64` are Windows-only. Open verification items: [roadmap.md](dev/roadmap.md).

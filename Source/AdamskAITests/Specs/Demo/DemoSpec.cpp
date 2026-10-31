@@ -430,8 +430,8 @@ TEST_CLASS_WITH_FLAGS(FDemoFleetSpec, "AdamskAIWorld.Demo.Fleet",
 				const FString Path = FPaths::ProjectSavedDir() / TEXT("AdamskAI/perf") / FString::Printf(TEXT("%s.json"), Name);
 				ASSERT_THAT(IsTrue(FFileHelper::SaveStringToFile(Json, *Path, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM), *Path));
 				TestRunner->AddInfo(Json);
-				// Every brain ticks every frame (no LOD), and none stopped.
-				ASSERT_THAT(IsTrue(TicksPerBrainFrame > 0.95, *Json));
+				// Brains sleep through their waits (bSleepWhenIdle), so they tick less than every frame; none stopped.
+				ASSERT_THAT(IsTrue(Pass.BrainTicks > 0, *Json));
 				for (const AADSKDemoDot* Dot : Scenario.Demo().GetDots()) { ASSERT_THAT(IsTrue(Dot->Brain->IsADSKRunning())); }
 				if (Options.bParallel) { ASSERT_THAT(IsTrue(Pass.ParallelTicks > 0, TEXT("a core-only fleet did not tick on workers"))); }
 				Scenario.Demo().Clear();

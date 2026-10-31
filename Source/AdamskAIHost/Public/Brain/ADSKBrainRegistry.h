@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Core/ADSKTypes.h"
 #include "CoreMinimal.h"
 #include "UObject/WeakObjectPtr.h"
 #include "UObject/WeakObjectPtrTemplates.h"
@@ -21,5 +22,5 @@ public:
 	TArray<UADSKBrainComponent*> GetAll() const;
 
 private:
-	TMap<FString, TArray<TWeakObjectPtr<UADSKBrainComponent>>> BySource;
+	TADSKExactMap<TArray<TWeakObjectPtr<UADSKBrainComponent>>> BySource;
 };

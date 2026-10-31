@@ -27,6 +27,7 @@ namespace FAsyncLeafSpecPrivate
 	{
 		TSharedRef<FHooks> Hooks = MakeShared<FHooks>();
 		UADSKBrainComponent* Brain = nullptr;
+		TSharedPtr<const FADSKDefinition> Definition;
 
 		FRuntime()
 		{
@@ -48,12 +49,12 @@ namespace FAsyncLeafSpecPrivate
 			});
 			ADSKTest::Register(*Registry, MoveTemp(Fetch));
 			Registry->Freeze();
-			const TSharedRef<const FADSKDefinition> Definition = ADSKTest::LoadOrStandIn(TEXT("async_leaf.xml"),
+			Definition = ADSKTest::LoadOrStandIn(TEXT("async_leaf.xml"),
 				TEXT("<Agent version=\"1\" id=\"a\"><Locals><Local name=\"L\" type=\"Int\"/></Locals><StateMachine id=\"m\" initial=\"s\"><State id=\"s\" tree=\"t\"/></StateMachine>")
 				TEXT("<Tree id=\"t\"><Sequence id=\"q\"><Fetch id=\"f\" out-value=\"L\"/><Wait id=\"w\" duration=\"100\"/></Sequence></Tree></Agent>"), Registry);
 			Brain = NewObject<UADSKBrainComponent>();
 			Brain->AddToRoot();
-			Brain->InitializeDefinition(Definition);
+			Brain->InitializeDefinition(Definition.ToSharedRef());
 		}
 
 		~FRuntime()
@@ -91,6 +92,24 @@ TEST_CLASS_WITH_FLAGS(FAsyncLeafSpec, "AdamskAI.Host.AsyncLeaf",
 		ASSERT_THAT(AreEqual(0, Runtime.Hooks->CancelsBeforeBeforeEnd));
 		ASSERT_THAT(AreEqual(1, Runtime.Hooks->Cancels));
 		ASSERT_THAT(AreEqual(EADSKAsyncCompletion::Stale, Runtime.Hooks->Ticket->Complete(EADSKNodeStatus::Succeeded)));
+	}
+
+	TEST_METHOD(ATicketFromBeforeCleanupCannotCompleteTheNextLifetimesLeaf)
+	{
+		FRuntime Runtime;
+		Runtime.Brain->StartLogic();
+		const FADSKAsyncTicket Old = Runtime.Hooks->Ticket.GetValue();
+		Runtime.Brain->Cleanup();
+		Runtime.Brain->InitializeDefinition(Runtime.Definition.ToSharedRef());
+		Runtime.Brain->StartLogic();
+		ASSERT_THAT(IsTrue(Runtime.Brain->IsRunning(), Runtime.Brain->GetLastError()));
+		const int32 CancelsBefore = Runtime.Hooks->Cancels;
+		ASSERT_THAT(AreEqual(EADSKAsyncCompletion::Stale, Old.Complete(EADSKNodeStatus::Succeeded, FADSKValue::MakeInt(7))));
+		Runtime.Brain->TickBrain(0.1f);
+		FADSKValue Value;
+		ASSERT_THAT(IsTrue(Runtime.Brain->GetInstance()->GetValue(TEXT("L"), Value), TEXT("no slot L")));
+		ASSERT_THAT(AreEqual(0, Value.Int));
+		ASSERT_THAT(AreEqual(CancelsBefore, Runtime.Hooks->Cancels));
 	}
 
 	TEST_METHOD(AnUnhandledCompletionWarnsOncePerHold)

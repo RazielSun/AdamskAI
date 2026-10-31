@@ -1,0 +1,25 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.5.0",
+	"FriendlyName": "AdamskAI Bench",
+	"Description": "Measures one behavior written three ways: an AdamskAI file, a Behavior Tree and a StateTree. Not for shipping; Tools/adsk_bench.sh runs it in a temporary host.",
+	"Category": "AI",
+	"CreatedBy": "Aleksandr Kardakov",
+	"CreatedByURL": "https://github.com/RazielSun",
+	"CanContainContent": false,
+	"IsBetaVersion": true,
+	"Modules": [
+		{
+			"Name": "AdamskAIBench",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{ "Name": "AdamskAI", "Enabled": true },
+		{ "Name": "StateTree", "Enabled": true },
+		{ "Name": "GameplayStateTree", "Enabled": true },
+		{ "Name": "CQTest", "Enabled": true }
+	]
+}

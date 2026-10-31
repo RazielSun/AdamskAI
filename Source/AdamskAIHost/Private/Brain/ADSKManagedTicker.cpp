@@ -54,13 +54,17 @@ void FADSKManagedTicker::TickPass(float Delta, TConstArrayView<FVector> Viewers)
 
 	// First decide, calling nothing that could change the set; a brain added by a tick below waits for the next pass.
 	DueScratch.Reset();
+	// Without LOD levels every distance gives the full rate, so no distance is measured.
+	const bool bDistanceRates = !Viewers.IsEmpty() && !GetDefault<UADSKSettings>()->TickLOD.IsEmpty();
 	for (int32 Index = 0; Index < Managed.Num(); ++Index)
 	{
 		FManagedBrain& Entry = Managed[Index];
 		const UADSKBrainComponent* Brain = Entry.Brain.Get();
 		if (!Brain) continue;
+		// A sleeping brain keeps gathering time and costs nothing else until it is due or woken.
+		if (Brain->IsAsleep(Entry.Accumulated + Delta)) { Entry.Accumulated += Delta; continue; }
 		float Interval = Brain->ManagedTickInterval;
-		if (Interval <= 0.f && !Viewers.IsEmpty())
+		if (Interval <= 0.f && bDistanceRates)
 		{
 			const AActor* Host = Brain->GetHostActor();
 			double Nearest = TNumericLimits<double>::Max();

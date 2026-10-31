@@ -102,6 +102,12 @@ public:
 	/** The running leaf of any lane. */
 	bool IsCurrentRunningLeaf(FADSKActivationHandle Handle) const;
 	bool HasDeferredContinuation() const { return Main().DeferredNode.IsSet(); }
+	/**
+	 * Seconds of tick time until some lane needs a step that time alone causes: 0 for a pending terminal, a deferred
+	 * start, a background lane restarting, a running node with OnUpdate and no OnNextWake, or an option checked
+	 * without one; otherwise the nearest OnNextWake or utility re-score. ADSK::NeverWake when nothing is timed.
+	 */
+	float GetNextWake();
 
 private:
 	friend struct FADSKInstance::FImpl;

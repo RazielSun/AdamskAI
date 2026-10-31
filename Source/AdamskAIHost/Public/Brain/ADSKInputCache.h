@@ -7,19 +7,10 @@
 
 class FADSKDefinition;
 
-/** Map key functions for input names, which are exact-case like every XML name; plain FString keys ignore case. */
-template <typename ValueType>
-struct TADSKExactNameKeyFuncs : BaseKeyFuncs<TPair<FString, ValueType>, FString, false>
-{
-	static const FString& GetSetKey(const TPair<FString, ValueType>& Element) { return Element.Key; }
-	static bool Matches(const FString& A, const FString& B) { return A.Equals(B, ESearchCase::CaseSensitive); }
-	static uint32 GetKeyHash(const FString& Key) { return FCrc::StrCrc32(*Key); }
-};
-
 /** Host-written input values by exact input name: what a brain replays into a replacement instance. */
-using FADSKInputValues = TMap<FString, FADSKValue, FDefaultSetAllocator, TADSKExactNameKeyFuncs<FADSKValue>>;
+using FADSKInputValues = TADSKExactMap<FADSKValue>;
 /** Enum input values by exact input name as (enum, value) names, which survive a reload that renumbers them. */
-using FADSKEnumInputValues = TMap<FString, TPair<FString, FString>, FDefaultSetAllocator, TADSKExactNameKeyFuncs<TPair<FString, FString>>>;
+using FADSKEnumInputValues = TADSKExactMap<TPair<FString, FString>>;
 
 /** Host-written inputs kept by name, so a reload can validate them against a new definition and replay them. */
 class ADAMSKAIHOST_API FADSKInputCache

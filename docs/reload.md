@@ -16,9 +16,14 @@ Per-world, per file:
 3. validate the candidate against every affected live brain's cached input bindings;
 4. queue it (the newest request replaces an older uncommitted candidate); nothing stops during preparation;
 5. at that world's next pre-actor-tick, prepare every affected brain (bindings and inputs; one refusal rejects the
-   reload and nothing stops), then stop the running ones deepest-first, publish the definition,
-   re-apply each brain's cached inputs to the new instance (`OnDefinitionReplaced` fires), and restart
-   only brains that were running. A brain that a stop callback cleaned up meanwhile is skipped, never restarted.
+   reload and nothing stops), publish the definition (a stop callback that acquires the file gets the new one), then
+   stop the running ones deepest-first, re-apply each brain's cached inputs to the new instance
+   (`OnDefinitionReplaced` fires), and restart only brains that were running; a paused brain comes back paused. A
+   brain that a stop callback cleaned up, gave another file or re-initialized meanwhile is skipped and keeps what the
+   callback chose.
+
+Paths are exact-case everywhere (the cache, the brains registered per file, the watcher): on Linux `Guard.xml` and
+`guard.xml` are two files with two definitions.
 
 An unchanged composite definition hash (source hash + catalogue fingerprint) is a no-op.
 

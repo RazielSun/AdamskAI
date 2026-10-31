@@ -141,6 +141,15 @@ struct FADSKInstance::FImpl final : IADSKSlotWriteSink
 	int32 CallbackDepth = 0;
 	/** Stop was called from a callback; the outermost Tick, Start or Stop performs it. */
 	bool bStopRequested = false;
+	/**
+	 * A node, a Set or a Bind wrote a slot since the last tick began: change events and re-checks see it on the next
+	 * tick, so GetNextWake answers 0. Inputs apply at the start of a tick and are seen in it, so they do not count.
+	 */
+	bool bSlotWrittenThisTick = false;
+	/** A SetInput is waiting for the next tick's ApplyPendingInputs. */
+	bool bHasPendingInputs = false;
+	TFunction<void()> QueueListener;
+	void NotifyQueued() { if (QueueListener) QueueListener(); }
 };
 
 struct FADSKCallbackScope
