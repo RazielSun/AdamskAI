@@ -71,7 +71,9 @@ Re-baseline deliberately with `-Update`, in the change that explains why. The ce
 
 **In game.** `stat AdamskAI`: cycle stats for the managed pass, brain ticks, the perception bridge and `Acquire`;
 counters for brains ticked, events dispatched, node starts, records written and synchronous compiles. CSV category
-`AdamskAI` (`ManagedPass`, `BrainTick`) for `csvprofile` captures of packaged runs. LLM tag `AdamskAI` (instances,
+`AdamskAI` (`ManagedPass`, `BrainTick`) for `csvprofile` captures of packaged runs; keep those short, since with 1000
+actors the profiler itself grows memory, so a soak measures memory without it. `-benchmarkseconds` also caps the total
+`DeltaTime`, so a long hitch at start ends the run. LLM tag `AdamskAI` (instances,
 recorders, compiles) in `stat LLM` and `memreport`. `UADSKWorldSubsystem::GetManagedTickStats()` gives the pass's
 time and tick counts to code.
 

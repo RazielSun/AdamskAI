@@ -8,13 +8,13 @@ delete it from this file and describe the result where it belongs ([migration.md
 
 | Platform | Last run | Result |
 |---|---|---|
-| Win64, UE 5.8.4, MSVC 14.51 | 2026-10-31 | 0.5.0 in three host projects: build, check, validate, schema check, simulate, 656 `AdamskAI.*`, 63 `AdamskAIWorld.*`, game Development + Shipping; strict includes, `BuildPlugin -StrictIncludes`, cook check, `adsk_selftest_win64.ps1`; a 5-minute fuzzer soak; `-game -nullrhi` smoke of five project maps with no AdamskAI warning. 2026-11-01: packaged Development (pak) with brains starting from the pak, a packaged listen server and client (brains on the server only), MSVC static analysis clean, `AdamskAI.*` under ASan, a 30-minute fuzzer soak |
+| Win64, UE 5.8.4, MSVC 14.51 | 2026-10-31 | 0.5.0 in three host projects: build, check, validate, schema check, simulate, 656 `AdamskAI.*`, 63 `AdamskAIWorld.*`, game Development + Shipping; strict includes, `BuildPlugin -StrictIncludes`, cook check, `adsk_selftest_win64.ps1`; a 5-minute fuzzer soak; `-game -nullrhi` smoke of five project maps with no AdamskAI warning. 2026-11-01: packaged Development (pak) with brains starting from the pak, a packaged listen server and client (brains on the server only), MSVC static analysis clean, `AdamskAI.*` under ASan, a 30-minute fuzzer soak; a Shipping package running 5 minutes; live reload on a project map with the project's controller (keep-state, a rejected save, restore); 40 PIE map changes with no leaked brain, subsystem or UObject; 1000 managed brains for 14 minutes with flat memory |
 | Linux, UE 5.8.4, clang | 2026-10-31 | `adsk_all.sh --world` (check, validate, schema check, simulate, `AdamskAI.*`, `AdamskAIWorld.*`), `adsk_host_check.sh` (the plugin alone in an empty host: build, validate, `AdamskAI.*`, strict includes); a 30-minute fuzzer soak: 15.2 million mutants, 948,470 compiled and ran, none broke a rule |
 | Mac | never | — |
 
-Not run on Win64 for 0.5.0: PIE with a brain-driven pawn on a project map. The fixes those runs found are applied
-on Linux since 2026-11-01; the Win64 scripts and the `schema-refused` selftest case have not run on Windows in this
-form.
+Not run on Win64 for 0.5.0: scripted PIE scenarios through Unreal MCP. The fixes the Win64 runs found are applied on
+Linux since 2026-11-01; the Win64 scripts, the ASan refusal and the `schema-refused` selftest case have not run on
+Windows in this form.
 
 ## Confirmed defects
 
@@ -104,8 +104,6 @@ changes its golden trace and compat tables.
 | Project Settings panel | Project Settings → Plugins → AdamskAI shows every `UADSKSettings` field; a change writes `[/Script/AdamskAIHost.ADSKSettings]` to `DefaultGame.ini` |
 | Another `BehaviorRoot` | with the root moved (files too), PIE and a live reload work; validation and tests on such a root already pass |
 | Mac | `RunUAT BuildPlugin -Plugin=<path>/AdamskAI.uplugin -Package=<out> -TargetPlatforms=Mac -StrictIncludes` |
-| `AdamskAIWorld.*` under ASan | on Win64 `Demo.Chase` → `Demo.Content` → `Demo.Fleet` crashes in the engine's GC on the map change under ASan (4 of 4), green without it; only the plugin is instrumented against a prebuilt engine, so likely mixed allocators. Needs engine symbols or a source-built ASan engine; if the stack names a plugin object, check the Chase scene's unbinding in `EndPlay` / `OnUnregister` |
-| Fleet soak | `AdamskAIWorld.Demo.Fleet` (1000 brains) in a loop for 30 minutes, the working set sampled each minute: recorders and `RetiredInstances` must not grow |
 
 ## Tooling
 

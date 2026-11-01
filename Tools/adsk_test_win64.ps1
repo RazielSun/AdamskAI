@@ -55,6 +55,18 @@ if (-not $Standalone -and (Test-Path -LiteralPath $ProjectRunner -PathType Leaf)
 }
 
 if (-not (Resolve-AdskEngine $Ctx)) { exit 2 }
+# ASan modules use the ANSI allocator; an installed engine frees their objects through mimalloc and crashes in GC.
+$Installed = Test-Path -LiteralPath (Join-Path $Ctx.UERoot 'Engine\Build\InstalledBuild.txt')
+$WorldTests = 'AdamskAIWorld.'.StartsWith($Filter) -or $Filter.StartsWith('AdamskAIWorld')
+if ($Installed -and $WorldTests) {
+	$ModuleBuild = Join-Path $PSScriptRoot '..\Intermediate\Build\Win64'
+	$Asan = Get-ChildItem -LiteralPath $ModuleBuild -Recurse -File -Include '*.rsp', 'Definitions.AdamskAI.h' -ErrorAction SilentlyContinue |
+		Where-Object { $_.Directory.Name -eq 'AdamskAI' } | Select-String -SimpleMatch 'FORCE_ANSI_ALLOCATOR=1' -List
+	if ($Asan) {
+		Write-AdskError 'AdamskAIWorld.* cannot run under ASan on an installed engine (mixed allocators; docs/windows.md). Run AdamskAI.* or rebuild without -EnableASan.'
+		exit 2
+	}
+}
 $Code = Invoke-AdskPreflight $Ctx
 if ($Code -ne 0) { exit $Code }
 

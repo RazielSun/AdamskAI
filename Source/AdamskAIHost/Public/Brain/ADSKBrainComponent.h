@@ -116,6 +116,8 @@ public:
 	AAIController* GetAIController() const;
 	/** Controller brains host their pawn (or null when unpossessed); all others host their owner actor. */
 	AActor* GetHostActor() const;
+	/** The brain's clock rate: the host's CustomTimeDilation, else the owner's (an unpossessed controller). */
+	float GetTimeDilation() const;
 	/** The one move request the async table currently tags; invalid when none. */
 	FAIRequestID GetActiveMoveRequest() const;
 	FADSKAsyncOps& GetAsyncOps() { return AsyncOps; }

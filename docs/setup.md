@@ -246,7 +246,9 @@ target is itself (joining, dead) is no viewer. In a networked game, keep the las
 least the AI pawns' net cull distance (`NetCullDistanceSquared`), or clients watch agents that think at the lowest
 rate. With `bParallelManagedTick` the managed brains
 whose behavior uses only thread-safe nodes (sensors do not count) tick on workers at once; host facts are still
-published (the `OnPreTick` bridges run, then the sensors) on the game thread before.
+published (the `OnPreTick` bridges run, then the sensors) on the game thread before. In both tick modes a brain's
+clock runs at its host's `CustomTimeDilation` (the pawn; the brain's owner when it has none), so slow motion on the
+pawn slows its `Wait` and cooldowns too; `TickBrain` called by hand takes the time as given.
 
 Brains sleep while nothing is due (`bSleepWhenIdle`, on by default, as Behavior Trees and StateTree do): a brain
 whose tree waits, holds or runs a `MoveTo` skips its ticks and gets the skipped time in the tick that wakes it. Any

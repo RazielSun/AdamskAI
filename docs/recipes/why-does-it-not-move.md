@@ -18,7 +18,8 @@ below log one line there.
    controller should log ([new-npc.md](new-npc.md) step 4).
    - `source-read`: the file was not found or not read. The path is relative to the behavior root, ends in lowercase
      `.xml` and has no `..` ([../gotchas.md](../gotchas.md)).
-   - `compile`: the file has errors. Check: `adsk_validate_win64.ps1 -Paths Content\AI\<file>.xml` lists them.
+   - `compile`, then up to five `<file>:<line>: <code> <message>` lines: the file has errors. All of them:
+     `adsk_validate_win64.ps1 -Paths Content\AI\<file>.xml`.
    - `required input missing: <names>`: `StartLogic` ran before those Inputs were written. The brain also logs
      `<brain> did not start: required input missing: ...`. Publish them between `InitializeFromSource` and
      `StartLogic`; a new file forgets the previous file's Inputs.

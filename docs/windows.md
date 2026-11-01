@@ -64,6 +64,11 @@ undoes one.
 - **A target named after a template.** A project renamed from a template keeps the template's target names;
   pass `-TargetName` / `-EditorTarget` / `-GameTarget`.
 
+- **ASan against an installed engine.** UBT builds the plugin's ASan modules with `FORCE_ANSI_ALLOCATOR=1`; the
+  prebuilt engine frees their objects through mimalloc and `AdamskAIWorld.*` crashes in GC on a map change. Only
+  `AdamskAI.*` runs under ASan there; `adsk_test_win64.ps1` refuses a world filter in that setup. World tests under
+  ASan need a source engine built entirely with `-EnableASan`.
+
 **Running the editor headless**
 
 - **`-stdout` is required.** `UnrealEditor-Cmd` does not copy its log to stdout on Windows unless asked, and
@@ -102,4 +107,4 @@ undoes one.
   not the stand-alone validate and test run.
 - `adsk_bench.sh` has no Win64 twin. The bench ran once by hand (2026-10-31, 1000 agents, per agent and frame):
   AdamskAI 0.11–0.13 µs ticking itself and 0.10–0.11 µs managed, Behavior Tree 0.12 µs, StateTree 0.31 µs.
-- A PIE session with a brain-driven pawn on a project map: see [roadmap.md](dev/roadmap.md).
+- Scripted PIE scenarios through Unreal MCP on a project map: see [roadmap.md](dev/roadmap.md).

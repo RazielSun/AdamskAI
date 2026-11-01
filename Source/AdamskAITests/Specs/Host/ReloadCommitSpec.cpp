@@ -279,7 +279,8 @@ TEST_CLASS_WITH_FLAGS(FAsyncReloadSpec, "AdamskAI.Host.AsyncReload",
 		F.Subsystem->FinishReloadsForTest();
 		ASSERT_THAT(IsTrue(F.Subsystem->GetLastAsyncReloadResult(SourceFile) == TOptional<EADSKReloadResult>(EADSKReloadResult::Rejected),
 			FString::Printf(TEXT("the last async reload is %s"), F.Subsystem->GetLastAsyncReloadResult(SourceFile).IsSet() ? LexToString(*F.Subsystem->GetLastAsyncReloadResult(SourceFile)) : TEXT("unset"))));
-		ASSERT_THAT(AreEqual(FString(TEXT("compile")), F.Subsystem->GetLastDiagnostics(SourceFile)));
+		const FString Diagnostics = F.Subsystem->GetLastDiagnostics(SourceFile);
+		ASSERT_THAT(IsTrue(Diagnostics.StartsWith(TEXT("compile\n  ")) && Diagnostics.Contains(FString(SourceFile) + TEXT(":")), Diagnostics));
 		Brain->Cleanup();
 	}
 

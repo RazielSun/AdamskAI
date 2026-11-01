@@ -21,10 +21,18 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
   more per instance: the new branches (`Concurrent`, `Set`), the per-tick input flags and the sleep bookkeeping.
 - A self-ticking brain that slept once no longer goes through the engine's cooldown list on every awake tick: 4000
   such brains cost 8.3 ms per frame instead of 11.1 on Win64.
+- A brain's clock follows its pawn's `CustomTimeDilation` (the owner's when there is no pawn) under both ticks: the
+  managed pass ignored dilation, and a self-ticking brain read the controller's.
+- A failed compile reports `compile` followed by up to five `file:line: code message` lines in `GetLastError`,
+  `RequestReload` and `GetLastDiagnostics`, not the bare code; compare the first word. The async reload log prints
+  the same text.
 - The perception bridge ceiling at 16 candidates is 3 µs: the same build reads 1.4–2.2 µs from one process to the
   next on Win64, 0.4 alike.
 
 ### Fixed
+- A self-ticking brain woke from a sleep one frame late (100 ms at 10 fps): the engine's interval tick starts a frame
+  after it is set and fires only past a whole interval. The interval now ends a frame early, and a brain the engine
+  wakes before its time re-arms for the rest.
 - A brain stopped while asleep in a hold (a possession change, a manual stop, a reload without keeping state) gave
   the whole stopped time to the first tick of its next run, so that run's first `Wait`, `TimeLimit` or `Cooldown`
   ended at once; on the managed pass and ticking itself alike. Only a running brain sleeps now, and a start resets

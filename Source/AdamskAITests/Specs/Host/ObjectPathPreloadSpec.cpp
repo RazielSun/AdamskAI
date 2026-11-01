@@ -137,7 +137,7 @@ TEST_CLASS_WITH_FLAGS(FObjectPathPreloadSpec, "AdamskAI.Host.ObjectPathPreload",
 		F.Subsystem->Prewarm(SourceFile);
 		FString Error;
 		ASSERT_THAT(IsFalse(F.Subsystem->Acquire(SourceFile, Error).IsValid(), TEXT("a broken file was acquired")));
-		ASSERT_THAT(AreEqual(FString(TEXT("compile")), Error));
+		ASSERT_THAT(IsTrue(Error.StartsWith(TEXT("compile\n  ")) && Error.Contains(FString(SourceFile) + TEXT(":")), Error));
 		ASSERT_THAT(IsFalse(F.Subsystem->IsPrewarming(SourceFile), TEXT("still prewarming after Acquire")));
 	}
 

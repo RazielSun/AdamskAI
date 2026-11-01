@@ -66,7 +66,7 @@ void UADSKBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// The world clock, not DeltaTime: the engine's first interval tick passes only one frame.
 	const UWorld* World = GetWorld();
 	const double Now = World ? World->GetTimeSeconds() : 0.0;
-	const float Delta = LastAutoTickTime >= 0.0 && World ? static_cast<float>(Now - LastAutoTickTime) * (GetOwner() ? GetOwner()->CustomTimeDilation : 1.f) : DeltaTime;
+	const float Delta = LastAutoTickTime >= 0.0 && World ? static_cast<float>(Now - LastAutoTickTime) * GetTimeDilation() : DeltaTime;
 	LastAutoTickTime = Now;
 	TickBrain(Delta);
 }
@@ -422,7 +422,8 @@ void UADSKBrainComponent::TickBrain(float DeltaTime)
 	CSV_SCOPED_TIMING_STAT(AdamskAI, BrainTick);
 	// Asleep, the time is kept for the tick that wakes it, so every timer sees the same total as at full rate.
 	SleptTime += DeltaTime;
-	if (IsAsleep(SleptTime)) { return; }
+	// Woken early by the engine (a dilated host): re-arm for the rest of the sleep.
+	if (IsAsleep(SleptTime)) { ApplyAutoTickRate(); return; }
 	DeltaTime = SleptTime;
 	SleptTime = 0.f;
 	INC_DWORD_STAT(STAT_ADSKBrainsTicked);
@@ -545,9 +546,15 @@ void UADSKBrainComponent::ApplyAutoTickRate()
 {
 	if (!bTicksItself) { return; }
 	if (SleepFor >= ADSK::NeverWake) { SetComponentTickEnabled(false); return; }
+	// World seconds to the frame before the wake, since the engine's interval tick lands a frame late; the brain's own
+	// clock waits out the rest.
+	const float Dilation = GetTimeDilation();
+	const float Remaining = SleepFor - SleptTime;
+	const float Frame = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.f;
+	const float Interval = Remaining > 0.f && Dilation > 0.f ? FMath::Max(Remaining / Dilation - Frame, 0.f) : 0.f;
 	// Already at interval 0: the engine call would reschedule through its cooldown list every tick.
-	if (SleepFor == 0.f && PrimaryComponentTick.TickInterval == 0.f) { SetComponentTickEnabled(true); return; }
-	SetComponentTickIntervalAndCooldown(SleepFor);
+	if (Interval == 0.f && PrimaryComponentTick.TickInterval == 0.f) { SetComponentTickEnabled(true); return; }
+	SetComponentTickIntervalAndCooldown(Interval);
 	SetComponentTickEnabled(true);
 }
 
@@ -761,6 +768,13 @@ AActor* UADSKBrainComponent::GetHostActor() const
 {
 	if (AAIController* Controller = GetAIController()) { return Controller->GetPawn(); }
 	return GetOwner();
+}
+
+float UADSKBrainComponent::GetTimeDilation() const
+{
+	const AActor* Host = GetHostActor();
+	if (!Host) Host = GetOwner();
+	return Host ? Host->CustomTimeDilation : 1.f;
 }
 
 FAIRequestID UADSKBrainComponent::GetActiveMoveRequest() const

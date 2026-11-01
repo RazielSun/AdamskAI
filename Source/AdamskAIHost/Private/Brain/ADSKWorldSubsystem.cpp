@@ -45,6 +45,23 @@ const TCHAR* LexToString(EADSKReloadResult Result)
 	return TEXT("unknown");
 }
 
+namespace ADSKWorldSubsystemPrivate
+{
+	/** `compile`, then the first errors as `file:line: code message`, so a caller needs no log to see why. */
+	FString DescribeFailedCompile(const FString& Path, const FADSKSourceReadResult& Read)
+	{
+		FString Out = TEXT("compile");
+		int32 Shown = 0;
+		for (const FADSKDiagnostic& Diagnostic : Read.Result.Diagnostics)
+		{
+			if (Diagnostic.Severity != EADSKSeverity::Error) continue;
+			if (++Shown > 5) { Out += TEXT("\n  ..."); break; }
+			Out += FString::Printf(TEXT("\n  %s:%d: %s %s"), *Path, Diagnostic.Line, LexToString(Diagnostic.Code), *Diagnostic.Message);
+		}
+		return Out;
+	}
+}
+
 int32 UADSKWorldSubsystem::LiveCount = 0;
 bool UADSKWorldSubsystem::DoesSupportWorldType(EWorldType::Type Type) const { return Type == EWorldType::Game || Type == EWorldType::PIE; }
 void UADSKWorldSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -92,7 +109,7 @@ TSharedPtr<const FADSKDefinition> UADSKWorldSubsystem::Acquire(FStringView Relat
 	TSharedPtr<const FADSKNodeRegistry> Registry = GetRegistry(OutError);
 	if (!Registry) return nullptr;
 	FADSKSourceReadResult Read = FADSKValidation::ReadSource(GetRoot(), Path, Registry.ToSharedRef());
-	if (!Read.Result.Definition) { OutError = Read.bReadFailed ? TEXT("source-read") : TEXT("compile"); return nullptr; }
+	if (!Read.Result.Definition) { OutError = Read.bReadFailed ? TEXT("source-read") : ADSKWorldSubsystemPrivate::DescribeFailedCompile(Path, Read); return nullptr; }
 	FSourceRecord& Record = Sources.FindOrAdd(Path);
 	++SynchronousCompiles;
 	INC_DWORD_STAT(STAT_ADSKSynchronousCompiles);
@@ -267,7 +284,7 @@ EADSKReloadResult UADSKWorldSubsystem::PrepareCandidate(const FString& Path, FSo
 {
 	if (!Read.Result.Definition)
 	{
-		Record.LastDiagnostics = Read.bReadFailed ? Read.ReportCode : TEXT("compile");
+		Record.LastDiagnostics = Read.bReadFailed ? Read.ReportCode : ADSKWorldSubsystemPrivate::DescribeFailedCompile(Path, Read);
 		OutDiagnostics = Record.LastDiagnostics;
 		return EADSKReloadResult::Rejected;
 	}
@@ -331,14 +348,6 @@ void UADSKWorldSubsystem::AdvanceReloads(bool bWait)
 		FString Diagnostics;
 		Record->LastAsyncResult = PrepareCandidate(Path, *Record, Read, Diagnostics);
 		UE_LOG(LogAdamskAIHost, Log, TEXT("AdamskAI reload %s: %s%s%s"), *Path, LexToString(*Record->LastAsyncResult), Diagnostics.IsEmpty() ? TEXT("") : TEXT(" "), *Diagnostics);
-		if (!Read.Result.Definition)
-		{
-			for (const FADSKDiagnostic& Diagnostic : Read.Result.Diagnostics)
-			{
-				if (Diagnostic.Severity != EADSKSeverity::Error) continue;
-				UE_LOG(LogAdamskAIHost, Log, TEXT("  %s:%d: %s %s"), *Path, Diagnostic.Line, LexToString(Diagnostic.Code), *Diagnostic.Message);
-			}
-		}
 	}
 }
 

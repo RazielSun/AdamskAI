@@ -56,6 +56,8 @@ TEST_CLASS_WITH_FLAGS(FWorldTickSpec, "AdamskAIWorld.Tick",
 	uint64 NearTicks = 0, MidTicks = 0, FarTicks = 0, AutoTicks = 0, ManagedTicks = 0;
 	uint64 FrameMark = 0;
 	double Mark = 0.0;
+	TArray<FADSKWorldAgent> Timed;
+	TArray<double> DoneAt;
 
 	BEFORE_EACH()
 	{
@@ -185,6 +187,59 @@ TEST_CLASS_WITH_FLAGS(FWorldTickSpec, "AdamskAIWorld.Tick",
 			ADSK_ASSERT(Managed.PathIs({TEXT("m"), TEXT("done")}));
 		});
 	}
+
+	/**
+	 * A one-second Wait under self and managed ticks, pawn CustomTimeDilation 1 and 0.5: each ends within the frames the
+	 * measure itself adds (start frame, seen-done frame), so a sleep that wakes a frame late fails.
+	 */
+	void WaitsEndOnTime(bool bSleep)
+	{
+		if (!Scenario.IsOpen()) return;
+		AwakeBrains.Reset();
+		AwakeBrains = MakeUnique<FADSKScopedSleepSetting>(bSleep);
+		GetMutableDefault<UADSKSettings>()->TickLOD.Reset();
+		TestCommandBuilder
+			.StartWhen(TEXT("player"), [this] { return Scenario.GetWorld().GetFirstPlayerController() != nullptr; }, Timeout)
+			.Then(TEXT("spawn four waiters"), [this]
+			{
+				UClass* Classes[] = {AADSKWorldTestController::StaticClass(), AADSKWorldManagedController::StaticClass()};
+				const float Dilations[] = {1.f, 0.5f};
+				for (int32 Index = 0; Index < 4; ++Index)
+				{
+					FADSKWorldAgent Agent = Scenario.SpawnAgent(FVector(-1000.0 + 700.0 * Index, -1500.0, ADSKWorldLayout::StandZ),
+						FADSKWorldScenario::Behavior(WaitFile), {.ControllerClass = Classes[Index % 2], .bStart = false});
+					ASSERT_THAT(IsTrue(Agent.Pawn.IsValid() && Agent.Brain.IsValid(), TEXT("no agent")));
+					Agent.Pawn->CustomTimeDilation = Dilations[Index / 2];
+					Agent.Brain->StartLogic();
+					Timed.Add(Agent);
+				}
+				DoneAt.Init(-1.0, Timed.Num());
+				Mark = Scenario.GetWorld().GetTimeSeconds();
+			})
+			.Until(TEXT("every Wait done"), [this]
+			{
+				bool bAll = true;
+				for (int32 Index = 0; Index < Timed.Num(); ++Index)
+				{
+					if (DoneAt[Index] < 0.0 && Timed[Index].IsIn(TEXT("m/done"))) DoneAt[Index] = Scenario.GetWorld().GetTimeSeconds() - Mark;
+					bAll &= DoneAt[Index] >= 0.0;
+				}
+				return bAll;
+			}, Timeout)
+			.Then(TEXT("each on time"), [this]
+			{
+				for (int32 Index = 0; Index < Timed.Num(); ++Index)
+				{
+					const double Expected = Index / 2 ? 2.0 : 1.0;
+					const bool bOnTime = DoneAt[Index] >= Expected - 1e-3 && DoneAt[Index] <= Expected + 2.5 * FADSKWorldScenario::FixedDelta;
+					ASSERT_THAT(IsTrue(bOnTime, FString::Printf(TEXT("%s, dilation %.1f: done after %.3f s, expected %.1f"),
+						Index % 2 ? TEXT("managed") : TEXT("self tick"), Index / 2 ? 0.5 : 1.0, DoneAt[Index], Expected)));
+				}
+			});
+	}
+
+	TEST_METHOD(SleepingWaitsEndOnTimeInBothTickModesAndActorDilation) { WaitsEndOnTime(true); }
+	TEST_METHOD(AwakeWaitsEndOnTimeInBothTickModesAndActorDilation) { WaitsEndOnTime(false); }
 
 	/** I22: UAITask_LockLogic claims the controller's Logic resource; the brain pauses and resumes without catching up. */
 	TEST_METHOD(AGameplayTaskLockingLogicPausesTheBrain)

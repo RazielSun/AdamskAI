@@ -61,8 +61,11 @@ void FADSKManagedTicker::TickPass(float Delta, TConstArrayView<FVector> Viewers)
 		FManagedBrain& Entry = Managed[Index];
 		const UADSKBrainComponent* Brain = Entry.Brain.Get();
 		if (!Brain) continue;
+		// The brain's own time, scaled as the engine scales its host's ticks; rates stay in world time.
+		const float Dilation = Brain->GetTimeDilation();
+		const float BrainDelta = Delta * Dilation;
 		// A sleeping brain keeps gathering time and costs nothing else until it is due or woken.
-		if (Brain->IsAsleep(Entry.Accumulated + Delta)) { Entry.Accumulated += Delta; continue; }
+		if (Brain->IsAsleep(Entry.Accumulated + BrainDelta)) { Entry.Accumulated += BrainDelta; continue; }
 		float Interval = Brain->ManagedTickInterval;
 		if (Interval <= 0.f && bDistanceRates)
 		{
@@ -73,8 +76,8 @@ void FADSKManagedTicker::TickPass(float Delta, TConstArrayView<FVector> Viewers)
 		}
 		// First tick after its phase; every tick hands over all accumulated time.
 		const float Due = Entry.bTicked ? Interval : Entry.Phase * Interval;
-		Entry.Accumulated += Delta;
-		if (Entry.Accumulated + KINDA_SMALL_NUMBER < Due) continue;
+		Entry.Accumulated += BrainDelta;
+		if (Entry.Accumulated + KINDA_SMALL_NUMBER < Due * Dilation) continue;
 		DueScratch.Add({Index, Entry.Accumulated});
 		Entry.Accumulated = 0.f;
 		Entry.bTicked = true;
