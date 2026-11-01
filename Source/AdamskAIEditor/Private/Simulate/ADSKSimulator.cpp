@@ -221,10 +221,7 @@ namespace ADSKSimulatorPrivate
 		return Plan.Result;
 	}
 
-	/**
-	 * The source catalogue with every non-core leaf and scope doubled: same fields and ports, so the file compiles as
-	 * shipped, but a leaf ends as its plan says and a scope only runs its child.
-	 */
+	/** Non-core leaves and scopes doubled: leaves end as planned, scopes only run their child. */
 	TSharedPtr<const FADSKNodeRegistry> MakeDoubles(const FADSKNodeRegistry& Source, const TSharedRef<FLeafPlans>& Plans, TSet<FString>& OutLeaves, FString& OutError)
 	{
 		const TSharedRef<FADSKNodeRegistry> Core = FADSKNodeRegistry::Create();
@@ -440,10 +437,7 @@ namespace ADSKSimulatorPrivate
 		}
 	};
 
-	/**
-	 * Reads the scenario and compiles its behavior against the leaf doubles, checking every name the scenario uses.
-	 * Null when it cannot run: Report then holds the error or the compile diagnostics.
-	 */
+	/** Null when the scenario cannot run; Report then holds the error or the compile diagnostics. */
 	TSharedPtr<const FADSKDefinition> Prepare(const FString& ScenarioPath, const FString& DisplayPath, const FADSKNodeRegistry& Registry,
 		FScenario& Scenario, const TSharedRef<FLeafPlans>& Plans, FString& OutBehaviorName, FADSKSimulationReport& Report)
 	{

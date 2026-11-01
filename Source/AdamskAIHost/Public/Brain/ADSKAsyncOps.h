@@ -41,10 +41,7 @@ public:
 	FADSKAsyncOp* Find(FADSKActivationHandle Handle);
 	const FADSKAsyncOp* Find(FADSKActivationHandle Handle) const;
 	FADSKAsyncOp* FindByMove(FAIRequestID RequestId);
-	/**
-	 * Removes the entry before any payload write or cancellation, so a synchronous completion from Cancel finds
-	 * nothing. On success writes the stored payload to PayloadPort; cancels only while no result was accepted.
-	 */
+	/** Removes the entry first, so a completion from Cancel finds nothing; then writes the payload or cancels. */
 	void End(FADSKNodeContext& Context, EADSKEndReason Reason, int32 PayloadPort = INDEX_NONE);
 	/** Detaches every entry, cancels the unfinished ones and returns the detached count. */
 	int32 CancelAll();

@@ -32,10 +32,7 @@ namespace FProjectBehaviorSpecPrivate
 
 using namespace FProjectBehaviorSpecPrivate;
 
-/**
- * Each episode leaves one event out so a final state (death) does not end every episode early. Proves only that
- * the files start and never hold; scenarios belong to the project's tests or PIE.
- */
+/** Each episode leaves one event out, so a final state does not end them all. Proves only start and no hold. */
 TEST_CLASS_WITH_FLAGS(FProjectBehaviorSpec, "AdamskAI.Project.Smoke",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
 {

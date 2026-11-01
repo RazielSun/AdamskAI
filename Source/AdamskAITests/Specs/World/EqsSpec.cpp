@@ -8,8 +8,7 @@
 #include "World/WorldScenario.h"
 #include "CQTest.h"
 
-// RunEQS on the real EQS manager, with no fake host services: EQ_AdskTest_Rings (or the same query built in
-// memory) runs around the agent on the open floor, and each param changes what it returns.
+// RunEQS on the real EQS manager, no fake host services.
 namespace FEqsSpecPrivate
 {
 	const FVector SpawnPoint(0.0, -1500.0, ADSKWorldLayout::StandZ);
@@ -135,10 +134,7 @@ TEST_CLASS_WITH_FLAGS(FWorldEqsSpec, "AdamskAIWorld.Eqs",
 		});
 	}
 
-	/**
-	 * Leave is queued in the frame the query starts; the brain ticks before the EQS manager does, so the state is left
-	 * and the query aborted before it ever runs. No late result may write the slot afterwards.
-	 */
+	/** The brain ticks before the EQS manager, so the state is left before the query runs; no late result may land. */
 	TEST_METHOD(LeavingTheStateAbortsTheQuery)
 	{
 		if (!Scenario.IsOpen()) return;

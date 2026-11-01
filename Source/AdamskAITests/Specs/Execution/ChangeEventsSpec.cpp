@@ -14,10 +14,7 @@ using Code = EADSKDiagnosticCode;
 
 namespace FChangeEventsSpecPrivate
 {
-	/**
-	 * GroundedChanged watches the Grounded Input: ground <-> air. PlanChanged watches the Local that `Set` binds.
-	 * Poke is a host event of lower priority; Noise is handled nowhere.
-	 */
+	/** GroundedChanged watches an Input, PlanChanged a Local; Poke is a lower-priority host event, Noise unhandled. */
 	FString ChangeXml(const FString& Extra = FString())
 	{
 		return TEXT("<Agent version=\"1\" id=\"c\">\n")

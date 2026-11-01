@@ -57,11 +57,7 @@ namespace ADSKTest
 		}
 	}
 
-	/**
-	 * Every record the recorder holds against Fixtures/golden/<Name>.trace. With ADSK_CAPTURE_GOLDEN=1 the file is
-	 * rewritten instead; review its diff before keeping it. The header records the source hash and catalogue
-	 * fingerprint of the capture; only the body is compared, and on a difference the header says which of them moved.
-	 */
+	/** Records against Fixtures/golden/<Name>.trace; ADSK_CAPTURE_GOLDEN=1 rewrites it. Only the body is compared. */
 	inline FADSKCheck MatchesGolden(const TCHAR* Name, const FADSKRecorder& Recorder, const FADSKDefinition& Definition)
 	{
 		const FString Source = Definition.GetSourceHash().ToString().ToLower();

@@ -11,8 +11,7 @@
 #include "Tasks/AITask_LockLogic.h"
 #include "CQTest.h"
 
-// How often brains tick in a live world: managed LOD from the real player view (no fake viewers), pause, time
-// dilation, AI resource locks through a gameplay task, and the parallel managed pass.
+// Tick rates in a live world: LOD from the real player view, pause, dilation, resource locks, parallel pass.
 namespace FTickSpecPrivate
 {
 	const FTimespan Timeout = FTimespan::FromSeconds(30);
@@ -84,10 +83,7 @@ TEST_CLASS_WITH_FLAGS(FWorldTickSpec, "AdamskAIWorld.Tick",
 		return Scenario.SpawnAgent(Location, FADSKWorldScenario::Behavior(WaitFile), {.ControllerClass = Controller});
 	}
 
-	/**
-	 * Levels at 10 m (5 Hz) and 30 m (2 Hz) from the player, who starts at PlayerStart; agents 3 m, 15 m and 52 m away.
-	 * Then the player walks over to the far one, which speeds up while the near one slows down.
-	 */
+	/** LOD at 10 m (5 Hz) and 30 m (2 Hz); agents at 3, 15 and 52 m, then the player walks to the far one. */
 	TEST_METHOD(ManagedLodFollowsThePlayersView)
 	{
 		if (!Scenario.IsOpen()) return;
@@ -231,10 +227,7 @@ TEST_CLASS_WITH_FLAGS(FWorldTickSpec, "AdamskAIWorld.Tick",
 		});
 	}
 
-	/**
-	 * I23: twenty seeded pure agents tick serially for 120 frames, then twenty more with the same seeds tick in the
-	 * parallel managed pass beside an agent with host nodes; each pair must end in exactly the same state and trace.
-	 */
+	/** Seeded agents ticked serially and in the parallel pass end with the same state and trace. */
 	TEST_METHOD(TheParallelManagedPassMatchesTheSerialOne)
 	{
 		if (!Scenario.IsOpen()) return;

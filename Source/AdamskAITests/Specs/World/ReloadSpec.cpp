@@ -9,8 +9,7 @@
 #include "Settings/ADSKSettings.h"
 #include "CQTest.h"
 
-// Reload and prewarm in a live world: the editor's directory watcher sees a file write (no InjectChangesForTest), the
-// subsystem compiles on a worker and publishes in the world's pre-actor tick (no CommitPendingReloads).
+// Real directory watcher, worker compile and pre-actor-tick publish; no test injections.
 namespace FReloadSpecPrivate
 {
 	const FTimespan Timeout = FTimespan::FromSeconds(30);

@@ -24,19 +24,13 @@ enum class EADSKRegisterResult : uint8
 	PortFieldCollision,
 	UnsafeStruct,
 	UnsupportedPortType,
-	/**
-	 * ParamsProperty names no `TArray<FADSKNamedParam>` property of the configuration struct, or bTakesArgs is set
-	 * with ParamsProperty or on a kind other than Leaf, Scope and Composite.
-	 */
+	/** Bad ParamsProperty, or bTakesArgs with it or on a kind other than Leaf, Scope, Composite. */
 	InvalidParamsProperty,
 };
 
 ADAMSKAI_API const TCHAR* LexToString(EADSKRegisterResult Result);
 
-/**
- * Freeze before sharing; definitions retain the registry so the descriptors they point at outlive them.
- * Names are exact-case: `MoveTo` and `moveto` are different.
- */
+/** Freeze before sharing; definitions retain it. Names are exact-case. */
 class ADAMSKAI_API FADSKNodeRegistry
 {
 public:

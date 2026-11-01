@@ -18,10 +18,7 @@ struct ADAMSKAI_API FADSKCompiler
 	static constexpr int32 MaxExpandedNodes = 4096;
 	static constexpr int32 MaxGeneratedIdChars = 1024 * 1024;
 
-	/**
-	 * The registry must be frozen; an unfrozen one fires an ensure and yields one `missing-required` diagnostic.
-	 * Any thread: it reads only the frozen registry and runs descriptors' ValidateConfig, which must be pure.
-	 */
+	/** Any thread. The registry must be frozen; an unfrozen one ensures and yields `missing-required`. */
 	static FADSKCompileResult Compile(
 		const FString& SourceName, const FString& Text, const TSharedRef<const FADSKNodeRegistry>& Registry);
 };

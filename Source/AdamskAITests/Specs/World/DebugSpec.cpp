@@ -11,8 +11,7 @@
 #include "VisualLogger/VisualLoggerTypes.h"
 #include "CQTest.h"
 
-// The debug surfaces against a PIE world with real controllers: the Visual Logger while recording, the adsk.*
-// console commands, the Gameplay Debugger category's lines.
+// Visual Logger, adsk.* commands and the Gameplay Debugger category on real controllers in PIE.
 namespace FDebugSpecPrivate
 {
 	const FTimespan Timeout = FTimespan::FromSeconds(30);

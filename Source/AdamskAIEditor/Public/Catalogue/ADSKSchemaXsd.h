@@ -6,10 +6,7 @@
 
 class FADSKNodeRegistry;
 
-/**
- * An XML Schema of XML v1 and one registry's nodes, for IDE completion and hover help. Rendered from the same schema
- * JSON as the catalogue; it checks shape only (elements, attributes, literals), the compiler stays the authority.
- */
+/** XML Schema of XML v1 and one registry's nodes for IDE help; checks shape only, the compiler stays the authority. */
 struct ADAMSKAIEDITOR_API FADSKSchemaXsd
 {
 	static bool Render(const FADSKNodeRegistry& Registry, const FString& RegistryLabel, FString& OutXsd, FString& OutError);

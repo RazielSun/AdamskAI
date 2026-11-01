@@ -4,10 +4,7 @@
 
 #include "CoreMinimal.h"
 
-/**
- * Behavior directories besides BehaviorRoot, addressed as `@<Mount>/<relative>.xml`. Registered at runtime (Game
- * Features) or configured in UADSKSettings::BehaviorMounts. Game thread only.
- */
+/** Extra behavior directories, addressed as `@<Mount>/<relative>.xml`. Game thread. */
 class ADAMSKAIHOST_API FADSKBehaviorRoots
 {
 public:

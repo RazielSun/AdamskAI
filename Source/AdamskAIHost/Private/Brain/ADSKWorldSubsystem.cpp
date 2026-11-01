@@ -52,9 +52,10 @@ void UADSKWorldSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	++LiveCount;
 	PreActorTickHandle = FWorldDelegates::OnWorldPreActorTick.AddUObject(this, &UADSKWorldSubsystem::OnWorldPreActorTick);
-	// World creation precedes the possessions that Acquire, so compiling overlaps the level load. A client runs no
-	// server brains; its net mode is already known here (from the URL, or PIE's play settings).
+	// Compiles overlap the level load. Skipped for the placeholder world before the first LoadMap (no game instance)
+	// and on clients, which run no brains.
 	const UADSKSettings* Settings = GetDefault<UADSKSettings>();
+	if (!GetWorld()->GetGameInstance()) return;
 	if (GetWorld()->GetNetMode() == NM_Client && !Settings->bPrewarmOnClients) return;
 	for (const FString& File : Settings->PrewarmFiles) Prewarm(File);
 }
@@ -423,13 +424,11 @@ void UADSKWorldSubsystem::CommitPendingReloads()
 			}
 		}
 		if (!bValid) continue;
-		// Published before any callback runs: Record points into Sources, which a callback's Acquire may grow, and a
-		// callback that acquires this file gets the new definition.
+		// Published before callbacks: one may Acquire this file, or grow Sources under Record.
 		Record->Active = Candidate;
 		Record->ActiveRefs = MoveTemp(Refs);
 		Record = nullptr;
-		// Stop callbacks are external code: they may end other brains, give a brain another file or a new instance.
-		// Each brain is re-resolved and checked before it is applied.
+		// Stop callbacks may end or re-file other brains: each is re-resolved before it is applied.
 		TArray<TWeakObjectPtr<UADSKBrainComponent>> WeakBrains; WeakBrains.Reserve(Brains.Num());
 		TArray<bool> WasRunning; WasRunning.Reserve(Brains.Num());
 		TArray<bool> WasPaused; WasPaused.Reserve(Brains.Num());

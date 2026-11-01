@@ -57,17 +57,13 @@ struct FADSKActiveNode
 	bool bPartiallyEntered = false;
 	uint64 StartedTick = 0;
 	int32 BackgroundLane = INDEX_NONE;
-	/** A Parallel's child lanes, one per child in document order. Allocated only by a Parallel: every active node of
-	 * every lane carries this member, and an inline buffer would cost every instance whether it has a Parallel or not. */
+	/** A Parallel's child lanes in document order; heap, since an inline buffer would cost every active node. */
 	TArray<int32> ChildLanes;
 	/** A Guard's last recorded value: guard-value is recorded at the start and then only when it changes. */
 	FADSKValue GuardValue;
 };
 
-/**
- * Each active SimpleParallel owns a background lane for its second child, which restarts the tick after it
- * finishes and is cancelled with its parallel.
- */
+/** A SimpleParallel's second child runs in a background lane, restarted when it finishes, cancelled with it. */
 struct FADSKLane
 {
 	int32 Id = 0;
@@ -103,11 +99,7 @@ public:
 	/** The running leaf of any lane. */
 	bool IsCurrentRunningLeaf(FADSKActivationHandle Handle) const;
 	bool HasDeferredContinuation() const { return Main().DeferredNode.IsSet(); }
-	/**
-	 * Seconds of tick time until some lane needs a step that time alone causes: 0 for a pending terminal, a deferred
-	 * start, a background lane restarting, a running node with OnUpdate and no OnNextWake, or an option checked
-	 * without one; otherwise the nearest OnNextWake or utility re-score. ADSK::NeverWake when nothing is timed.
-	 */
+	/** Tick seconds until some lane has timed work; 0 when one has untimed work, NeverWake when nothing is timed. */
 	float GetNextWake();
 
 private:

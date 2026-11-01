@@ -8,13 +8,13 @@ delete it from this file and describe the result where it belongs ([migration.md
 
 | Platform | Last run | Result |
 |---|---|---|
-| Win64, UE 5.8.4, MSVC 14.51 | 2026-10-31 | 0.5.0 in three host projects: build, check, validate, schema check, simulate, 656 `AdamskAI.*`, 63 `AdamskAIWorld.*`, game Development + Shipping; strict includes, `BuildPlugin -StrictIncludes`, cook check, `adsk_selftest_win64.ps1`; a 5-minute fuzzer soak; `-game -nullrhi` smoke of five project maps with no AdamskAI warning. Packaged runs were last made on 0.4 (2026-10-30) |
+| Win64, UE 5.8.4, MSVC 14.51 | 2026-10-31 | 0.5.0 in three host projects: build, check, validate, schema check, simulate, 656 `AdamskAI.*`, 63 `AdamskAIWorld.*`, game Development + Shipping; strict includes, `BuildPlugin -StrictIncludes`, cook check, `adsk_selftest_win64.ps1`; a 5-minute fuzzer soak; `-game -nullrhi` smoke of five project maps with no AdamskAI warning. 2026-11-01: packaged Development (pak) with brains starting from the pak, a packaged listen server and client (brains on the server only), MSVC static analysis clean, `AdamskAI.*` under ASan, a 30-minute fuzzer soak |
 | Linux, UE 5.8.4, clang | 2026-10-31 | `adsk_all.sh --world` (check, validate, schema check, simulate, `AdamskAI.*`, `AdamskAIWorld.*`), `adsk_host_check.sh` (the plugin alone in an empty host: build, validate, `AdamskAI.*`, strict includes); a 30-minute fuzzer soak: 15.2 million mutants, 948,470 compiled and ran, none broke a rule |
 | Mac | never | — |
 
-Not run on Win64 for 0.5.0: a packaged run, PIE with a brain-driven pawn on a project map. The fixes that run found
-(sleep after a stop, `ChildLanes`, `adsk_schema_check_win64.ps1`, `adsk_build_win64.ps1`) are on Linux since
-2026-11-01; the Win64 scripts and the `schema-refused` selftest case have not run on Windows in this form.
+Not run on Win64 for 0.5.0: PIE with a brain-driven pawn on a project map. The fixes those runs found are applied
+on Linux since 2026-11-01; the Win64 scripts and the `schema-refused` selftest case have not run on Windows in this
+form.
 
 ## Confirmed defects
 
@@ -35,7 +35,7 @@ StateTree 1.31–1.48 µs. Delete a row when it lands and re-run the bench.
 - **PERF-4 — managed pass bookkeeping:** a sleeping brain still costs the pass a weak-pointer `Get` and an `IsAsleep`
   per frame, and `RemoveAll` walks every entry per pass; a wake queue would visit only due brains. The viewer
   distance is no longer measured without `TickLOD` levels.
-- **PERF-5 — `TickBrain` overhead:** broadcast `OnPreTick` only when bound; measure the instance-call guards.
+- **PERF-5 — `TickBrain` overhead:** measure the instance-call guards.
 - **PERF-6 — a wider bench:** a behavior reacting to a value that changes every frame (where sleeping does not help),
   memory per agent for all three, `TickLOD`, the median of several runs in `adsk_bench`; then the numbers in perf.md
   and README.
@@ -51,10 +51,9 @@ StateTree 1.31–1.48 µs. Delete a row when it lands and re-run the bench.
   key and a `GetActorLocation` per candidate per tick, all cache misses: 7–9 µs per brain at 64 candidates. A dense
   `TArray` sorted by `SortKey` with the raw pointer cached once per tick, no second `FindChecked` in `OnPreTick`, and
   the forgotten-candidate sweep only when one is lost or a `RequiredActorTag` is set.
-- **PERF-10 — the auto tick's interval each tick (unmeasured, from reading the engine):** `ApplyAutoTickRate` calls
-  `SetComponentTickIntervalAndCooldown` after every `TickBrain`; once a brain has ticked on an interval, each call is a
-  remove and reschedule through the engine's cooldown list. Call it only when the interval changes, and bench 1000
-  self-ticking brains alternating a `Wait` with an `OnUpdate` node without `OnNextWake`.
+- **PERF-10 — a self-ticking fleet after sleep:** `AdamskAIWorld.Perf.SelfTickingFleetAfterSleep`, N self-ticking
+  brains that `Wait` once and then stay awake. On Win64 4000 such brains cost 11.05 ms per frame against 8.51 awake
+  from the start, before awake brains stopped calling `SetComponentTickIntervalAndCooldown` (8.33 after, 2026-11-01).
 
 ## Waves
 
@@ -78,7 +77,6 @@ snapshot of the host project's tree without its history. What it did not get yet
 
 | Step | Details |
 |---|---|
-| Win64 packaged run | `RunUAT BuildCookRun -platform=Win64 -clientconfig=Development -build -cook -stage -pak` for a host, then the game on a map with brains, `-nullrhi -benchmark`: behavior files staged from the pak, no editor-only references, the demo mount harmless |
 | CI | GitHub Actions running `adsk_check.sh` and a Markdown link check, both engine-free; building and testing need an Unreal Engine on a self-hosted runner, which a free runner does not have |
 | README picture | a capture of the demo ([demo.md](../demo.md)): `adsk.Demo Squad` or `Tokens` with labels, and the Fleet line |
 | Mac | the build in "Checks that need a person or another machine" |
@@ -106,10 +104,8 @@ changes its golden trace and compat tables.
 | Project Settings panel | Project Settings → Plugins → AdamskAI shows every `UADSKSettings` field; a change writes `[/Script/AdamskAIHost.ADSKSettings]` to `DefaultGame.ini` |
 | Another `BehaviorRoot` | with the root moved (files too), PIE and a live reload work; validation and tests on such a root already pass |
 | Mac | `RunUAT BuildPlugin -Plugin=<path>/AdamskAI.uplugin -Package=<out> -TargetPlatforms=Mac -StrictIncludes` |
-| ASan | a host editor built with `-EnableASan`, then `AdamskAI.*` and the fuzzer: lanes, `TUniquePtr` lanes and retired instances are where a use-after-free would hide |
-| MSVC static analysis | `BuildPlugin ... -StaticAnalyzer=VisualCpp`, about five minutes |
-| Long fuzzer on Win64 | `ADSK_FUZZ_SECONDS=1800` with several `ADSK_FUZZ_SEED`; 300 s with seed 7 passed (2026-10-31) |
-| Project map soak | 30 minutes of a project map in `-game`, the working set sampled each minute: recorders and `RetiredInstances` must not grow |
+| `AdamskAIWorld.*` under ASan | on Win64 `Demo.Chase` → `Demo.Content` → `Demo.Fleet` crashes in the engine's GC on the map change under ASan (4 of 4), green without it; only the plugin is instrumented against a prebuilt engine, so likely mixed allocators. Needs engine symbols or a source-built ASan engine; if the stack names a plugin object, check the Chase scene's unbinding in `EndPlay` / `OnUnregister` |
+| Fleet soak | `AdamskAIWorld.Demo.Fleet` (1000 brains) in a loop for 30 minutes, the working set sampled each minute: recorders and `RetiredInstances` must not grow |
 
 ## Tooling
 
@@ -120,6 +116,8 @@ changes its golden trace and compat tables.
 | Win64 twins | `adsk_bench_win64.ps1` (the bench has run on Win64 only by hand) and `adsk_host_check_win64.ps1` |
 | Catalogue regeneration | `adsk_validate --regenerate` / `-Regenerate` writing the project's catalogue and schema, and the full command in the `catalogue-stale` line, which names only the flag |
 | A map smoke with a verdict | `-ExecCmds` runs before NPCs spawn, so a `-game` smoke sees only errors and crashes: `adsk.StatusEvery <sec>` or a status at exit, or a project CQTest on `FMapTestSpawner` checking every brain runs with no `GetLastError` and changed state |
+| `adsk_smoke` | a packaged or `-game` run with `-trace=cpu,frame`, exported with `UnrealInsights -NoUI -AutoQuit`: `FADSKInstance::Start` equal to the NPC count and `TickBrain` above 0 prove brains run on a project map |
+| Generated files in the pak | the staged behavior root ships `adamskai.xsd` and `node-catalog.md`; the engine has no per-file staging exclusion, so they would move out of the root |
 | Foreign-namespace files | `adsk_schema_check_win64.ps1` does not validate a file whose root is in another namespace (`xmlns="..."`): .NET reports only a warning; turn on `ReportValidationWarnings` and count "no schema for element" as an error |
 | Shared Python tooling | `Tools/lib/adsk.py` for engine and project resolution, the editor check, logs and exit codes, the `.sh` and `_win64.ps1` scripts as thin wrappers; worth it only when a script needs a third copy of the same logic |
 

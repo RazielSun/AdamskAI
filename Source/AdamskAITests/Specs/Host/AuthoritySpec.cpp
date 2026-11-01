@@ -12,8 +12,7 @@
 #include "Support/TestChecks.h"
 #include "CQTest.h"
 
-// A brain whose owner has no authority (a client's copy of a replicated actor) is refused, so it
-// never compiles, loads or ticks there. Roles are set by hand; NetworkSpec covers the same in a networked PIE.
+// Without authority a brain never compiles, loads or ticks. Roles set by hand; NetworkSpec does it networked.
 namespace FAuthoritySpecPrivate
 {
 	const TCHAR* SourceFile = TEXT("authority.xml");

@@ -19,10 +19,7 @@ struct FADSKHoldRisk
 
 namespace ADSK
 {
-	/**
-	 * Conservative: an outcome counts as possible unless the node kinds rule it out. Valid files may hold on
-	 * purpose, so callers report these as notes, never as errors.
-	 */
+	/** Conservative: an outcome counts as possible unless node kinds rule it out. Report as notes, never errors. */
 	ADAMSKAI_API TArray<FADSKHoldRisk> FindHoldRisks(const FADSKDefinition& Definition);
 
 	ADAMSKAI_API FString DescribeHoldRisk(const FADSKDefinition& Definition, const FADSKHoldRisk& Risk);

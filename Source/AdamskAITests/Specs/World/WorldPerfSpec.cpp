@@ -12,8 +12,7 @@
 #include "Support/FakeHostServices.h"
 #include "CQTest.h"
 
-// A benchmark, not a threshold, like AdamskAI.Perf.*: a fleet of managed agents shuttling on the navmesh, in a PIE
-// world under -nullrhi. The numbers go to Saved/AdamskAI/perf/AdamskAIWorld.Perf.<test>.json; compare before and after.
+// Benchmarks, not thresholds: numbers go to Saved/AdamskAI/perf/AdamskAIWorld.Perf.<test>.json.
 namespace FWorldPerfSpecPrivate
 {
 	constexpr int32 Columns = 20;
@@ -75,11 +74,7 @@ TEST_CLASS_WITH_FLAGS(FWorldPerfSpec, "AdamskAIWorld.Perf",
 		(*Services)->Viewers = TArray<FVector>{FMath::Lerp(ViewerStart, ViewerEnd, Alpha)};
 	}
 
-	/**
-	 * Without TickLOD every brain ticks every frame, the most work the pass can do. With it, a viewer crossing the
-	 * fleet leaves most brains on the slower levels: the pass's share when distance does its job. With bSleep each
-	 * brain sleeps while its MoveTo runs and wakes for the result (bSleepWhenIdle, the default).
-	 */
+	/** No TickLOD: every brain every frame; with it a viewer crosses the fleet; bSleep: sleep through MoveTo. */
 	void MeasureFleet(const TCHAR* Name, bool bTickLOD, bool bSleep = false)
 	{
 		GetMutableDefault<UADSKSettings>()->bParallelManagedTick = true;

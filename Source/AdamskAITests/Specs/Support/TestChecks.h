@@ -161,10 +161,7 @@ namespace ADSKTest
 		Expect(Result == EADSKRegisterResult::Accepted, FString::Printf(TEXT("test node %s rejected: %s"), *Name, LexToString(Result)));
 	}
 
-	/**
-	 * The core and host nodes, which no provider changes, so it is assembled once per run. When it cannot be assembled,
-	 * the running test fails and gets the core nodes alone.
-	 */
+	/** Core and host nodes, assembled once per run; on failure the test fails and gets core nodes alone. */
 	inline TSharedRef<const FADSKNodeRegistry> PluginCatalogue()
 	{
 		static TSharedPtr<const FADSKNodeRegistry> Assembled;

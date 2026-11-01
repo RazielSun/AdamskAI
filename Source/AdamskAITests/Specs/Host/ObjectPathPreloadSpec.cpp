@@ -7,6 +7,7 @@
 #include "Brain/ADSKBrainComponent.h"
 #include "Brain/ADSKWorldSubsystem.h"
 #include "Components/ActorTestSpawner.h"
+#include "Settings/ADSKSettings.h"
 #include "Support/CompilerSpecSupport.h"
 #include "Support/SpawnerNode.h"
 #include "Support/TempTree.h"
@@ -116,6 +117,18 @@ TEST_CLASS_WITH_FLAGS(FObjectPathPreloadSpec, "AdamskAI.Host.ObjectPathPreload",
 		ASSERT_THAT(IsFalse(F.Subsystem->IsPrewarming(SourceFile), TEXT("still prewarming after Acquire")));
 		ASSERT_THAT(AreEqual(1, F.Subsystem->GetActiveRetainedCount(SourceFile)));
 		ASSERT_THAT(IsTrue(F.Subsystem->Acquire(SourceFile, Error) == Definition, TEXT("Acquire did not return the prewarmed definition")));
+	}
+
+	TEST_METHOD(AWorldWithoutAGameInstanceIsNotPrewarmed)
+	{
+		// The shape of a standalone game's placeholder world before its first LoadMap: created with no game instance.
+		UADSKSettings* Settings = GetMutableDefault<UADSKSettings>();
+		const TArray<FString> Saved = Settings->PrewarmFiles;
+		Settings->PrewarmFiles = {SourceFile};
+		FActorTestSpawner Spawner;
+		const bool bPrewarming = Spawner.GetWorld().GetSubsystem<UADSKWorldSubsystem>()->IsPrewarming(SourceFile);
+		Settings->PrewarmFiles = Saved;
+		ASSERT_THAT(IsFalse(bPrewarming, TEXT("a world with no game instance prewarmed")));
 	}
 
 	TEST_METHOD(AFailedPrewarmLeavesTheDiagnosisToAcquire)

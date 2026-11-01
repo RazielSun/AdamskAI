@@ -8,9 +8,6 @@ class FADSKDefinition;
 
 namespace ADSKTest
 {
-	/**
-	 * Deterministic, for comparing compiled programs across compiler changes. Fields introduced after the
-	 * legacy format are omitted while they hold their compatibility defaults; source lines are not emitted.
-	 */
+	/** Deterministic; fields newer than the legacy format are omitted while at their defaults. No source lines. */
 	ADAMSKAI_API FString DumpNormalizedTables(const FADSKDefinition& Definition);
 }

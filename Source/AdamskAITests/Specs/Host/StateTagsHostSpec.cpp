@@ -13,8 +13,7 @@
 #include "Support/TestChecks.h"
 #include "CQTest.h"
 
-// The brain turns the active states' tags into gameplay tags, broadcasts each change once, and
-// refuses a file whose tags are not registered.
+// Active state tags become gameplay tags, one broadcast per change; unregistered tags are refused.
 namespace FStateTagsHostSpecPrivate
 {
 	const TCHAR* SourceFile = TEXT("tags.xml");

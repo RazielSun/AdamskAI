@@ -9,12 +9,7 @@
 
 class UADSKBrainComponent;
 
-/**
- * The minimal controller of docs/setup.md as compiled code, so it keeps building: it owns one brain, lets an
- * FADSKBrainDriver run the host contract (load, publish, start; publish and tick; stop) and writes its per-tick Input
- * through an FADSKInputRef. Copy it into a game module and rename it; tests run it on `sample_watch.xml`
- * (AdamskAI.Samples).
- */
+/** docs/setup.md's minimal controller, compiled so it keeps building. Copy and rename. */
 UCLASS(NotBlueprintable, Transient)
 class AADSKSampleController : public AAIController
 {

@@ -64,10 +64,7 @@ namespace FCompilerSpecSupport
 		return FADSKCompiler::Compile(TEXT("spec.xml"), Xml, MakeProbeRegistry());
 	}
 
-	/**
-	 * The seventeen-line base document every rule row mutates. Line numbers are part of the
-	 * contract: 3 inputs, 6 locals, 9 event, 12 state, 14 tree, 15 node, 16 tree end.
-	 */
+	/** The base document rule rows mutate; its line numbers are contract. */
 	inline TArray<FString> BaseLines()
 	{
 		return {

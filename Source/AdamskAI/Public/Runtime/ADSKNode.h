@@ -31,12 +31,8 @@ enum class EADSKPortDirection : uint8
 };
 
 /**
- * A Scope wraps one child with descriptor callbacks and ends with its child's result. A Parallel loops its second
- * child beside its first, ends with the first child's result and cancels the second. A Composite's OnUpdate may end
- * it while a child runs, cancelling the child. A Sensor is never in a tree: it is declared under `<Sensors>`, and the
- * host samples it before every tick into the Inputs bound to its out ports. A Set writes a literal or another slot's
- * value to a Local and succeeds; the compiler types it from the slot, so it has no ports or fields. A Concurrent runs
- * every child at once, each in its own lane, and ends by its success and failure policy, cancelling the rest.
+ * Scope: one child, ends with its result. Parallel: loops the second child beside the first. Concurrent: every child
+ * in its own lane, ends by policy. Sensor: never in a tree, sampled into Inputs before every tick. Set: writes a Local.
  */
 enum class EADSKNodeKind : uint8
 {
@@ -156,15 +152,9 @@ struct FADSKNodeContextParams
 enum class EADSKSelectorPolicy : uint8
 {
 	Ordered,
-	/**
-	 * At most ADSK::MaxReactiveChildren options, memory FADSKReactiveSelectorMemory. Every tick, an earlier Guard
-	 * option whose condition turned true since last seen cancels the running option and starts in its place.
-	 */
+	/** An earlier Guard option turning true since last seen cancels the running option and takes its place. */
 	Reactive,
-	/**
-	 * At most ADSK::MaxReactiveChildren options, config FADSKUtilityConfig, memory FADSKUtilitySelectorMemory. Options
-	 * scoring 0 or less are skipped; a rescore switches only when another beats the running one by more than `margin`.
-	 */
+	/** Options scoring 0 or less are skipped; a rescore switches only when another wins by more than `margin`. */
 	Utility,
 };
 
@@ -198,10 +188,7 @@ public:
 	UObject* GetHost() const { return Host.Get(); }
 	template <typename T> T* GetHost() const { return Cast<T>(Host.Get()); }
 
-	/**
-	 * Reseeded on every Start, so the same seed, inputs and deltas replay the same draws. Draw only from
-	 * callbacks; never keep the reference.
-	 */
+	/** Reseeded on every Start. Draw only from callbacks; never keep the reference. */
 	FRandomStream& GetRandom() const
 	{
 		checkf(Random, TEXT("node context has no random stream"));
@@ -238,10 +225,7 @@ public:
 	bool WritePort(int32 PortIndex, const FADSKValue& Value);
 	bool WriteInt(int32 PortIndex, int32 Value);
 
-	/**
-	 * The node's `<Param name from/>` arguments with their slots' current values, in document order; empty unless the
-	 * descriptor sets bTakesArgs. Shaped for FADSKInstance::EnqueueEvent, so a node can pass them on as event parameters.
-	 */
+	/** The node's `<Param>` values in document order, shaped for EnqueueEvent; empty unless bTakesArgs. */
 	TArray<FADSKNamedValue> ReadArgs() const;
 
 private:
@@ -293,11 +277,7 @@ using FADSKScoreFn = TFunction<float(FADSKNodeContext&)>;
 using FADSKCheckFn = TFunction<bool(FADSKNodeContext&)>;
 /** A sensor's reading: writes its out ports from the host and its in ports; the context has no memory or state. */
 using FADSKSampleFn = TFunction<void(FADSKNodeContext&)>;
-/**
- * Seconds of tick time until the node next needs its OnUpdate (when running) or its OnCheck (as a ReactiveSelector's
- * earlier option); ADSK::NeverWake when only a slot write, an event or a result can change what it does. The call
- * changes nothing. A brain sleeps until the nearest of these, so a node that answers too late misses its moment.
- */
+/** Tick seconds until OnUpdate or OnCheck is next needed; NeverWake when untimed. Never answer late. */
 using FADSKNextWakeFn = TFunction<float(FADSKNodeContext&)>;
 
 namespace ADSK
@@ -307,10 +287,7 @@ namespace ADSK
 }
 /** Receives the descriptor's configuration struct memory after every mapped field converted. */
 using FADSKValidateConfigFn = TFunction<bool(const void*)>;
-/**
- * Runs once ObjectPath fields can be resolved (editor validator, world subsystem preload). False with a
- * message when the referenced asset cannot serve this configuration.
- */
+/** Once ObjectPath fields resolve: false with a message when the asset cannot serve this configuration. */
 using FADSKValidateAssetsFn = TFunction<bool(const void*, FString&)>;
 
 /** Registered by value; the registry keeps a heap-stable copy. */
@@ -320,15 +297,9 @@ struct ADAMSKAI_API FADSKNodeDescriptor
 	FString Name;
 	int32 SchemaVersion = 1;
 	EADSKNodeKind Kind = EADSKNodeKind::Leaf;
-	/**
-	 * One or two sentences for the catalogue: what the node does, when it succeeds and when it fails. Documentation
-	 * only: not part of the schema or the catalogue fingerprint (the rendered catalogue still shows the new text).
-	 */
+	/** One or two catalogue sentences: what it does, when it succeeds and fails. Not part of the fingerprint. */
 	FString Description;
-	/**
-	 * Optional advice for authors, one point per line: when to pick the node, when another fits better, and its
-	 * traps. Rendered as a list under the node in the catalogue; documentation only, like Description.
-	 */
+	/** Optional author advice, one point per line, listed under the node in the catalogue. */
 	FString Guidance;
 
 	const UScriptStruct* ConfigStruct = nullptr;
@@ -340,11 +311,7 @@ struct ADAMSKAI_API FADSKNodeDescriptor
 
 	/** Optional `TArray<FADSKNamedParam>` filled from `<Param>` children, which do not count against MaxChildren. */
 	FName ParamsProperty;
-	/**
-	 * Leaf, Scope or Composite without ParamsProperty: the node takes `<Param name from/>` children naming slots of
-	 * any type but an enum (enums belong to one file), read at run time with FADSKNodeContext::ReadArgs. For nodes that
-	 * pass values on, such as an event to other agents.
-	 */
+	/** Takes `<Param name from/>` of any non-enum slot, read with FADSKNodeContext::ReadArgs. */
 	bool bTakesArgs = false;
 
 	int32 MinChildren = 0;
@@ -353,10 +320,7 @@ struct ADAMSKAI_API FADSKNodeDescriptor
 	bool bNeverFails = false;
 	/** Selector only. Anything but Ordered requires that policy's memory struct. */
 	EADSKSelectorPolicy SelectorPolicy = EADSKSelectorPolicy::Ordered;
-	/**
-	 * Every callback reads and writes only its context (configuration, memory, state, ports, random stream, clock)
-	 * and never the host, so FADSKParallelTick may run the node on a worker. Core intrinsic kinds need no flag.
-	 */
+	/** Callbacks touch only their context, never the host, so FADSKParallelTick may run the node on a worker. */
 	bool bThreadSafe = false;
 
 	/** Runs inside the compiler, which may be on a worker thread: it must only read the config it is given. */
@@ -370,15 +334,9 @@ struct ADAMSKAI_API FADSKNodeDescriptor
 	FADSKChildFinishedFn OnChildFinished;
 	/** Called without starting the node. */
 	FADSKScoreFn OnScore;
-	/**
-	 * Optional, called without starting the node: a ReactiveSelector re-checks every earlier option that has one each
-	 * tick, and one turning true interrupts the running option, as a Guard's condition does (a Cooldown becoming ready).
-	 */
+	/** Optional: a ReactiveSelector checks earlier options with it every tick; true interrupts the running one. */
 	FADSKCheckFn OnCheck;
-	/**
-	 * Optional: when the node is next due (FADSKNextWakeFn). Without it a running node with OnUpdate is updated every
-	 * tick and an option with OnCheck is checked every tick, so its brain never sleeps while it runs.
-	 */
+	/** Optional: when the node is next due. Without it an OnUpdate or OnCheck node keeps its brain awake. */
 	FADSKNextWakeFn OnNextWake;
 	/** Sensor only, required. */
 	FADSKSampleFn OnSample;

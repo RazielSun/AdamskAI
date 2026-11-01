@@ -19,10 +19,7 @@
 #include "World/WorldTestActors.h"
 #include <initializer_list>
 
-/**
- * Where things are in L_AdskWorldTest, in cm. The map generator (AdamskAIWorld.Content) builds it from these and
- * the specs aim at them, so the two cannot drift.
- */
+/** L_AdskWorldTest positions in cm, shared by the map generator and the specs. */
 namespace ADSKWorldLayout
 {
 	inline const TCHAR* MapDirectory = TEXT("/AdamskAI/Tests/Maps");
@@ -89,10 +86,7 @@ struct FADSKWorldAgent
 	double Distance2D(const FVector& Point) const { return FVector::Dist2D(Location(), Point); }
 };
 
-/**
- * How FADSKWorldScenario::SpawnAgent sets an agent up. At namespace scope, not nested: clang rejects a nested struct
- * with member initializers as a default argument of its enclosing class.
- */
+/** At namespace scope: clang rejects a nested struct with member initializers as a default argument. */
 struct FADSKWorldAgentOptions
 {
 	std::initializer_list<FADSKNamedValue> Inputs;
@@ -103,10 +97,7 @@ struct FADSKWorldAgentOptions
 	bool bStart = true;
 };
 
-/**
- * Holds UADSKSettings::bSleepWhenIdle at a value for a test's life: tests of the tick machinery count ticks, and a
- * sleeping brain skips them.
- */
+/** Pins bSleepWhenIdle for a test's life: tick-counting tests must not see brains sleep. */
 struct FADSKScopedSleepSetting
 {
 	bool bSaved = GetDefault<UADSKSettings>()->bSleepWhenIdle;
@@ -117,9 +108,8 @@ struct FADSKScopedSleepSetting
 };
 
 /**
- * One AdamskAIWorld.* test: the test map in PIE, the plugin's Fixtures/world mounted as `@AdskWorld/`, a scratch
- * directory mounted as `@AdskWorldTemp/` for behaviors a test writes, and a fixed time step, so a run takes the same
- * simulated time on any machine. Start it in BEFORE_EACH; it restores the time step and the mounts when destroyed.
+ * The test map in PIE with `@AdskWorld/` and a scratch `@AdskWorldTemp/` mounted and a fixed time step. Start in
+ * BEFORE_EACH; restores both on destruction.
  */
 class FADSKWorldScenario
 {
@@ -156,10 +146,7 @@ public:
 	/** `@AdskWorldTemp/<File>`: a file this scenario wrote. */
 	static FString TempBehavior(const FString& File) { return FString::Printf(TEXT("@%s/%s"), TempMount, *File); }
 
-	/**
-	 * BEFORE_EACH: mounts the behaviors, fixes the time step and queues opening the map in PIE. Without the map it
-	 * fails the test instead (FMapTestSpawner would assert and end the whole run); test methods then check IsOpen.
-	 */
+	/** Without the map it fails the test instead of letting FMapTestSpawner assert; methods then check IsOpen. */
 	void Start(FAutomationTestBase* TestRunner, const TCHAR* MapDirectory = ADSKWorldLayout::MapDirectory, const TCHAR* MapName = ADSKWorldLayout::MapName,
 		const TCHAR* GenerateHint = TEXT("ADSK_GENERATE_WORLD_MAP=1 and the test AdamskAIWorld.Content"))
 	{
@@ -216,10 +203,7 @@ public:
 		return Point;
 	}
 
-	/**
-	 * Writes Xml as `@AdskWorldTemp/<File>`, mounting a scratch directory on first use. May be called before PIE: the
-	 * mount is registered at once, so the editor's live reload watches it too.
-	 */
+	/** Writes `@AdskWorldTemp/<File>`; the mount registers at once, so it works before PIE. */
 	FString WriteBehavior(const FString& File, const FString& Xml)
 	{
 		if (!Temp)
@@ -241,11 +225,7 @@ public:
 
 	using FAgentOptions = FADSKWorldAgentOptions;
 
-	/**
-	 * A pawn at Location possessed by a test controller (Options.ControllerClass, AADSKWorldTestController by default)
-	 * whose brain runs Source with the given inputs set. A brain that cannot initialize or start fails the test with
-	 * its last error.
-	 */
+	/** A pawn at Location under a test controller running Source; a brain that cannot start fails the test. */
 	FADSKWorldAgent SpawnAgent(const FVector& Location, const FString& Source, const FAgentOptions& Options = FAgentOptions())
 	{
 		FActorSpawnParameters Parameters;

@@ -7,8 +7,7 @@
 
 FADSKProcedure::FGuardResult FADSKProcedure::EvaluateGuard(const FADSKActiveNode& Active)
 {
-	// A guard's only port is its condition, so it reads the bound slot itself: reactive selectors re-check every
-	// earlier option each tick, and a full node context per check would be most of their cost.
+	// Reads the condition slot directly: a full context per re-check would be most of a reactive selector's cost.
 	FGuardResult Result;
 	const FADSKNodeDefinition& Node = NodeDef(Active);
 	const bool bHolds = ADSK::EvaluateCondition(Node.Condition, Owner.Slots)

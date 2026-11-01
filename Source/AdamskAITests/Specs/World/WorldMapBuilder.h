@@ -43,10 +43,7 @@ namespace ADSKWorldMapBuilder
 		Property->GetUnderlyingProperty()->SetIntPropertyValue(Property->ContainerPtrToValuePtr<void>(&NavMesh), static_cast<int64>(ERuntimeGenerationType::Dynamic));
 	}
 
-	/**
-	 * Nav bounds of Size at Center and a dynamic navmesh built inside them, in a new editor world; null when nothing
-	 * was built. Dynamic, so obstacles a scene or test spawns cut the navmesh, whatever the project default is.
-	 */
+	/** Nav bounds and a dynamic navmesh in a new editor world; null when nothing was built. */
 	inline ARecastNavMesh* BuildNavigation(UWorld& World, const FVector& Center, const FVector& Size)
 	{
 		ANavMeshBoundsVolume* Bounds = World.SpawnActor<ANavMeshBoundsVolume>(Center, FRotator::ZeroRotator);
@@ -61,8 +58,7 @@ namespace ADSKWorldMapBuilder
 		{
 			return nullptr;
 		}
-		// A new editor world holds AsyncLoadLock until a ticker sees asset compilation done; this runs before any
-		// tick, so finish compiling and lift the lock the way that ticker would, without its rebuild.
+		// A new editor world holds AsyncLoadLock until a ticker lifts it; no tick runs here.
 		FAssetCompilingManager::Get().FinishAllCompilation();
 		Navigation->RemoveNavigationBuildLock(ENavigationBuildLock::AsyncLoadLock, UNavigationSystemV1::ELockRemovalRebuildAction::NoRebuild);
 		Navigation->OnNavigationBoundsUpdated(Bounds);

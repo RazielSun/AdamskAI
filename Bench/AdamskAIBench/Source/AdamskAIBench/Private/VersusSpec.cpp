@@ -44,25 +44,12 @@
 #include "UObject/StrongObjectPtr.h"
 
 /**
- * One behavior written three ways, each in its own idiom, and timed side by side.
- *
- * The behavior: patrol (count, wait 1 s, wait 1 s, again) until the host raises Alert, then alert (count, wait 0.25 s,
- * wait 0.25 s, again) until it lowers it; the switch interrupts whatever runs. The host flips Alert for each agent
- * every 1.5 s, staggered. Count is each system's own native task, so the entries counted show the three ran the same
- * behavior.
- *
- * - AdamskAI: a file whose Alert input raises a change event; a brain component ticking itself.
- * - Behavior Tree: a selector whose alert branch has a Blackboard decorator aborting both ways; RunBehaviorTree.
- * - StateTree: Patrol and Alert states with child steps, switched by events; a StateTree component.
- *
- * Benchmarks, not thresholds: a test fails only when a behavior does not compile or does not run.
+ * One behavior (patrol / alert, switched by a host-flipped Alert every 1.5 s) as an AdamskAI file, a Behavior Tree
+ * and a StateTree, timed side by side. Fails only when a behavior does not compile or run.
  */
 namespace FVersusSpecPrivate
 {
-	/**
-	 * The StateTree's event tags, declared in the bench plugin's Config/Tags. A native tag needs a Runtime module and
-	 * the engine reads no plugin's Config/Tags by itself, so the first use adds that directory.
-	 */
+	/** Event tags from the bench's Config/Tags, which the engine does not read for a plugin by itself. */
 	FGameplayTag Tag(const TCHAR* Name)
 	{
 		static const bool bLoaded = []()
@@ -237,10 +224,7 @@ namespace FVersusSpecPrivate
 		FFileHelper::SaveStringToFile(Json, *Path);
 	}
 
-	/**
-	 * A game world of Agents AI controllers, each running the bench behavior in System (Count: none, the baseline).
-	 * The engine's test world (a game instance, a game mode, begun play), ticked as a game ticks it.
-	 */
+	/** A begun-play test world of Agents AI controllers running System's behavior, ticked as a game ticks it. */
 	struct FWorldFleet
 	{
 		FTestWorldWrapper Wrapper;

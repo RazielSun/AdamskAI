@@ -20,11 +20,8 @@ struct ADAMSKAIEDITOR_API FADSKValidateEnvironment
 };
 
 /**
- * `-run=AdamskAIValidate` with one mode: `-paths=<file|dir>[+...]`, none (examples, then project AI),
- * `-fixtures`, `-describe=<out.json> [-registry=plugin|full]`, `-catalog=<out.md>` / `-xsd=<out.xsd>` [-registry=] [-check],
- * `-projectcatalog` / `-projectxsd` [-check], `-simulate=<scenario.json|dir>[+...]` or `-all`.
- * Exit 0 clean or exact, 1 diagnostics, findings or stale output, 2 usage, setup or write failure. The final
- * line is always `ADSK_VALIDATE_COMPLETE exit=N`.
+ * `-run=AdamskAIValidate` modes: `-paths=`, none, `-fixtures`, `-describe=`, `-catalog=`/`-xsd=`, `-projectcatalog`/
+ * `-projectxsd`, `-simulate=`, `-all` (docs/dev/testing.md). Exit 0/1/2; last line `ADSK_VALIDATE_COMPLETE exit=N`.
  */
 UCLASS()
 class ADAMSKAIEDITOR_API UAdamskAIValidateCommandlet : public UCommandlet

@@ -35,8 +35,7 @@ TEST_CLASS_WITH_FLAGS(FMemoryArenaSpec, "AdamskAI.Execution.MemoryArena",
 
 	TEST_METHOD(EveryActivationStartsFromFreshMemoryAcrossRestarts)
 	{
-		// Each loop the Wait counts its own elapsed time from zero and the random selector draws a new order into
-		// memory that holds an array, so a stale or undestroyed slice would show in the timing or leak the array.
+		// A stale or undestroyed memory slice would show in the Wait's timing or leak the selector's array.
 		FADSKTestRuntime Runtime(Agent(TEXT("<Sequence id=\"q\"><RandomSelector id=\"r\"><Chance id=\"c\" probability=\"0\"/><Wait id=\"w\" duration=\"0.3\"/></RandomSelector></Sequence>")));
 		ADSK_ASSERT(ADSKTest::Start(*Runtime.Instance));
 		int32 WaitStarts = 0;

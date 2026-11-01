@@ -12,8 +12,7 @@
 #include "Components/ActorTestSpawner.h"
 #include "CQTest.h"
 
-// One brain living several lives on one component, the way a controller that possesses, unpossesses
-// and possesses again drives it: AAIController calls Cleanup() on every unpossess.
+// Several lives on one component: AAIController calls Cleanup() on every unpossess.
 namespace FBrainRepossessSpecPrivate
 {
 	const TCHAR* GuardFile = TEXT("lifecycle_guard.xml");

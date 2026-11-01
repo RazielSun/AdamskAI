@@ -84,10 +84,8 @@ adsk_resolve_engine() {
 	}
 }
 
-# Optional host-project preflight, run before any editor launch. ADSK_PREFLIGHT names an executable
-# that exits nonzero to refuse the run; ADSK_PREFLIGHT=none disables it. Without the variable, a
-# project that ships Tools/lib/preflight.sh gets its preflight_require_clean_modules, in a subshell
-# so the helper's own `exit` cannot end this script.
+# Host preflight before any editor launch: ADSK_PREFLIGHT=<executable>|none, else the project's
+# Tools/lib/preflight.sh (in a subshell, so its `exit` cannot end this script).
 adsk_preflight() {
 	if [ -n "${ADSK_PREFLIGHT:-}" ]; then
 		[ "$ADSK_PREFLIGHT" = "none" ] && return 0

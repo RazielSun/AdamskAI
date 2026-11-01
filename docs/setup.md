@@ -1,6 +1,6 @@
 # Setup — deploying AdamskAI into a project
 
-Verified with Unreal Engine 5.8 for 0.5.0 on Linux (clang) and Win64 (MSVC 14.51; no packaged run of 0.5.0 yet);
+Verified with Unreal Engine 5.8 for 0.5.0 on Linux (clang) and Win64 (MSVC 14.51, packaged too);
 Mac is not built yet (see [limitations.md](limitations.md), [roadmap.md](dev/roadmap.md)). Nothing here needs an editor window.
 Every `Tools/<name>.sh` script has a Windows twin, `Tools\<name>_win64.ps1`, with the same modes, logs and
 exit codes; prerequisites and traps per platform are in [linux.md](linux.md) and [windows.md](windows.md).
@@ -61,8 +61,9 @@ modules load and reports "could not find the class" otherwise.
    as the path (`DirectoriesToAlwaysStageAsNonUFS`, or staging a parent directory, also counts). The
    default validator run prints a `note:` line when the root is not staged; the note never fails the
    run. The assets behavior files name through ObjectPath fields (an EQS query) are referenced by nothing else, so
-   the editor module adds their packages to every cook by the book (`LogAdamskAICook`). This is configuration
-   only; no packaged run is claimed.
+   the editor module adds their packages to every cook by the book (`LogAdamskAICook`). Verified packaged on Win64
+   (2026-11-01): the files load from the pak and prewarm there. The whole root is staged, so the generated
+   `adamskai.xsd` and `node-catalog.md` (about 14 KB) ship too; harmless.
 6. Live debugging needs nothing more: the `adsk.*` console commands, the Gameplay Debugger category and the labels
    come with the plugin ([debugging.md](debugging.md)). A project that wants an in-game panel draws it from the
    public debug snapshot ([debugging.md](debugging.md#a-projects-own-panel)).

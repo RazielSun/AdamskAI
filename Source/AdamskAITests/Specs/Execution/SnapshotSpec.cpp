@@ -10,10 +10,7 @@
 
 namespace FSnapshotSpecPrivate
 {
-	/**
-	 * Go(V) binds V to Kept and enters work/inner; Roll rolls into Rolled. The cooldown's ready time is node state,
-	 * Watched raises Changed.
-	 */
+	/** Go(V) binds Kept, enters work/inner; Roll writes Rolled; Watched raises Changed. */
 	FString Agent(const TCHAR* KeptType = TEXT("Float"), const TCHAR* InnerId = TEXT("inner"), const TCHAR* MoodValues = TEXT("<Value name=\"Calm\"/><Value name=\"Angry\"/>"))
 	{
 		return FString::Printf(TEXT("<Agent version=\"1\" id=\"snap\"><Enums><Enum name=\"Mood\">%s</Enum></Enums>"

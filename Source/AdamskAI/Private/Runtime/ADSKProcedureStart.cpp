@@ -97,8 +97,7 @@ FADSKProcedure::EStartOutcome FADSKProcedure::StartNode(int32 NodeIndex)
 	return EStartOutcome::Started;
 }
 
-// Both helpers take `Active` by reference into `Stack`; neither touches it after a call that can
-// push to the stack (StartNode) or pop it (FinishTop).
+// `Active` refers into `Stack`: never touched after StartNode (push) or FinishTop (pop).
 void FADSKProcedure::StartGuard(FADSKActiveNode& Active, int32 NodeIndex, const FADSKNodeDefinition& Node)
 {
 	const FGuardResult Result = EvaluateGuard(Active);

@@ -33,10 +33,7 @@ enum class EADSKRecordKind : uint8
 	TransitionTaken,
 	/** A Bind or an Out port changed a slot; unchanged writes are not recorded. */
 	SlotWritten,
-	/**
-	 * A `select` state picked State to enter, Value its score; reason no-score when it fell back to `initial`, reason
-	 * history when a history resumed State (no value).
-	 */
+	/** A `select` pick and its score; reason no-score (fell back to `initial`) or history (no value). */
 	StateSelected,
 };
 
@@ -87,10 +84,7 @@ struct FADSKRecord
 	uint64 LostCount = 0;
 };
 
-/**
- * Preallocated ring. When full, the oldest records coalesce into one Gap at the logical front, so loss
- * is counted exactly. Decisions never read it.
- */
+/** Preallocated ring; when full, the oldest records coalesce into one counted Gap. Decisions never read it. */
 class ADAMSKAI_API FADSKRecorder
 {
 public:

@@ -63,8 +63,7 @@ bool UADSKBrainComponent::RefuseWithoutAuthority()
 void UADSKBrainComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	// After an interval the engine's delta can miss time (its first interval tick passes one frame); the world clock
-	// does not, scaled as the engine scales this actor's ticks.
+	// The world clock, not DeltaTime: the engine's first interval tick passes only one frame.
 	const UWorld* World = GetWorld();
 	const double Now = World ? World->GetTimeSeconds() : 0.0;
 	const float Delta = LastAutoTickTime >= 0.0 && World ? static_cast<float>(Now - LastAutoTickTime) * (GetOwner() ? GetOwner()->CustomTimeDilation : 1.f) : DeltaTime;
@@ -114,15 +113,13 @@ void UADSKBrainComponent::InitializeDefinition(const TSharedRef<const FADSKDefin
 {
 	if (RefuseWithoutAuthority()) return;
 	StopLogic();
-	// The new definition belongs to no source file until InitializeFromSource registers it, so a later
-	// reload of the previous file cannot replace a definition supplied here directly.
+	// Unregistered: a reload of the previous file must not replace a definition supplied directly.
 	UnregisterFromSource();
 	SourcePath.Reset();
 	// A new definition is a new life: inputs written for the previous one are never replayed into it.
 	InputCache.Reset();
 	UnbindMoveCompleted();
-	// Cleanup ends a life, not the component: AAIController cleans its brain on every unpossess, and a
-	// controller that possesses again must still be cleaned at EndPlay.
+	// AAIController cleans its brain on every unpossess; a later possession reuses the component.
 	if (State == EADSKBrainState::CleanedUp) State = EADSKBrainState::Stopped;
 	Recorder = InRecorder;
 	ReplaceInstance(Definition);
@@ -348,8 +345,7 @@ void UADSKBrainComponent::StartLogic()
 		LastError = FString::Printf(TEXT("required input missing: %s"), *FString::Join(Report.MissingInputs, TEXT(", ")));
 		UE_LOG(LogAdamskAIHost, Warning, TEXT("%s did not start: %s"), *GetPathName(), *LastError);
 	}
-	// A resource lock taken before this start (or held across a stop, restart or reload) still pauses the run;
-	// the base only pauses on the unlocked-to-locked edge, which has already passed.
+	// The base pauses only on the lock edge, which a lock held from before the start has passed.
 	if (State == EADSKBrainState::Running && IsResourceLocked()) State = EADSKBrainState::Paused;
 	SleptTime = 0.f;
 	// The auto tick may have been off since the last run; the time it was off is not this run's.
@@ -452,7 +448,12 @@ bool UADSKBrainComponent::BeginBrainTick()
 	}
 #endif
 
-	OnPreTick.Broadcast();
+	if (OnPreTick.IsBound())
+	{
+		// The host's own publishing, apart from the brain's cost in a trace.
+		TRACE_CPUPROFILER_EVENT_SCOPE(UADSKBrainComponent::OnPreTick);
+		OnPreTick.Broadcast();
+	}
 	if (State != EADSKBrainState::Running || !Instance) { return false; }
 	SampleSensors();
 	EnterInstanceCall();
@@ -544,6 +545,8 @@ void UADSKBrainComponent::ApplyAutoTickRate()
 {
 	if (!bTicksItself) { return; }
 	if (SleepFor >= ADSK::NeverWake) { SetComponentTickEnabled(false); return; }
+	// Already at interval 0: the engine call would reschedule through its cooldown list every tick.
+	if (SleepFor == 0.f && PrimaryComponentTick.TickInterval == 0.f) { SetComponentTickEnabled(true); return; }
 	SetComponentTickIntervalAndCooldown(SleepFor);
 	SetComponentTickEnabled(true);
 }
@@ -605,8 +608,7 @@ void UADSKBrainComponent::RetireInstance()
 
 void UADSKBrainComponent::ReplaceInstance(const TSharedRef<const FADSKDefinition>& Definition)
 {
-	// A stopped predecessor's generation is above every generation in which it issued handles; the
-	// successor starts above it, so a late result for any earlier instance of this component cannot match a new leaf.
+	// Above every earlier generation, so a late result for a previous instance never matches a new leaf.
 	RetireInstance();
 	Instance = MakeUnique<FADSKInstance>(Definition, Recorder, this, GenerationFloor);
 	++InstanceSerial;

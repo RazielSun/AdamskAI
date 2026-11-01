@@ -49,8 +49,7 @@ namespace ADSKHostServicesPrivate
 			{
 				const APlayerController* Controller = It->Get();
 				if (!Controller) continue;
-				// No pawn and no camera of its own (joining, dead, a bare controller): its view point is wherever the
-				// controller was spawned, which nobody watches. A remote spectator on the server reports a synced camera.
+				// No pawn and no own camera (joining, dead): its view point is the spawn spot nobody watches.
 				const bool bSyncedSpectator = Controller->IsInState(NAME_Spectating) && Controller->HasAuthority() && !Controller->IsLocalController();
 				if (!Controller->GetPawn() && !bSyncedSpectator && Controller->GetViewTarget() == Controller) continue;
 				FVector Location; FRotator Rotation;

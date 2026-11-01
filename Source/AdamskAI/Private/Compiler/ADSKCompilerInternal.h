@@ -216,17 +216,11 @@ namespace ADSKCompilerInternal
 	/** More than one comparison attribute is `bad-arity`, reported here; the result is then null and OutOp unset. */
 	const FADSKXmlAttribute* FindCompareAttribute(FCompileContext& Context, const FADSKXmlElement& Element, EADSKCompareOp& OutOp, const FString& NodeId = FString());
 
-	/**
-	 * `is` takes an Int literal or an enum value name; `below`/`above` take an Int or Float slot and a literal
-	 * of that type or a same-typed slot (OutSlot). Reports and returns false otherwise.
-	 */
+	/** `is`: Int or enum literal; `below`/`above`: Int or Float slot against a literal or same-typed slot. */
 	bool ParseCompareOperand(FCompileContext& Context, const FSlot& Slot, EADSKCompareOp Op, const FString& Text, int32 Line,
 		const FString& NodeId, FADSKValue& OutValue, int32& OutSlot);
 
-	/**
-	 * `if`/`unless` with an optional `is`/`below`/`above`, as on `On` and `When`. bOutHas: one of `if`/`unless` was
-	 * authored. bOutSyntaxOk turns false on conflicting or orphan attributes; an unresolved slot leaves it true.
-	 */
+	/** `if`/`unless` with optional `is`/`below`/`above`. bOutSyntaxOk false on conflicting attributes only. */
 	void ParseConditionAttributes(FCompileContext& Context, const FADSKXmlElement& Element, const FString& NodeId,
 		FADSKCondition& OutCondition, bool& bOutHas, bool& bOutSyntaxOk);
 

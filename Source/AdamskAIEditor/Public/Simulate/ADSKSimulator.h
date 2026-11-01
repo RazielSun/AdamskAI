@@ -20,11 +20,7 @@ struct ADAMSKAIEDITOR_API FADSKSimulationReport
 	FString Error;
 };
 
-/**
- * Runs one behavior file headless against a JSON scenario (docs/dev/testing.md, "Simulation"): fixed steps, the scenario's
- * inputs and events at their times. Core nodes run as shipped; every other leaf finishes as the scenario's `leaves`
- * say, every other scope only runs its child. Reports livelocks, holds and `expect` failures.
- */
+/** Runs a file headless against a JSON scenario; reports livelocks, holds and `expect` failures. */
 struct ADAMSKAIEDITOR_API FADSKSimulator
 {
 	static FADSKSimulationReport Run(const FString& ScenarioPath, const FString& DisplayPath, const TSharedRef<const FADSKNodeRegistry>& Registry);

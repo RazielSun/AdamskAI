@@ -26,11 +26,7 @@ namespace ADSKCompilerExpandRunsPrivate
 	/** Tree parameter slot -> the call site's slot, for the tree whose body is being cloned. */
 	using FSubstitution = TMap<int32, int32>;
 
-	/**
-	 * Expands from an immutable copy of the authored nodes, so one call site never sees another's
-	 * expansion. A tree with parameters is a template: its own call sites are expanded only inside its
-	 * clones, and its authored nodes are dropped afterwards.
-	 */
+	/** Expands from an immutable copy; a tree with parameters is a template, expanded only in its clones. */
 	class FExpander
 	{
 	public:
@@ -207,10 +203,7 @@ namespace ADSKCompilerExpandRunsPrivate
 			return true;
 		}
 
-		/**
-		 * Clones one snapshot node. A valid `Dest` is the slot replaced in place; otherwise a slot is
-		 * appended under `ParentDest`. Every generated id is `Prefix + authored id`.
-		 */
+		/** Clones one node into `Dest` (in place) or under `ParentDest`; generated ids are `Prefix + authored id`. */
 		void CloneNode(int32 Source, int32 Dest, int32 ParentDest, const FString& Prefix, int32 Depth, const FSubstitution& Substitution)
 		{
 			if (bStopped)

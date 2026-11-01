@@ -94,8 +94,7 @@ bool FADSKInstance::CaptureSnapshot(FADSKSnapshot& Out) const
 
 void FADSKInstance::FImpl::Restore(const FADSKSnapshot& Snapshot, TArray<FString>& OutDropped)
 {
-	// Everything is still matched by name: a reload that renamed the agent keeps its state, and the host learns of it.
-	// A snapshot built by hand may leave the id empty.
+	// Still matched by name, so a renamed agent keeps its state; the host is told.
 	if (!Snapshot.AgentId.IsEmpty() && !Snapshot.AgentId.Equals(Definition->GetAgentId(), ESearchCase::CaseSensitive))
 	{
 		OutDropped.Add(TEXT("agent ") + Snapshot.AgentId);
@@ -116,8 +115,7 @@ void FADSKInstance::FImpl::Restore(const FADSKSnapshot& Snapshot, TArray<FString
 			Record({.Kind = EADSKRecordKind::SlotWritten, .Slot = Slot, .bHasValue = true, .Value = Value});
 		}
 	}
-	// A baseline that cannot be read becomes the slot's current value, as at a plain Start: no change is raised for it.
-	// So does one whose event now watches another slot, or the same name turned from Local to Input or back.
+	// An unreadable or retargeted baseline becomes the current value, as at a plain Start.
 	for (int32 Index = 0; Index < ChangeEvents.Num(); ++Index)
 	{
 		const FADSKEventDefinition& Event = Definition->GetEvents()[ChangeEvents[Index]];

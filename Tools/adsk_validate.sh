@@ -118,9 +118,7 @@ case "$MODE" in
 	xsd) check xsd -xsd="$ADSK_PLUGIN_DIR/docs/adamskai.xsd" -registry=plugin -check ;;
 	paths) check paths "-paths=$PATHS_ARG" ;;
 	simulate) check simulate "-simulate=$PATHS_ARG" ;;
-	# default, fixtures, and the plugin's and the project's catalogue and schema checks in one editor launch
-	# (-all). The commandlet resolves the behavior root and whether the project has provider nodes, so a
-	# project without any passes without its own catalogue and schema.
+	# Every mode in one launch (-all); a project without provider nodes needs no catalogue or schema of its own.
 	all) check all -all ;;
 esac
 

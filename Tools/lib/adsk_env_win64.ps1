@@ -123,10 +123,8 @@ function Get-AdskPython([string] $UERoot) {
 	return $null
 }
 
-# Optional host-project preflight, run before any editor launch or build. ADSK_PREFLIGHT names a
-# command that exits nonzero to refuse the run; ADSK_PREFLIGHT=none disables it. Without the variable,
-# a project that ships Tools\lib\preflight_win64.ps1 (the twin of its Tools/lib/preflight.sh) has it
-# run in a child PowerShell. Returns the exit code to stop with, or 0 to continue.
+# Host preflight before any editor launch or build: ADSK_PREFLIGHT=<command>|none, else the project's
+# Tools\lib\preflight_win64.ps1. Returns the exit code to stop with, or 0.
 function Invoke-AdskPreflight($Ctx) {
 	if ($env:ADSK_PREFLIGHT) {
 		if ($env:ADSK_PREFLIGHT -eq 'none') { return 0 }
@@ -144,14 +142,24 @@ function Invoke-AdskPreflight($Ctx) {
 
 # Editor processes whose command line names this project (or no project at all, which can be any).
 function Get-AdskRunningEditors($Ctx) {
-	$Name = [regex]::Escape($Ctx.Name + '.uproject')
+	$Name = $Ctx.Name + '.uproject'
+	$Full = [IO.Path]::GetFullPath($Ctx.UProject).Replace('/', '\')
 	@(Get-CimInstance Win32_Process -Filter "Name LIKE 'UnrealEditor%'" -ErrorAction SilentlyContinue |
-		Where-Object { $_.CommandLine -match $Name -or $_.CommandLine -notmatch '\.uproject' })
+		Where-Object {
+			$Line = "$($_.CommandLine)"
+			if ($Line -notmatch '\.uproject') { return $true }
+			# A rooted path names one checkout; a bare or relative name may be this one.
+			foreach ($M in [regex]::Matches($Line, '"([^"]+\.uproject)"|(\S+\.uproject)')) {
+				$Path = if ($M.Groups[1].Success) { $M.Groups[1].Value } else { $M.Groups[2].Value }
+				if ((Split-Path $Path -Leaf) -ne $Name) { continue }
+				if (-not [IO.Path]::IsPathRooted($Path)) { return $true }
+				if ([IO.Path]::GetFullPath($Path).Replace('/', '\') -eq $Full) { return $true }
+			}
+			return $false
+		})
 }
 
-# NO EDITOR MAY BE RUNNING while a build links this project's modules: it holds the DLLs open and the
-# link fails on a file it cannot replace (Live Coding owns them). Report the PIDs and refuse; never
-# kill, and never by a name pattern, which can match the caller's own shell. Returns $true when clear.
+# A running editor holds the module DLLs and the link fails. Report the PIDs and refuse; never kill, never by name.
 function Assert-AdskNoEditor($Ctx) {
 	$Running = @(Get-AdskRunningEditors $Ctx)
 	if ($Running.Count -eq 0) { return $true }
@@ -160,10 +168,8 @@ function Assert-AdskNoEditor($Ctx) {
 	return $false
 }
 
-# One argument in the form UnrealEditor parses from its raw Windows command line: `-Key=Value` with a
-# space becomes `-Key="Value"` (FParse::Value stops at an unquoted space), anything else with a space
-# is quoted whole. The bash scripts get the same result from FCommandLine::BuildFromArgV. cmd.exe
-# metacharacters are quoted too, since the line runs through `cmd /c`.
+# Quotes one argument as UnrealEditor parses its raw command line (`-Key="Value"` when Value has a space);
+# cmd.exe metacharacters too, since the line runs through `cmd /c`.
 function ConvertTo-AdskArgument([string] $Arg) {
 	if ($Arg -notmatch '[\s"&|<>^()%!]') { return $Arg }
 	if ($Arg -match '["%!]') { throw "argument must not contain a double quote, % or !: $Arg" }
@@ -171,12 +177,8 @@ function ConvertTo-AdskArgument([string] $Arg) {
 	return '"' + $Arg.TrimEnd('\') + '"'
 }
 
-# Runs a program with stdout and stderr merged into $LogPath as raw bytes (as `>log 2>&1` in the bash
-# scripts; PowerShell's own `*>` would write UTF-16 and turn stderr lines into error records).
-# Returns @{ Status = <exit code>; TimedOut = <bool> }. With a positive timeout the whole process tree
-# is killed when it expires and Status is 124, the code GNU timeout uses, so callers keep the bash
-# scripts' rules. cmd.exe owns the redirection: editor children (crash reporter, shader workers) can
-# hold the handles a moment after the editor exits, which makes a PowerShell-side merge race them.
+# Runs a program with stdout and stderr merged into $LogPath as raw bytes; `*>` would write UTF-16. cmd.exe owns
+# the redirection, since editor children hold the handles past exit. Timeout kills the tree; Status 124.
 function Invoke-AdskLogged([string] $Exe, [string[]] $Arguments, [string] $LogPath, [int] $TimeoutSeconds = 0) {
 	# The same children can still hold the previous run's log when a script runs right after another (adsk_all):
 	# cmd then cannot redirect, the editor never starts and the run reads as incomplete. Wait up to 30 s for it.

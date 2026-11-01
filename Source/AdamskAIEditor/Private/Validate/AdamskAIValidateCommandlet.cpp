@@ -48,10 +48,7 @@ namespace ADSKValidateCommandletPrivate
 		return Exit;
 	}
 
-	/**
-	 * `-all`: default, fixtures, and the plugin's and the project's catalogue and schema checks in one editor launch.
-	 * Each mode prints its own rows and summary; the one marker carries the worst exit, 2 over 1 over 0.
-	 */
+	/** `-all`: every mode in one launch; the marker carries the worst exit. */
 	int32 RunAll(const FADSKValidateEnvironment& Environment)
 	{
 		const FString Catalog = Environment.PluginBase / TEXT("docs/node-catalog.md");

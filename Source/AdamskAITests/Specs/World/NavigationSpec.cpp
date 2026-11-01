@@ -9,8 +9,7 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "CQTest.h"
 
-// MoveTo and MoveToActor on the test map's real navmesh, with no CompleteMoveForTest: the path following component
-// finishes them.
+// MoveTo and MoveToActor on the real navmesh, finished by path following.
 namespace FNavigationSpecPrivate
 {
 	const TCHAR* MoveFile = TEXT("world_move_to.xml");
@@ -90,10 +89,7 @@ TEST_CLASS_WITH_FLAGS(FWorldNavigationSpec, "AdamskAIWorld.Navigation",
 		});
 	}
 
-	/**
-	 * The island is on the navmesh but no path leads there. By default (allowPartialPath="true", the engine's
-	 * behavior) the pawn walks to the floor's edge facing the island and the move succeeds there.
-	 */
+	/** Unreachable island: with allowPartialPath (default) the pawn stops at the floor's edge and the move succeeds. */
 	TEST_METHOD(MoveToAnUnreachablePointEndsAtTheClosestPoint)
 	{
 		if (!Scenario.IsOpen()) return;

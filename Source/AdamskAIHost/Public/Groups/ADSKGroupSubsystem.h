@@ -10,11 +10,7 @@
 class UADSKBrainComponent;
 struct FADSKNamedValue;
 
-/**
- * Groups of agents and what they share, so no brain reaches another (concept.md, principle 6). The host puts actors
- * (pawns) into groups and reports what a member sees; sensors read it back into each member's file (`GroupTarget`).
- * Attack tokens cap how many agents act on one target at once (`HoldToken`). Game thread only.
- */
+/** Groups and what members share (sensed targets, radio, attack tokens), so no brain reaches another. Game thread. */
 UCLASS()
 class ADAMSKAIHOST_API UADSKGroupSubsystem : public UWorldSubsystem
 {
@@ -38,20 +34,16 @@ public:
 	AActor* GetGroupTarget(const AActor& Member, double MaxAge) const;
 
 	/**
-	 * A radio call: after Delay seconds, Event with Parameters is queued in the brain of every other member of Sender's
-	 * group, as it is then. Dropped when Sender is destroyed or has left the group by then (the caller was cut off). A
-	 * member whose file does not declare Event, or declares other parameters, refuses it (FADSKInstance::EnqueueEvent).
-	 * False when Sender is in no group.
+	 * Queues Event in every other member's brain after Delay; dropped if Sender is gone or left by then. Members whose
+	 * file lacks Event refuse it. False when Sender is in no group.
 	 */
 	bool Broadcast(const AActor& Sender, FName Event, float Delay, TConstArrayView<FADSKNamedValue> Parameters = {});
 	/** The brain on Actor itself, or on its controller when Actor is a pawn; null when neither has one. */
 	static UADSKBrainComponent* FindBrain(const AActor* Actor);
 
 	/**
-	 * One of Pool's tokens on Target for Holder: true when Holder holds one now (taken, or already held), false when
-	 * all of them are held by others. The pool's size is UADSKSettings::TokenPools, 1 for a pool it does not name.
-	 * A holder holds one token however often it takes it, and keeps it until it has returned it as often as it took it
-	 * (nested HoldToken scopes on one brain).
+	 * True when Holder holds one of Pool's tokens on Target (pool size from UADSKSettings::TokenPools, default 1).
+	 * Counted: kept until returned as often as taken.
 	 */
 	bool TakeToken(FName Pool, const AActor* Target, const UObject& Holder);
 	void ReturnToken(FName Pool, const AActor* Target, const UObject& Holder);

@@ -81,10 +81,7 @@ namespace ADSKHoldAnalysisPrivate
 	/** 0: no handler on the path, 1: only conditional ones, 2: an unconditional one. */
 	int32 Coverage(const FADSKDefinition& Definition, int32 State, int32 Event);
 
-	/**
-	 * The tree succeeds only by an Emit whose event an unconditional handler on the state path leaves the state for:
-	 * that event is queued before the completion, so the completion is stale when it dispatches.
-	 */
+	/** Succeeds only by an Emit an unconditional handler leaves the state for, so the completion is stale. */
 	bool SucceedsThroughHandledEmit(const FADSKDefinition& Definition, int32 State, int32 NodeIndex)
 	{
 		const FADSKNodeDefinition& Node = Definition.GetNodes()[NodeIndex];

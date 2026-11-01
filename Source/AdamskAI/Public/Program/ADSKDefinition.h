@@ -162,10 +162,7 @@ struct FADSKStateDefinition
 	EADSKStateSelect Select = EADSKStateSelect::Initial;
 	/** Entering it again after leaving it resumes the child it left, before Select or Initial are consulted. */
 	EADSKStateHistory History = EADSKStateHistory::None;
-	/**
-	 * As a child of a selecting state: scores `ScoreWeight * ScoreSlot + ScoreBias`, the slot reading 1 when unset.
-	 * A child without `score`, `weight` or `bias` scores 0 and is entered only through a transition or as Initial.
-	 */
+	/** Score as a `select` child: `ScoreWeight * ScoreSlot + ScoreBias` (unset slot reads 1); none of them scores 0. */
 	bool bScored = false;
 	int32 ScoreSlot = INDEX_NONE;
 	float ScoreWeight = 1.f;

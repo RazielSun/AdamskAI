@@ -30,9 +30,7 @@
 #include "UObject/SavePackage.h"
 #include "CQTest.h"
 
-// The test content is generated, not hand-made: run `AdamskAIWorld.Content` with ADSK_GENERATE_WORLD_MAP=1 to (re)write
-// Content/Tests/Maps/L_AdskWorldTest from ADSKWorldLayout and Content/Tests/EQS from ADSKWorldQueries. A normal run
-// skips the generators; AdamskAIWorld.Map and the Content checks verify the result.
+// Generated content: ADSK_GENERATE_WORLD_MAP=1 rewrites the map and EQS assets; a normal run only verifies them.
 namespace FWorldContentSpecPrivate
 {
 	bool IsGenerating()

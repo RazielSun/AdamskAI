@@ -11,10 +11,7 @@
 #include "Support/TestChecks.h"
 #include "Trace/ADSKTrace.h"
 
-/**
- * Non-core leaves and scopes keep their descriptors, so a file compiles exactly as shipped, but run doubles: a leaf
- * stays Running until the test finishes it, and on success writes ScriptedPoint to its Vector out ports.
- */
+/** Files compile as shipped, but non-core leaves stay Running until the test finishes them (writing ScriptedPoint). */
 namespace FADSKScriptedCatalogue
 {
 	inline const FVector ScriptedPoint(100.0, 200.0, 0.0);

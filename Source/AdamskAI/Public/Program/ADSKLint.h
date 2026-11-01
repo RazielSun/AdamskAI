@@ -17,12 +17,6 @@ struct FADSKLintNote
 
 namespace ADSK
 {
-	/**
-	 * Static checks on a compiled definition, in that code order then declaration order:
-	 * - unreachable-state: no initial chain or transition target ever enters the state;
-	 * - unhandled-event: no transition anywhere names the event, so raising it does nothing;
-	 * - unread-local: no port, condition, change event, Emit, Param or Set argument reads the Local;
-	 * - unread-input: the same for an Input, which the host then publishes for nothing.
-	 */
+	/** unreachable-state, unhandled-event, unread-local, unread-input; in that order, then declaration order. */
 	ADAMSKAI_API TArray<FADSKLintNote> FindLintNotes(const FADSKDefinition& Definition);
 }

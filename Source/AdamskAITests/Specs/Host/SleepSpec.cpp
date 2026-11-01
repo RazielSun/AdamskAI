@@ -137,6 +137,24 @@ TEST_CLASS_WITH_FLAGS(FSleepSpec, "AdamskAI.Host.Sleep",
 		Brain->Cleanup();
 	}
 
+	TEST_METHOD(AnAutoTickingBrainThatWokeTicksEveryFrame)
+	{
+		FFixture F;
+		UADSKBrainComponent* Brain = F.Start(true);
+		ASSERT_THAT(IsTrue(FMath::IsNearlyEqual(Brain->GetComponentTickInterval(), 1.f), FString::SanitizeFloat(Brain->GetComponentTickInterval())));
+		// Awake from the next tick on; later awake ticks must keep interval 0.
+		Brain->OnPreTick.AddLambda([] {});
+		for (int32 Frame = 0; Frame < 5; ++Frame)
+		{
+			Brain->TickBrain(0.1f);
+			ASSERT_THAT(IsTrue(Brain->IsComponentTickEnabled(), TEXT("an awake brain stopped ticking")));
+			ASSERT_THAT(IsTrue(Brain->GetComponentTickInterval() == 0.f, FString::SanitizeFloat(Brain->GetComponentTickInterval())));
+		}
+		ASSERT_THAT(AreEqual(uint64(5), Ticks(*Brain)));
+		Brain->OnPreTick.Clear();
+		Brain->Cleanup();
+	}
+
 	TEST_METHOD(AManagedBrainStoppedInAHoldStartsItsNextRunWithoutTheStoppedTime)
 	{
 		FFixture F;

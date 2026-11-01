@@ -10,10 +10,7 @@ class AActor;
 class UEnvQuery;
 class UWorld;
 
-/**
- * What RunEQS, the perception bridge and the managed tick read from the engine. A world uses the engine's own unless
- * its UADSKWorldSubsystem was given others with SetHostServices: other view points for tick LOD, or fakes in specs.
- */
+/** What RunEQS, the perception bridge and the managed tick read from the engine; per world. */
 class ADAMSKAIHOST_API IADSKHostServices
 {
 public:

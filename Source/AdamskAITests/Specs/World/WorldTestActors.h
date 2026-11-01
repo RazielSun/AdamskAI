@@ -14,10 +14,7 @@ class UADSKPerceptionBridgeComponent;
 class UAIPerceptionStimuliSourceComponent;
 class UStaticMeshComponent;
 
-/**
- * The body of an AdamskAIWorld.* agent or target: a default character with a cube to see it by, registered as a sight
- * source itself rather than through the project's auto-registration setting. Tests possess it explicitly.
- */
+/** A default character with a cube, registered as a sight source itself. */
 UCLASS(NotBlueprintable, Transient)
 class AADSKWorldTestPawn : public ACharacter
 {
@@ -33,10 +30,7 @@ public:
 	TObjectPtr<UAIPerceptionStimuliSourceComponent> StimuliSource;
 };
 
-/**
- * A test pawn that carries a brain itself (bAutoTick), so the pawn's network copies carry one too, and replicates
- * the brain's active state tags the way networking.md's recipe does.
- */
+/** Carries its own brain (bAutoTick) and replicates its state tags as networking.md shows. */
 UCLASS(NotBlueprintable, Transient)
 class AADSKWorldBrainPawn : public AADSKWorldTestPawn
 {
@@ -69,10 +63,7 @@ protected:
 	virtual void OnUnPossess() override;
 };
 
-/**
- * Performs every action the kit's Act starts: records each call, and ends the running action only when the test calls
- * Finish. An action named `Refused` does not start.
- */
+/** Records every Act; the action ends only on Finish. `Refused` does not start. */
 UCLASS(NotBlueprintable, Transient)
 class AADSKWorldActingController : public AADSKWorldTestController, public IADSKActionPerformer
 {
@@ -101,11 +92,7 @@ public:
 	AADSKWorldManagedController();
 };
 
-/**
- * Sight (2000 cm, 60 degrees each side, every affiliation) through a perception bridge into the Inputs and events of
- * Fixtures/world/world_sight.xml: a lost target is remembered for ForgetAfter seconds, the alert level reaches 1 in
- * half a second of sight.
- */
+/** Sight (2000 cm, 60 degrees) bridged into world_sight.xml: forgets after ForgetAfter, full alert in 0.5 s. */
 UCLASS(NotBlueprintable, Transient)
 class AADSKWorldSightController : public AADSKWorldTestController
 {

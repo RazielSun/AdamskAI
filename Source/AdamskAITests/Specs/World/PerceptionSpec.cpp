@@ -10,8 +10,7 @@
 #include "Perception/AISense_Sight.h"
 #include "CQTest.h"
 
-// The perception bridge on real AI sight, with no InjectStimulusForTest or fake clock: the target is seen in
-// front of the agent, then teleported behind the map's wall.
+// The perception bridge on real AI sight: seen in front, then teleported behind the wall.
 namespace FPerceptionSpecPrivate
 {
 	const FTimespan Timeout = FTimespan::FromSeconds(20);

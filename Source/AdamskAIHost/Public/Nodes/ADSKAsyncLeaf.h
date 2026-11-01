@@ -35,10 +35,8 @@ using FADSKAsyncCanStartFn = TFunction<bool(FADSKNodeContext&)>;
 namespace ADSK
 {
 	/**
-	 * Fills OnStart/OnEnd with the async protocol. CanStart, when given, runs first: false fails the node plainly, with
-	 * no entry opened. Start runs once the brain's entry is open and partial entry is marked. At the end BeforeEnd runs
-	 * first (unbind what Start bound), then the entry closes: on success its payload goes to PayloadPort; unfinished,
-	 * its cancel runs.
+	 * Fills OnStart/OnEnd with the async protocol: CanStart (false fails, no entry), Start once the entry is open;
+	 * at the end BeforeEnd (unbind), then the entry closes with its payload or its cancel.
 	 */
 	ADAMSKAIHOST_API void MakeAsyncLeaf(FADSKNodeDescriptor& Descriptor, FName Kind, FADSKAsyncStartFn Start,
 		int32 PayloadPort = INDEX_NONE, FADSKEndFn BeforeEnd = nullptr, FADSKAsyncCanStartFn CanStart = nullptr);

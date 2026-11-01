@@ -57,10 +57,7 @@ struct FADSKInstance::FImpl final : IADSKSlotWriteSink
 	int32 TakeExternalEvent(int32 Index);
 	void HandleEvent(int32 Event, const FADSKValue* Parameters, bool bWasCompletion);
 	void EnterInitialConfiguration();
-	/**
-	 * The child entering State enters: the one its history resumes (only when State was just entered, bInOutDeep
-	 * then carrying a deep history down), its `select` pick or its initial child. INDEX_NONE for a leaf.
-	 */
+	/** The child State enters: history's (only on entry), its `select` pick or initial. INDEX_NONE for a leaf. */
 	int32 EntryChild(int32 State, bool bJustEntered, bool& bInOutDeep);
 	/** Enters the chain of entry children below the deepest active state; bJustEntered: that state was entered now. */
 	void EnterEntryChain(bool bJustEntered);
@@ -110,10 +107,7 @@ struct FADSKInstance::FImpl final : IADSKSlotWriteSink
 	TArray<uint64, TInlineAllocator<8>> ActiveTokens;
 	/** Per active state, its Insights region; 0 when AdamskAIChannel was off as it was entered. */
 	TArray<uint64, TInlineAllocator<8>> ActiveRegions;
-	/**
-	 * Per state, the child that was active when the state was last left (INDEX_NONE before that); history resumes it.
-	 * Kept for every state, so a deep history finds the whole path below. Reset by every Start.
-	 */
+	/** Per state, the child active when last left (history resumes it); INDEX_NONE before. Reset by Start. */
 	TArray<int32> LastChild;
 	/** The state ExitTopState popped last, so the next pop knows which child its state is leaving. */
 	int32 LastExited = INDEX_NONE;
@@ -141,10 +135,7 @@ struct FADSKInstance::FImpl final : IADSKSlotWriteSink
 	int32 CallbackDepth = 0;
 	/** Stop was called from a callback; the outermost Tick, Start or Stop performs it. */
 	bool bStopRequested = false;
-	/**
-	 * A node, a Set or a Bind wrote a slot since the last tick began: change events and re-checks see it on the next
-	 * tick, so GetNextWake answers 0. Inputs apply at the start of a tick and are seen in it, so they do not count.
-	 */
+	/** A node, Set or Bind wrote a slot this tick, so the next one has work. Inputs do not count. */
 	bool bSlotWrittenThisTick = false;
 	/** A SetInput is waiting for the next tick's ApplyPendingInputs. */
 	bool bHasPendingInputs = false;

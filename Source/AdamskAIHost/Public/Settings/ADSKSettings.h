@@ -52,11 +52,7 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "Tick")
 	bool bParallelManagedTick = false;
 
-	/**
-	 * Brains skip ticks while nothing is due (a Wait running, a hold) and get the skipped time in the tick that wakes
-	 * them, as Behavior Trees and StateTrees do; an input, event or async result wakes one at once
-	 * (UADSKBrainComponent::IsAsleep). Off ticks every running brain every frame (or at its managed rate).
-	 */
+	/** Brains skip ticks while nothing is due and get the skipped time on waking; off ticks every brain every frame. */
 	UPROPERTY(Config, EditAnywhere, Category = "Tick")
 	bool bSleepWhenIdle = true;
 

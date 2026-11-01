@@ -8,11 +8,7 @@
 
 class UADSKBrainComponent;
 
-/**
- * An Input written every tick: resolved to an id once per definition and again after a reload, so a host writes by
- * id without tracking definition serials. A name the definition does not declare falls back to the by-name write,
- * which warns once (outside Shipping).
- */
+/** An Input written every tick by id, re-resolved after a reload; an undeclared name falls back to by-name. */
 struct ADAMSKAIHOST_API FADSKInputRef
 {
 	FADSKInputRef() = default;
@@ -26,11 +22,7 @@ private:
 	FADSKInputId Id;
 };
 
-/**
- * The host contract of docs/setup.md for an actor that owns one brain, so a controller does not repeat it: Begin
- * initializes from the file, publishes the facts and starts; Tick publishes and advances the brain once; End stops it.
- * Publish runs before the start and before every tick. Embed one in the controller (no base class needed).
- */
+/** One brain's host contract (docs/setup.md): Begin starts, Tick publishes and advances, End stops. Embed it. */
 class ADAMSKAIHOST_API FADSKBrainDriver
 {
 public:

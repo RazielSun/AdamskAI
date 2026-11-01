@@ -307,8 +307,7 @@ EADSKInputResult FADSKInstance::PostActionResult(FADSKActivationHandle Handle, E
 	}
 	if (Impl->Results.Num() >= ADSK::ActionResultCapacity)
 	{
-		// Only running leaves' results can still change anything; stale posts must not crowd them out. Each running
-		// leaf (one per lane) gets one slot beyond capacity, so the overflow stays bounded.
+		// Stale posts must not crowd out running leaves: each running leaf gets one slot beyond capacity.
 		const bool bReservedSlot = Impl->Procedure->IsCurrentRunningLeaf(Handle)
 			&& !Impl->Results.ContainsByPredicate([Handle](const FADSKQueuedResult& Queued) { return Queued.Handle == Handle; });
 		if (!bReservedSlot)
@@ -511,8 +510,7 @@ void FADSKInstance::FImpl::RaiseChangeEvents()
 
 void FADSKInstance::FImpl::ApplyResults()
 {
-	// A callback started by an accepted result may post again (a leaf completing inside its own OnStart).
-	// That post must not join this pass: it goes to the emptied queue and is classified next tick.
+	// A post made inside this pass goes to the emptied queue and is handled next tick.
 	Swap(Results, ResultsInFlight);
 	TArray<FADSKActivationHandle, TInlineAllocator<ADSK::ActionResultCapacity + 1>> Seen;
 	for (const FADSKQueuedResult& Result : ResultsInFlight)

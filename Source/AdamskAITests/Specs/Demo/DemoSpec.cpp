@@ -27,8 +27,7 @@
 #include "World/WorldScenario.h"
 #include "CQTest.h"
 
-// The demo arena is generated, like the test map: run `AdamskAIWorld.Demo.Content` with ADSK_GENERATE_DEMO_MAP=1 to
-// (re)write Content/Demo/Maps/L_AdskDemo from ADSKDemoLayout. The scene specs open it and run each scene headless.
+// Generated arena: ADSK_GENERATE_DEMO_MAP=1 rewrites L_AdskDemo; the scene specs run each scene headless.
 namespace FDemoSpecPrivate
 {
 	const FTimespan Timeout = FTimespan::FromSeconds(30);

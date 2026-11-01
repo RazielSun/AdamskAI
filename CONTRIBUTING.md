@@ -42,8 +42,10 @@ follow [AGENTS.md](AGENTS.md), which this file shares its rules with.
   file includes ImGui.
 - The plugin never includes project game code; host features reach a pawn through interfaces the project
   implements.
-- Match the surrounding code: naming (`FADSK`, `UADSK`, `EADSK`, `IADSK`), comment density, one-sentence doc comments
-  on public API.
+- Match the surrounding code: naming (`FADSK`, `UADSK`, `EADSK`, `IADSK`), one-sentence doc comments on public API.
+- Comment only where the code cannot say it: an invariant, an ordering that matters, an engine quirk, a non-obvious
+  why. One short line, rarely two. No restating the code, no history (what it used to do, which review found it),
+  no essays: the reasoning lives in docs/, the history in git.
 - Behavior files follow [docs/xml-style.md](docs/xml-style.md).
 
 ## Tests

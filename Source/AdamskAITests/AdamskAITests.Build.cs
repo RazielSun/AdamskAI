@@ -8,9 +8,7 @@ public class AdamskAITests : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		// UNITY OFF, DELIBERATELY: spec files each open a same-named private namespace
-		// (`namespace F<File>Private { ... }`) followed by a file-scope `using namespace`, which
-		// becomes ambiguous the moment Unity concatenates two files declaring the same constant.
+		// Unity off on purpose: every spec's `namespace F<File>Private` + `using namespace` collides once concatenated.
 		bUseUnity = false;
 
 		// Specs include their shared helpers as "Support/<Header>.h".

@@ -18,14 +18,9 @@
 #include "Support/TempTree.h"
 #include "CQTest.h"
 
-// Seeded mutants of every example and fixture, valid and invalid; some mutations draw node names, fields and ports from
-// the catalogue and the grammar. Each must compile to a definition or to errors on lines the file has, never crash; a
-// definition must also pass the hold and lint analyses, start and tick, restart from its own snapshot, and start from a
-// snapshot of the unmutated file, as a live reload does. The file being compiled is written to
-// Saved/AdamskAI/fuzz/current.xml first, so a crash leaves its input behind; a mutant that breaks a rule is kept there
-// under its file and seed. ADSK_FUZZ_MUTANTS sets mutants per file and round (default 24). By default the run makes one
-// round within 20 s; ADSK_FUZZ_SECONDS sets a longer budget, and the run then repeats rounds with new seeds until it is
-// spent (a soak). ADSK_FUZZ_SEED moves every seed, so two soaks cover different mutants.
+// Seeded mutants of every example and fixture: compile to a definition or to in-range errors, never crash; a definition
+// must also pass the analyses, start, tick and restart from snapshots. The current input is kept in
+// Saved/AdamskAI/fuzz/current.xml. ADSK_FUZZ_MUTANTS, ADSK_FUZZ_SECONDS (soak) and ADSK_FUZZ_SEED: docs/dev/testing.md.
 namespace FFuzzSpecPrivate
 {
 	constexpr int32 DefaultMutantsPerFile = 24;

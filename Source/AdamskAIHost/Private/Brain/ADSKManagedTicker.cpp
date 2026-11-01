@@ -71,8 +71,7 @@ void FADSKManagedTicker::TickPass(float Delta, TConstArrayView<FVector> Viewers)
 			for (const FVector& Viewer : Viewers) Nearest = FMath::Min(Nearest, Host ? FVector::Dist(Viewer, Host->GetActorLocation()) : 0.0);
 			Interval = UADSKSettings::GetTickInterval(Nearest);
 		}
-		// The first tick comes after its phase of an interval; every tick hands over all the time accumulated, so Wait
-		// and every timer see the same total as at full rate.
+		// First tick after its phase; every tick hands over all accumulated time.
 		const float Due = Entry.bTicked ? Interval : Entry.Phase * Interval;
 		Entry.Accumulated += Delta;
 		if (Entry.Accumulated + KINDA_SMALL_NUMBER < Due) continue;

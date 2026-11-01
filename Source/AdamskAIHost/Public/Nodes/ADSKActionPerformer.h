@@ -15,20 +15,13 @@ class UADSKActionPerformer : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- * What `<Act action="..." in-target="..."/>` runs: an attack, a shot, an ability, anything the pawn does by name and
- * ends on its own time. Implemented by the brain's host actor (the pawn) or, when the pawn does not, by the brain's
- * owner (its controller). The file decides when; the performer does it and says when it is over.
- */
+/** What `<Act>` runs by name (attack, shot, ability). Implemented by the pawn, else by the controller. */
 class ADAMSKAIHOST_API IADSKActionPerformer
 {
 	GENERATED_BODY()
 
 public:
-	/**
-	 * Starts Action at Target (null when the slot is none). True when it started: call Done when it ends by itself,
-	 * or never for an action that lasts until the node is left (firing). False when it cannot start: the node fails.
-	 */
+	/** True when started: call Done when it ends by itself. False fails the node. */
 	virtual bool StartAction(FName Action, AActor* Target, FADSKActionDone Done) = 0;
 
 	/** The node was left before Done: stop the action. Done must not be called afterwards. */

@@ -77,9 +77,8 @@ $Start = Get-Date
 $Code = (Invoke-AdskLogged $RunUAT $UatArgs $Log).Status
 $Elapsed = (Get-Date) - $Start
 
-# Every error, even one reported inside an engine header: MSVC blames the header for a plugin name that
-# shadows it (C4459), and only the following `note: see declaration` line points at the plugin.
-# Warnings only from outside the engine, which emits hundreds of deprecation warnings of its own.
+# Every error, even inside an engine header (C4459 blames the header; the next `note: see declaration` names us);
+# warnings only from outside the engine.
 Select-String -LiteralPath $Log -Pattern ':\s+(fatal )?error [A-Z]+\d+|note: see declaration|warning C\d+|BUILD (SUCCESSFUL|FAILED)|AutomationException' |
 	Where-Object { $_.Line -notmatch 'warning C\d+' -or $_.Line -notmatch '\\Engine\\Source\\' } |
 	Select-Object -First 40 | ForEach-Object { Write-Host $_.Line }

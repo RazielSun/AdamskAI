@@ -16,10 +16,7 @@ namespace FReloadKeepStateSpecPrivate
 {
 	const TCHAR* SourceFile = TEXT("reload_keep.xml");
 
-	/**
-	 * Go(V) binds V to Kept and leaves idle for busy, whose wait runs under a cooldown; a cooldown that is not ready
-	 * fails busy's tree into cooled. The edit changes only busy's wait.
-	 */
+	/** Go(V) binds Kept and enters busy, a wait under a cooldown; edits change only that wait. */
 	FString MakeXml(const TCHAR* Duration)
 	{
 		return FString::Printf(TEXT("<Agent version=\"1\" id=\"keep\"><Locals><Local name=\"Kept\" type=\"Int\"/></Locals>")

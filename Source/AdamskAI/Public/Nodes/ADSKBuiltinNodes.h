@@ -41,10 +41,7 @@ struct ADAMSKAI_API FADSKNamedParam
 	bool bBoolValue = false;
 };
 
-/**
- * Wait and TimeLimit: seconds of supplied simulation time. A nonzero `deviation` draws the time uniformly from
- * [duration - deviation, duration + deviation], floored at zero, once per start.
- */
+/** Wait and TimeLimit, in tick seconds; `deviation` draws uniformly around `duration` once per start, floored at 0. */
 USTRUCT()
 struct ADAMSKAI_API FADSKWaitConfig
 {
@@ -134,10 +131,7 @@ struct ADAMSKAI_API FADSKUtilitySelectorMemory
 	double LastScored = 0.0;
 };
 
-/**
- * Repeat: `count` successes in a row; 0 repeats until the child fails or something cancels it. Retry: `count` attempts;
- * 0 tries again until the child succeeds or something cancels it.
- */
+/** Repeat: `count` successes in a row; Retry: `count` attempts. 0 means until the child fails (succeeds). */
 USTRUCT()
 struct ADAMSKAI_API FADSKRepeatConfig
 {
@@ -156,10 +150,7 @@ struct ADAMSKAI_API FADSKRepeatMemory
 	int32 Done = 0;
 };
 
-/**
- * Parallel: `success` and `failure` are `all`, `any` or a count of children; a count above the child count means all.
- * It succeeds once that many children succeeded, and fails once that many failed or success can no longer be reached.
- */
+/** Parallel: `success` / `failure` are `all`, `any` or a count (above the child count means all). */
 USTRUCT()
 struct ADAMSKAI_API FADSKParallelConfig
 {

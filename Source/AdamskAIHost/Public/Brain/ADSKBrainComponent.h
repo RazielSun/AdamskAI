@@ -50,11 +50,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	bool InitializeFromSource(FStringView InSourcePath);
 	void InitializeDefinition(const TSharedRef<const FADSKDefinition>& Definition, const TSharedPtr<FADSKRecorder>& Recorder = nullptr);
-	/**
-	 * Resolve once per definition (again on OnDefinitionReplaced) and write by id every tick. A name the file lacks
-	 * warns once (not in Shipping) and gives an invalid id, which SetInput and EnqueueEvent refuse with UnknownName
-	 * and no trace record.
-	 */
+	/** Resolve once per definition, write by id. An unknown name warns once and yields an invalid id (UnknownName). */
 	FADSKInputId FindInput(FStringView Name) const;
 	FADSKEventId FindEvent(FStringView Name) const;
 	EADSKInputResult SetInput(FStringView Name, const FADSKValue& Value);
@@ -97,18 +93,12 @@ public:
 #endif
 	virtual bool IsPaused() const override { return State == EADSKBrainState::Paused; }
 	void TickBrain(float DeltaTime);
-	/**
-	 * TickBrain split for batched ticking (FADSKParallelTick): the caller ticks GetInstance() only when BeginBrainTick
-	 * returns true, then calls EndBrainTick. Game thread, in this order, nothing else in between.
-	 */
+	/** TickBrain split for batched ticking: tick GetInstance() only if BeginBrainTick is true, then EndBrainTick. */
 	bool BeginBrainTick();
 	void EndBrainTick();
 	/**
-	 * Sleep (UADSKSettings::bSleepWhenIdle): true while Elapsed seconds since the last tick are short of when the
-	 * instance is next due (FADSKInstance::GetNextWake). Any accepted input, event or result (through this component
-	 * or GetInstance()), a start or a resume wakes it. Never asleep while OnPreTick is bound or the file declares
-	 * sensors, since both publish before every tick, and never unless running: a stopped or paused brain's ticks drop
-	 * their time, so a stop never hands its length to the next run.
+	 * True while Elapsed is short of the instance's next wake; any accepted input, event, result, start or resume wakes
+	 * it. Never with OnPreTick bound, sensors declared, or the brain not running.
 	 */
 	bool IsAsleep(float Elapsed) const;
 	const FADSKInstance* GetInstance() const { return Instance.Get(); }
@@ -145,10 +135,7 @@ public:
 	FOnADSKBrainPreTick OnPreTick;
 	/** After a running instance stops, its nodes end and async operations drain. */
 	FOnADSKBrainStopped OnStopped;
-	/**
-	 * The gameplay tags of the active states (XML `<State tags="...">`), for a replicated property that drives
-	 * animation, VFX or UI on clients. Empty while stopped.
-	 */
+	/** Gameplay tags of the active states (`<State tags>`), for replication to clients. Empty while stopped. */
 	const FGameplayTagContainer& GetActiveTags() const { return ActiveTags; }
 	/** Once per change of GetActiveTags, at the end of the brain call that changed it; never from inside a node. */
 	FOnADSKActiveTagsChanged OnActiveTagsChanged;
@@ -168,10 +155,7 @@ public:
 private:
 	UFUNCTION()
 	void OnMoveCompleted(FAIRequestID RequestId, EPathFollowingResult::Type Result);
-	/**
-	 * Releases Instance. Node callbacks may reach Cleanup or a re-initialization while the instance is
-	 * executing; it is then kept in RetiredInstances until the outermost brain call returns.
-	 */
+	/** Releases Instance; called from inside its own callback, it is retired until the outermost call returns. */
 	void RetireInstance();
 	/** Replaces the instance with a fresh one of Definition, its generations above the old instance's. */
 	void ReplaceInstance(const TSharedRef<const FADSKDefinition>& Definition);

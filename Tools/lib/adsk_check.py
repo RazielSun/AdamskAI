@@ -19,9 +19,8 @@ ALLOWED_DEPENDENCIES = {
     # CQTest's PIE network component replicates through Iris in its header templates (tests, editor block).
     "IrisCore",
 }
-# check()/checkSlow() compile to nothing in Shipping and Test, so their argument may only ask questions.
-# An allowlist, not a list of bad verbs: ResolveEnumValue(Value, OutType, OutName) and Render(.., OutText)
-# look harmless by name and still fill their out-parameters. Get* passes only with no arguments.
+# check() compiles out of Shipping and Test, so its argument may only ask questions. An allowlist: harmless
+# names (ResolveEnumValue, Render) still fill out-parameters. Get* passes only with no arguments.
 CHECK_ARGUMENT = re.compile(r"\bcheck(?:Slow)?\s*\((.*)")
 CALL = re.compile(r"\b([A-Za-z_]\w*)\s*\((\s*\))?")
 PURE_CALL = re.compile(r"^(?:Is|Has|Can|Find|Contains|Equals|Num|Len|Matches|StartsWith|EndsWith|TEXT$)\w*$")

@@ -10,10 +10,7 @@
 #include "EnvironmentQuery/Tests/EnvQueryTest_Distance.h"
 #include "EnvironmentQuery/Tests/EnvQueryTest_Pathfinding.h"
 
-/**
- * The EQS query of the AdamskAIWorld.* specs, built in code: the generator saves it as the asset EQ_AdskTest_Rings
- * (with the redirector EQ_AdskTest_Old pointing at it), and specs may build the same query in memory.
- */
+/** The specs' EQS query in code; the generator saves it as EQ_AdskTest_Rings (redirector EQ_AdskTest_Old). */
 namespace ADSKWorldQueries
 {
 	inline const TCHAR* Directory = TEXT("/AdamskAI/Tests/EQS");
@@ -40,10 +37,8 @@ namespace ADSKWorldQueries
 	}
 
 	/**
-	 * Replaces Query's options with one: 8 points per ring on navmesh-projected rings around the querier, from 100 cm
-	 * to Radius in Rings rings, filtered by whether a path reaches them (== Reachable), scored by distance, farthest
-	 * first. So the best point lies Radius away, or 100 cm with Rings = 1, and on open floor Reachable = false leaves
-	 * nothing.
+	 * One option: 8 points per ring from 100 cm to Radius, filtered by reachability (== Reachable), farthest first.
+	 * On open floor Reachable = false leaves nothing.
 	 */
 	inline void Fill(UEnvQuery& Query)
 	{

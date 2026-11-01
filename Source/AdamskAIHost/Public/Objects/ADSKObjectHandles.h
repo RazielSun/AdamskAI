@@ -5,10 +5,7 @@
 #include "Core/ADSKTypes.h"
 #include "CoreMinimal.h"
 
-/**
- * Opaque ids for Object slots, so the core stays value-only. Process-wide, game-thread only. One object keeps one id,
- * so `is` compares identity; ids are never reused, and a destroyed object's id resolves to null.
- */
+/** Opaque ids for Object slots; one id per object, never reused, null once destroyed. Game thread. */
 struct ADAMSKAIHOST_API FADSKObjectHandles
 {
 	/** `none` for null. */

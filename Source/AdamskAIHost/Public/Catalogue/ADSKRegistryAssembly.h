@@ -18,10 +18,7 @@ public:
 	static TSharedPtr<const FADSKNodeRegistry> BuildPluginCatalogue(TArray<FString>& OutErrors);
 	static bool HasAttempted();
 	static bool ReleaseAssembled();
-	/**
-	 * The next TryGet assembles a new registry; compiled definitions keep theirs. A provider's module must outlive
-	 * every definition that uses its nodes.
-	 */
+	/** The next TryGet assembles anew; compiled definitions keep theirs, so provider modules must outlive them. */
 	static void MarkProvidersChanged();
 	static uint32 GetGeneration();
 };

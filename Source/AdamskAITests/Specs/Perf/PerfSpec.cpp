@@ -351,10 +351,7 @@ TEST_CLASS_WITH_FLAGS(FPerfSpec, "AdamskAI.Perf",
 		Report(*TestRunner, TEXT("ManagedTick"), Numbers);
 	}
 
-	/**
-	 * What each Game/PIE world pays to compile the project's behavior files, since every world
-	 * compiles its own (a dedicated server per map change, PIE once per client). Read plus compile, best of 10.
-	 */
+	/** Read plus compile of the project's files, best of 10: every Game/PIE world compiles its own. */
 	TEST_METHOD(ProjectCompile)
 	{
 		TArray<FString> Errors;
@@ -386,10 +383,7 @@ TEST_CLASS_WITH_FLAGS(FPerfSpec, "AdamskAI.Perf",
 		Report(*TestRunner, TEXT("ProjectCompile"), Numbers);
 	}
 
-	/**
-	 * What a Start and a Stop cost per instance (every restart, reload and re-possession pays them), and what one reload
-	 * commit costs a world of brains on the same file: prepare, stop, publish, restart.
-	 */
+	/** Start and Stop per instance, and one reload commit over brains on one file. */
 	TEST_METHOD(StartCost)
 	{
 		constexpr int32 Agents = 1000;
@@ -444,7 +438,7 @@ TEST_CLASS_WITH_FLAGS(FPerfSpec, "AdamskAI.Perf",
 		for (int32 Commit = 0; Commit < Commits; ++Commit)
 		{
 			// Alternating texts, as an unchanged hash would make the reload a no-op.
-			Tree.Write(File, FString(BenchXml).Replace(TEXT("duration=\"0.3\""), Commit % 2 ? TEXT("duration=\"0.30\"") : TEXT("duration=\"0.31\"")));
+			Tree.Write(File, FString(BenchXml).Replace(TEXT("duration=\"0.3\""), (Commit % 2) ? TEXT("duration=\"0.30\"") : TEXT("duration=\"0.31\"")));
 			FString Error;
 			const EADSKReloadResult Queued = Subsystem->RequestReload(File, Error);
 			ASSERT_THAT(IsTrue(Queued == EADSKReloadResult::Queued, FString::Printf(TEXT("reload %s: %s"), LexToString(Queued), *Error)));

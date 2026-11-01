@@ -102,4 +102,4 @@ undoes one.
   not the stand-alone validate and test run.
 - `adsk_bench.sh` has no Win64 twin. The bench ran once by hand (2026-10-31, 1000 agents, per agent and frame):
   AdamskAI 0.11–0.13 µs ticking itself and 0.10–0.11 µs managed, Behavior Tree 0.12 µs, StateTree 0.31 µs.
-- A packaged (staged) run and a PIE session with a brain-driven pawn: see [roadmap.md](dev/roadmap.md).
+- A PIE session with a brain-driven pawn on a project map: see [roadmap.md](dev/roadmap.md).

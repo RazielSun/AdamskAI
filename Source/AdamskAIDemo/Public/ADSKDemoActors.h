@@ -52,10 +52,7 @@ private:
 	FADSKDemoTint Tint;
 };
 
-/**
- * Owns the brain, which ticks itself, and tints its pawn by the leaf state. Performs `Act` for every action: the pawn
- * flashes white for ActionSeconds, then the action succeeds.
- */
+/** Self-ticking brain tinting its pawn by state; every `Act` flashes it for ActionSeconds, then succeeds. */
 UCLASS(NotBlueprintable)
 class ADAMSKAIDEMO_API AADSKDemoController : public AAIController, public IADSKActionPerformer
 {

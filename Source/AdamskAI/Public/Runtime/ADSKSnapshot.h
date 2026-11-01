@@ -37,10 +37,8 @@ struct FADSKSnapshotNodeState
 };
 
 /**
- * What a running instance has decided, by name, so it can start again on the same or an edited definition: the
- * active state path, Locals, node state structs, change-event baselines, the random stream and the clock. Not in
- * it: running procedures, queued events and pending results; a restore restarts the leaf state's tree. Object
- * values are process-wide ids (FADSKObjectHandles), meaningful only in the process that captured them.
+ * An instance's decisions by name: state path, Locals, node state, change baselines, random stream, clock. Not
+ * running procedures, queued events or results. Object values are process-local ids.
  */
 struct FADSKSnapshot
 {

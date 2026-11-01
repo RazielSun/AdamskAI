@@ -40,10 +40,7 @@ namespace ADSKNormalizedDumpPrivate
 		return TEXT("?");
 	}
 
-	/**
-	 * A comparison suffix. The legacy `is` with a literal keeps its frozen text (LegacyPrefix + value);
-	 * every newer form names its operator: ` below=3` or ` below slot=4`.
-	 */
+	/** Legacy `is` with a literal keeps its frozen text; newer forms name the operator (` below=3`). */
 	FString FormatComparison(const FADSKDefinition& Definition, EADSKCompareOp Op, const FADSKValue& Value, int32 Slot, const TCHAR* LegacyPrefix)
 	{
 		if (Op == EADSKCompareOp::Equal && Slot == INDEX_NONE)

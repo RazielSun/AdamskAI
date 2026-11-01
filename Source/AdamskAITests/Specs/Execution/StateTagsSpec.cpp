@@ -8,8 +8,7 @@
 #include "Support/ExecutionTestSupport.h"
 #include "CQTest.h"
 
-// `<State tags="...">`. A state's tags hold while it or a descendant is active; the instance keeps
-// their union and a serial that moves only when the set changes.
+// Tags hold while the state or a descendant is active; the serial moves only when the union changes.
 namespace FStateTagsSpecPrivate
 {
 	const TCHAR* TaggedXml = TEXT(

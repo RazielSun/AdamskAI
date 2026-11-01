@@ -312,9 +312,7 @@ void FADSKInstance::FImpl::DispatchEvents()
 
 bool FADSKInstance::FImpl::SelectNextEvent(int32& OutExternal) const
 {
-	// OutExternal is the queue index of the winner, or INDEX_NONE when the ready completion wins.
-	// "Found" is its own flag: every int32 is a legal priority, MIN_int32 included, so no priority
-	// value can double as the empty marker.
+	// OutExternal: the winner's queue index, INDEX_NONE when the completion wins. Every int32 is a legal priority.
 	const TConstArrayView<FADSKEventDefinition> EventDefinitions = Definition->GetEvents();
 	bool bFound = false;
 	int32 BestPriority = 0;

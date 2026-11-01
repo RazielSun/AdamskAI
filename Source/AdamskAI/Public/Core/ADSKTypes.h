@@ -21,10 +21,7 @@ enum class EADSKValueType : uint8
 	Object,
 };
 
-/**
- * Only the member matching Type is meaningful; equality compares the type and that member alone, and a NaN
- * equals a NaN so a NaN slot does not look changed on every tick. Holds no UObject reference.
- */
+/** Only the member matching Type is meaningful and compared; NaN equals NaN so a NaN slot never looks changed. */
 struct ADAMSKAI_API FADSKValue
 {
 	EADSKValueType Type = EADSKValueType::Bool;
@@ -99,10 +96,7 @@ namespace ADSK
 	ADAMSKAI_API FString FormatValue(const FADSKDefinition& Definition, const FADSKValue& Value);
 }
 
-/**
- * Map key functions for exact-case string keys: XML names and behavior file paths are exact-case, and plain FString
- * keys ignore case.
- */
+/** Exact-case map keys: XML names and behavior paths are exact-case, plain FString keys are not. */
 template <typename ValueType>
 struct TADSKExactKeyFuncs : BaseKeyFuncs<TPair<FString, ValueType>, FString, false>
 {

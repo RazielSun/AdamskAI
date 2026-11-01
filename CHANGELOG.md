@@ -13,11 +13,14 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
 - Perception binding filters `RequiredActorTag` (ordinary Actor Tags) and `RequiredStimulusTag` (exact stimulus tag).
   Empty filters preserve behavior; callback and resync use the same filters, loss still clears accepted sensing,
   and removing the required actor tag invalidates the candidate on the next sample.
+- An Insights CPU scope `UADSKBrainComponent::OnPreTick` around the host's `OnPreTick`, broadcast only when bound.
 
 ### Changed
 - An instance takes 6980 bytes instead of 7492 (6660 in 0.4): a `Parallel`'s child lane list is allocated when the
   `Parallel` starts instead of inline in every active node. Against 0.4, `Start` costs about 5% more and `Stop` 11%
   more per instance: the new branches (`Concurrent`, `Set`), the per-tick input flags and the sleep bookkeeping.
+- A self-ticking brain that slept once no longer goes through the engine's cooldown list on every awake tick: 4000
+  such brains cost 8.3 ms per frame instead of 11.1 on Win64.
 - The perception bridge ceiling at 16 candidates is 3 µs: the same build reads 1.4–2.2 µs from one process to the
   next on Win64, 0.4 alike.
 
@@ -26,6 +29,10 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
   the whole stopped time to the first tick of its next run, so that run's first `Wait`, `TimeLimit` or `Cooldown`
   ended at once; on the managed pass and ticking itself alike. Only a running brain sleeps now, and a start resets
   the auto tick's clock.
+- A standalone game prewarmed `PrewarmFiles` twice: once for the placeholder world it creates before its first
+  `LoadMap`. A world without a game instance is not prewarmed now.
+- The Win64 scripts' running-editor check matched only the `.uproject` name, so a checkout of the same project
+  elsewhere blocked a build; a rooted path is compared in full now.
 - `adsk_schema_check_win64.ps1` passed with exit 0 after printing a schema error, also inside `adsk_all_win64.ps1`;
   `adsk_selftest_win64.ps1` has a case for it.
 - `adsk_build_win64.ps1` names the module and the `Build.cs` behind a `RulesError`, and prints the log's last lines

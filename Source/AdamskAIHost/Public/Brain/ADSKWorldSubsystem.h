@@ -36,19 +36,13 @@ public:
 	virtual bool DoesSupportWorldType(EWorldType::Type WorldType) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
-	/**
-	 * The first successful Acquire synchronously loads and retains the definition's ObjectPath assets (can hitch)
-	 * until deinitialize or a reload replaces them. InitializeDefinition on a brain bypasses this preload.
-	 */
+	/** The first Acquire loads and retains the file's ObjectPath assets synchronously (may hitch) until replaced. */
 	TSharedPtr<const FADSKDefinition> Acquire(FStringView RelativePath, FString& OutError);
 	/** Compiles on a worker and streams assets so the first Acquire does not hitch; an earlier Acquire waits for it. */
 	void Prewarm(FStringView RelativePath);
 	/** Prepares a replacement. Publishing only happens from the pre-actor-tick callback. */
 	EADSKReloadResult RequestReload(FStringView RelativePath, FString& OutDiagnostics);
-	/**
-	 * RequestReload with the compile on a worker; prepared in a later pre-actor tick. A request during a compile
-	 * compiles again after it, so the latest edit wins. False when the path is invalid or the file was never loaded.
-	 */
+	/** RequestReload compiled on a worker; a request during a compile compiles again, so the latest edit wins. */
 	bool RequestReloadAsync(FStringView RelativePath);
 	/** The outcome of the last finished asynchronous reload of the file, as RequestReload would have returned it. */
 	TOptional<EADSKReloadResult> GetLastAsyncReloadResult(FStringView RelativePath) const;
@@ -101,10 +95,7 @@ private:
 		TArray<TStrongObjectPtr<UObject>> PendingRefs;
 		FADSKExactStringSet WarnedMissing;
 		TSharedPtr<FPrewarm> Prewarm;
-		/**
-		 * An asynchronous reload's compile; whether another asynchronous request arrived while it ran (it compiles
-		 * again); whether a synchronous request did (its result is dropped: the synchronous one read a newer edit).
-		 */
+		/** A running async compile; whether another async request (compile again) or a sync one (drop this) arrived. */
 		TOptional<UE::Tasks::TTask<FADSKSourceReadResult>> ReloadCompile;
 		bool bReloadAgain = false;
 		bool bReloadCompileSuperseded = false;

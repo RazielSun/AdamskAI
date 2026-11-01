@@ -10,8 +10,7 @@
 #include "Editor.h"
 #include "CQTest.h"
 
-// The host contract in a live world: pawns die mid-action, controllers unpossess, PIE ends. Any error a brain logs
-// fails the test through the automation framework.
+// Pawns dying mid-action, unpossess, PIE end; any error a brain logs fails the test.
 namespace FLifecycleSpecPrivate
 {
 	const FTimespan Timeout = FTimespan::FromSeconds(20);
@@ -66,8 +65,7 @@ TEST_CLASS_WITH_FLAGS(FWorldLifecycleSpec, "AdamskAIWorld.Lifecycle",
 			.Until(TEXT("half a second later"), [this] { return Scenario.Now() - Mark >= 0.5; }, Timeout)
 			.Then(TEXT("ended, nothing pending"), [this]
 			{
-				// An AI controller destroys itself with its pawn (AController::PawnPendingDestroy), brain included; the
-				// brain's EndPlay must have stopped it cleanly, which any error it logged would contradict.
+				// The controller dies with its pawn; EndPlay must stop the brain without errors.
 				ASSERT_THAT(IsFalse(Mover.Pawn.IsValid(), TEXT("the pawn survived Destroy")));
 				ASSERT_THAT(IsTrue(!Mover.Brain.IsValid() || !Mover.Brain->IsADSKRunning(), TEXT("the brain still runs without a pawn")));
 				ASSERT_THAT(IsTrue(!Mover.Brain.IsValid() || !Mover.Brain->GetActiveMoveRequest().IsValid(), TEXT("a move request outlived the pawn")));

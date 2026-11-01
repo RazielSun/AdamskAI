@@ -4,10 +4,7 @@
 
 #include "CoreMinimal.h"
 
-/**
- * The demo arena, shared by its generator (AdamskAIWorld.Demo.Content) and the scenes, so the map and what the scenes
- * spawn on it cannot disagree. Centimetres; the floor's top is at Z 0.
- */
+/** The arena, shared by its generator and the scenes so they cannot disagree. Centimetres; floor top at Z 0. */
 namespace ADSKDemoLayout
 {
 	inline const TCHAR* MapDirectory = TEXT("/AdamskAI/Demo/Maps");

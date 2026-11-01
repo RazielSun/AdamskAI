@@ -26,13 +26,7 @@ struct FADSKSampleSendToConfig
 	FName Event;
 };
 
-/**
- * The smallest useful node provider, compiled with the tests so it keeps building: a host leaf,
- * `<SampleTurnToward id="..." in-point="Slot" yawOffset="0"/>`, that turns the brain's host actor toward a Vector
- * and succeeds, and `<SampleSendTo id="..." event="..." in-target="Slot"><Param name="..." from="Slot"/></SampleSendTo>`,
- * which sends an event with parameters to another actor's brain (docs/recipes/talk-between-agents.md). A project's provider looks the same and is registered in its game module's StartupModule
- * (docs/authoring-nodes.md, docs/recipes/add-a-project-node.md).
- */
+/** The smallest node provider, compiled so it keeps building (docs/authoring-nodes.md). */
 class FADSKSampleNodeProvider final : public IADSKNodeProvider
 {
 public:

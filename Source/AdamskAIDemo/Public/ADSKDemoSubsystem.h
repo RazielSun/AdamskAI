@@ -26,11 +26,7 @@ struct FADSKDemoFleetOptions
 	bool bColor = false;
 };
 
-/**
- * The demo scenes: `adsk.Demo <Scene>` clears what the last scene spawned and spawns the next one on the arena
- * (ADSKDemoLayout), with its behavior files from `@AdskDemo`. Writes the scene, its hint and live numbers on screen.
- * Game and PIE worlds, game thread only.
- */
+/** `adsk.Demo <Scene>`: clears the last scene and spawns the next on the arena, files from `@AdskDemo`. Game thread. */
 UCLASS()
 class ADAMSKAIDEMO_API UADSKDemoSubsystem : public UTickableWorldSubsystem
 {

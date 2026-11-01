@@ -71,10 +71,7 @@ struct FADSKStartReport
 	EADSKStartResult Result = EADSKStartResult::Started;
 	/** Missing required Input names, in definition slot order. */
 	TArray<FString> MissingInputs;
-	/**
-	 * A start from a snapshot: what the definition could not take (`state x`, `local y`, `node-state z`, `history w`),
-	 * in snapshot order, after `agent v` when the snapshot names another agent id (restored all the same).
-	 */
+	/** What a snapshot start could not take (`state x`, `local y`, `node-state z`, `history w`; `agent v` first). */
 	TArray<FString> Dropped;
 
 	bool IsSuccess() const { return Result == EADSKStartResult::Started; }
@@ -111,54 +108,34 @@ public:
 	EADSKInputResult PostActionResult(FADSKActivationHandle Handle, EADSKNodeStatus Status);
 
 	/**
-	 * Node callbacks may call SetInput, EnqueueEvent, PostActionResult and Stop on their own instance.
-	 * Stop from a callback is deferred: nothing new starts, and the outermost Start, Tick or Stop
-	 * performs it before returning. Start and Tick from a callback return Reentrant. Destroying the
-	 * instance from its own callback is a fatal error; owners defer it (UADSKBrainComponent does).
+	 * Callbacks may call SetInput, EnqueueEvent, PostActionResult and Stop on their own instance; Stop is deferred to
+	 * the outermost call, Start and Tick return Reentrant. Destroying the instance from its own callback is fatal.
 	 */
 	FADSKStartReport Start();
 	/**
-	 * Start, but on a snapshot instead of the initial configuration: it enters the deepest state of the snapshot's
-	 * path this definition still has, then that state's entry children, and takes every Local, node state and change
-	 * baseline whose name and type still match; the leaf state's tree starts from its root. The random stream and
-	 * the clock continue. Inputs are this instance's, as for Start. What it leaves out is in the report's Dropped.
+	 * Start on a snapshot: enters the deepest snapshot state still defined and takes every Local, node state and
+	 * baseline whose name and type match; the leaf tree restarts. Random stream and clock continue.
 	 */
 	FADSKStartReport Start(const FADSKSnapshot& Snapshot);
 	EADSKTickResult Tick(float Delta);
 	void Stop();
-	/**
-	 * False, with Out reset, when the instance is not running. Taken while the procedure still runs: what its nodes would
-	 * write when cancelled (a Cooldown's ready time) is not in it. To stop anyway, StopAndCaptureSnapshot includes that.
-	 */
+	/** False, Out reset, when not running. Excludes what nodes write on cancel; StopAndCaptureSnapshot includes it. */
 	bool CaptureSnapshot(FADSKSnapshot& Out) const;
-	/**
-	 * Stop, capturing the snapshot after the running procedure is cancelled and before the states are left. False, Out
-	 * reset, when it is not running or when called from a callback (the stop is then only deferred, as Stop's).
-	 */
+	/** Stop, capturing after the procedure is cancelled. False when not running or called from a callback. */
 	bool StopAndCaptureSnapshot(FADSKSnapshot& Out);
 
-	/**
-	 * Every Start reseeds the node random stream with it, so a run is a pure function of seed, inputs,
-	 * events and deltas. Takes effect at the next Start. A Start from a snapshot continues the snapshot's stream instead,
-	 * so after one this seed no longer reproduces the draws.
-	 */
+	/** Applied at the next Start: a run is a pure function of seed, inputs, events and deltas. */
 	void SetRandomSeed(int32 Seed);
 	int32 GetRandomSeed() const;
 
 	bool IsRunning() const;
 	bool IsHolding() const;
 	/**
-	 * Seconds of tick time until a Tick could do anything that time alone causes; 0 when the next tick has work
-	 * (queued inputs, events or results, a tree completion, a slot written in the last tick, a running node or option
-	 * that cannot say when it is due); ADSK::NeverWake when only SetInput, EnqueueEvent or PostActionResult can.
-	 * A host may skip ticks until then and hand the time over in one Tick: the run is the same as ticking every frame
-	 * with the same total. Asks running nodes' OnNextWake, so not from a node callback.
+	 * Tick seconds until time alone can change anything: 0 when the next tick has work, ADSK::NeverWake when only
+	 * SetInput, EnqueueEvent or PostActionResult can. Skipped time in one Tick runs the same. Not from a callback.
 	 */
 	float GetNextWake();
-	/**
-	 * Called after every accepted SetInput, SetEnumInput, EnqueueEvent and PostActionResult, whoever made it (not for
-	 * events the file's own nodes emit), so a host that skips ticks until GetNextWake knows to tick again. Game thread.
-	 */
+	/** After every accepted external input, event or result, so a sleeping host ticks again. */
 	void SetQueueListener(TFunction<void()> Listener);
 	uint32 GetGeneration() const;
 	uint64 GetTickCount() const;
@@ -175,10 +152,7 @@ public:
 	FADSKActivationHandle GetActiveLeafHandle() const;
 	/** Authored ID of the deepest active procedure node; NAME_None when no node is active. */
 	FName GetActiveNodeId() const;
-	/**
-	 * The deepest active node of every procedure lane: the main path first, then the background child of each
-	 * running SimpleParallel in start order. OutLeafHandles is parallel to it, invalid where that node is no leaf.
-	 */
+	/** Deepest active node per lane, main path first; OutLeafHandles parallel, invalid where the node is no leaf. */
 	void GetActiveNodes(TArray<FName>& OutNodeIds, TArray<FADSKActivationHandle>& OutLeafHandles) const;
 	/** Resets Out, then appends pending external event names in dispatch order. */
 	void GetQueuedEvents(TArray<FString>& OutEventNames) const;

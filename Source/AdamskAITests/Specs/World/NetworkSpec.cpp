@@ -30,8 +30,7 @@
 #include "World/WorldTestActors.h"
 #include "CQTest.h"
 
-// A listen server with one client. The brain lives on the AI controller, which no client ever gets, so only the
-// server runs behavior; the client sees the replicated pawn and nothing of AdamskAI.
+// Listen server and one client: brains live on AI controllers, which clients never get.
 namespace FNetworkSpecPrivate
 {
 	struct FState : FBasePIENetworkComponentState
@@ -253,8 +252,7 @@ NETWORK_TEST_CLASS(FWorldNetworkSpec, "AdamskAIWorld.Network")
 	}
 };
 
-// Prewarming with bPrewarmOnClients. CQTest runs a test's body after BEFORE_EACH's latent commands, so settings the
-// worlds read at creation are set here, not in the body.
+// CQTest runs the body after BEFORE_EACH's latent commands, so settings read at world creation go here.
 NETWORK_TEST_CLASS(FWorldNetworkPrewarmOnClientsSpec, "AdamskAIWorld.Network.PrewarmOnClients")
 {
 	FPIENetworkComponent<FState> Network{TestRunner, TestCommandBuilder, bInitializing};

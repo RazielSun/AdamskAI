@@ -5,9 +5,8 @@
 #include "Runtime/ADSKInstance.h"
 
 /**
- * Instances with a thread-safe definition tick concurrently on workers; the rest tick afterwards on the game thread
- * in the given order, as does one sharing its recorder with an instance ticked earlier. The outcome equals ticking
- * them one by one. Nothing may call into these instances while the pass runs.
+ * Thread-safe definitions tick on workers, the rest after on the game thread (as does one sharing an earlier
+ * instance's recorder); same outcome as ticking in order. Nothing may call into these instances meanwhile.
  */
 struct ADAMSKAI_API FADSKParallelTick
 {

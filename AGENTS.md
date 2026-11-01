@@ -9,7 +9,7 @@ A deterministic, XML-authored agent behavior plugin for Unreal Engine 5.8: a str
 registry of native nodes, a hierarchical state machine with procedure trees, a bounded recorder, an
 Unreal host (`AdamskAIHost`) and a headless validator. Product: [README.md](README.md); runtime contract
 (ownership, bounds, tick order, modules): [docs/contract.md](docs/contract.md).
-Version 0.5.0 is verified on Linux and Win64 (no packaged run of 0.5.0 yet); Mac is not built. Status and
+Version 0.5.0 is verified on Linux and Win64, packaged and networked on Win64; Mac is not built. Status and
 everything still left: [docs/dev/roadmap.md](docs/dev/roadmap.md).
 
 ## Rules that prevent most mistakes
@@ -114,6 +114,8 @@ snapshots, labels and the optional panel are in [docs/debugging.md](docs/debuggi
 
 ## Do not
 
+- Write long comments. C++ comments go only where the code cannot say it (an invariant, an ordering, an engine
+  quirk), one short line; no restating the code and no history ([CONTRIBUTING.md](CONTRIBUTING.md#code-rules)).
 - Edit [docs/node-catalog.md](docs/node-catalog.md) or [docs/adamskai.xsd](docs/adamskai.xsd) by hand; regenerate them
   (see [docs/dev/testing.md](docs/dev/testing.md)). Never name the schema inside a behavior file: `xsi:` attributes do not compile.
 - Add an expectation to a fixture without checking the compiler's diagnostic is the right one.

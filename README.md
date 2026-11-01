@@ -137,7 +137,7 @@ The whole setup, with the controller pattern: [docs/setup.md](docs/setup.md). Pr
 
 Verified on Linux with UE 5.8.4: the build, the plugin alone in an empty project, about 650 automation tests and 60
 world tests; the same on Win64 with MSVC 14.51 in three host projects, plus Development and Shipping game builds and
-the cook check (a packaged run of 0.5.0 is still owed). Mac is not built. What is left:
+the cook check, a packaged run with brains loading from the pak and a packaged listen server. Mac is not built. What is left:
 [docs/dev/roadmap.md](docs/dev/roadmap.md).
 
 ## License
