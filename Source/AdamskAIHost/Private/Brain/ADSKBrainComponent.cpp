@@ -352,6 +352,8 @@ void UADSKBrainComponent::StartLogic()
 	// the base only pauses on the unlocked-to-locked edge, which has already passed.
 	if (State == EADSKBrainState::Running && IsResourceLocked()) State = EADSKBrainState::Paused;
 	SleptTime = 0.f;
+	// The auto tick may have been off since the last run; the time it was off is not this run's.
+	if (const UWorld* World = GetWorld()) LastAutoTickTime = World->GetTimeSeconds();
 	UpdateSleep();
 #if ENABLE_VISUAL_LOG
 	VisLogTransition();
@@ -516,7 +518,8 @@ void UADSKBrainComponent::EndBrainTick()
 
 bool UADSKBrainComponent::IsAsleep(float Elapsed) const
 {
-	return SleepFor > 0.f && Elapsed + KINDA_SMALL_NUMBER < SleepFor && !OnPreTick.IsBound();
+	// Only a running brain sleeps: a stopped or paused one is due at once, and its tick drops the time.
+	return State == EADSKBrainState::Running && SleepFor > 0.f && Elapsed + KINDA_SMALL_NUMBER < SleepFor && !OnPreTick.IsBound();
 }
 
 void UADSKBrainComponent::UpdateSleep()

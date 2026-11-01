@@ -136,6 +136,44 @@ TEST_CLASS_WITH_FLAGS(FSleepSpec, "AdamskAI.Host.Sleep",
 		ASSERT_THAT(IsFalse(Brain->IsComponentTickEnabled(), TEXT("a holding brain still ticks")));
 		Brain->Cleanup();
 	}
+
+	TEST_METHOD(AManagedBrainStoppedInAHoldStartsItsNextRunWithoutTheStoppedTime)
+	{
+		FFixture F;
+		UADSKBrainComponent* Brain = F.Start(false, true);
+		UADSKWorldSubsystem* Subsystem = F.Spawner.GetWorld().GetSubsystem<UADSKWorldSubsystem>();
+		for (int32 Frame = 0; Frame < 12; ++Frame) Subsystem->TickManagedBrains(0.1f);
+		ASSERT_THAT(AreEqual(FString(TEXT("done")), Leaf(*Brain)));
+		Brain->StopLogic();
+		for (int32 Frame = 0; Frame < 50; ++Frame) Subsystem->TickManagedBrains(0.1f);
+		Brain->StartLogic();
+		// The new run's Wait has had 0.2 of its second, not the five the brain spent stopped.
+		for (int32 Frame = 0; Frame < 2; ++Frame) Subsystem->TickManagedBrains(0.1f);
+		ASSERT_THAT(AreEqual(FString(TEXT("wait")), Leaf(*Brain)));
+		Brain->Cleanup();
+	}
+
+	TEST_METHOD(AnAutoTickingBrainStoppedInAHoldStartsItsNextRunWithoutTheStoppedTime)
+	{
+		FFixture F;
+		UADSKBrainComponent* Brain = F.Start(true);
+		UWorld& World = F.Spawner.GetWorld();
+		const auto Frame = [&World, Brain](float Delta)
+		{
+			World.TimeSeconds += Delta;
+			Brain->TickComponent(Delta, LEVELTICK_All, nullptr);
+		};
+		Frame(1.f);
+		Frame(0.f);
+		ASSERT_THAT(AreEqual(FString(TEXT("done")), Leaf(*Brain)));
+		Brain->StopLogic();
+		World.TimeSeconds += 5.0;
+		Brain->StartLogic();
+		Frame(0.1f);
+		Frame(0.1f);
+		ASSERT_THAT(AreEqual(FString(TEXT("wait")), Leaf(*Brain)));
+		Brain->Cleanup();
+	}
 };
 
 #endif

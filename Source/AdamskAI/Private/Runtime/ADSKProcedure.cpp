@@ -129,7 +129,7 @@ void FADSKProcedure::EndTop(EADSKEndReason Reason, EADSKNodeStatus Status)
 		Active.BackgroundLane = INDEX_NONE;
 	}
 	// Each child lane cancelled deepest first, in document order. Copied: cancelling never touches Active's lane.
-	const TArray<int32, TInlineAllocator<ADSK::MaxParallelChildren>> ChildLanes = MoveTemp(Active.ChildLanes);
+	const TArray<int32> ChildLanes = MoveTemp(Active.ChildLanes);
 	for (const int32 Id : ChildLanes)
 	{
 		CancelLane(Id);

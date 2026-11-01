@@ -48,6 +48,10 @@ follow [AGENTS.md](AGENTS.md), which this file shares its rules with.
 
 ## Tests
 
+`Bench/AdamskAIBench/AdamskAIBench.uplugin` sits inside this plugin on purpose: UBT and the editor stop searching a
+folder at the first `.uplugin`, so a host never builds the bench. `Tools/adsk_bench.sh` copies it into a host of its
+own.
+
 - A new rule or node comes with a test under `Source/AdamskAITests/Specs/<Area>/`; the area folders show the
   patterns (`CQTest`, `TEST_CLASS_WITH_FLAGS`).
 - An invalid input goes in `Fixtures/` with the exact diagnostic it must produce; check the compiler's diagnostic is

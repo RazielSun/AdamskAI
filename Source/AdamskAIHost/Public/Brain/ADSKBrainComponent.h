@@ -107,7 +107,8 @@ public:
 	 * Sleep (UADSKSettings::bSleepWhenIdle): true while Elapsed seconds since the last tick are short of when the
 	 * instance is next due (FADSKInstance::GetNextWake). Any accepted input, event or result (through this component
 	 * or GetInstance()), a start or a resume wakes it. Never asleep while OnPreTick is bound or the file declares
-	 * sensors, since both publish before every tick.
+	 * sensors, since both publish before every tick, and never unless running: a stopped or paused brain's ticks drop
+	 * their time, so a stop never hands its length to the next run.
 	 */
 	bool IsAsleep(float Elapsed) const;
 	const FADSKInstance* GetInstance() const { return Instance.Get(); }

@@ -84,6 +84,13 @@ undoes one.
 - `*>` writes UTF-16 and wraps a native tool's stderr in error records; native output goes through
   `cmd /c ... >log 2>&1` instead, so logs are plain bytes `Select-String` and `grep` both read.
 
+**First runs**
+
+- **The first `UnrealEditor-Cmd` in a project takes up to two minutes.** `adsk_validate` measured 115 s cold against
+  10 s warm: 53 s of Turnkey asking UBT for the AutoSDK (cached in `Saved/Logs/AutoSDKInfo.json`, and waiting on the
+  UBT mutex while another build runs), about 13 s starting ZenServer, 10 s of shader types. Nothing of it is the
+  plugin's; a timeout on that first run is not a hang.
+
 **Files**
 
 - **Wildcards are case-insensitive.** `*.xml` also finds `Guard.XML`; behavior file names must end in
@@ -93,4 +100,6 @@ undoes one.
 
 - `adsk_host_check.sh` has no Win64 twin; `adsk_buildplugin_win64.ps1` covers the stand-alone build but
   not the stand-alone validate and test run.
+- `adsk_bench.sh` has no Win64 twin. The bench ran once by hand (2026-10-31, 1000 agents, per agent and frame):
+  AdamskAI 0.11–0.13 µs ticking itself and 0.10–0.11 µs managed, Behavior Tree 0.12 µs, StateTree 0.31 µs.
 - A packaged (staged) run and a PIE session with a brain-driven pawn: see [roadmap.md](dev/roadmap.md).

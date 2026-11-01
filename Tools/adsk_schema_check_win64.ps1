@@ -47,12 +47,17 @@ function Test-Schema([string] $Xsd, [string[]] $Dirs) {
 			$Settings.ValidationType = [System.Xml.ValidationType]::Schema
 			$Settings.Schemas = $Set
 			$Path = $File.FullName
+			# A closure runs in its own module, where $script: is another variable: the handler only fills a list it
+			# captured, and the count is taken from the list after the read.
+			$Errors = New-Object System.Collections.Generic.List[string]
 			$Settings.add_ValidationEventHandler({ param($Sender, $Event)
-				Write-Host "${Path}:$($Event.Exception.LineNumber): error schema: $($Event.Message)"; $script:Problems++ }.GetNewClosure())
+				$Errors.Add("${Path}:$($Event.Exception.LineNumber): error schema: $($Event.Message)") }.GetNewClosure())
 			$Reader = [System.Xml.XmlReader]::Create($Path, $Settings)
 			try { while ($Reader.Read()) {} }
-			catch { Write-Host "${Path}: error schema: $($_.Exception.InnerException.Message)"; $script:Problems++ }
+			catch { $Errors.Add("${Path}: error schema: $($_.Exception.InnerException.Message)") }
 			finally { $Reader.Close() }
+			foreach ($Line in $Errors) { Write-Host $Line }
+			$script:Problems += $Errors.Count
 		}
 	}
 }

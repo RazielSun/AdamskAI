@@ -77,6 +77,14 @@ which `adsk_test` reports as a failure. New: `AdamskAI.Perf.*`, `AdamskAI.Valida
 
 ## From 0.4 to 0.5
 
+A host project that only uses the plugin needed three steps in each of three Win64 projects (2026-10-31):
+
+1. Remove `"AdamskAIKit"` from the game module's `Build.cs` (UBT stops with `Could not find definition for module
+   'AdamskAIKit'`).
+2. `#include "Combat/ADSKActionPerformer.h"` → `#include "Nodes/ADSKActionPerformer.h"`.
+3. Regenerate the project's catalogue and schema (`adsk_validate` reports `catalogue-stale` until then):
+   `UnrealEditor-Cmd <Project>.uproject -run=AdamskAIValidate -projectcatalog`, then the same with `-projectxsd`.
+
 Everything below landed between 0.4.0 (2026-10-29) and 0.5.0 (2026-10-31), dated by the day it landed.
 
 Behavior a project may notice:

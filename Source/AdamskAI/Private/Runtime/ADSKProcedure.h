@@ -57,8 +57,9 @@ struct FADSKActiveNode
 	bool bPartiallyEntered = false;
 	uint64 StartedTick = 0;
 	int32 BackgroundLane = INDEX_NONE;
-	/** A Parallel's child lanes, one per child in document order. */
-	TArray<int32, TInlineAllocator<ADSK::MaxParallelChildren>> ChildLanes;
+	/** A Parallel's child lanes, one per child in document order. Allocated only by a Parallel: every active node of
+	 * every lane carries this member, and an inline buffer would cost every instance whether it has a Parallel or not. */
+	TArray<int32> ChildLanes;
 	/** A Guard's last recorded value: guard-value is recorded at the start and then only when it changes. */
 	FADSKValue GuardValue;
 };

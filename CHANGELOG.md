@@ -14,6 +14,23 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
   Empty filters preserve behavior; callback and resync use the same filters, loss still clears accepted sensing,
   and removing the required actor tag invalidates the candidate on the next sample.
 
+### Changed
+- An instance takes 6980 bytes instead of 7492 (6660 in 0.4): a `Parallel`'s child lane list is allocated when the
+  `Parallel` starts instead of inline in every active node. Against 0.4, `Start` costs about 5% more and `Stop` 11%
+  more per instance: the new branches (`Concurrent`, `Set`), the per-tick input flags and the sleep bookkeeping.
+- The perception bridge ceiling at 16 candidates is 3 µs: the same build reads 1.4–2.2 µs from one process to the
+  next on Win64, 0.4 alike.
+
+### Fixed
+- A brain stopped while asleep in a hold (a possession change, a manual stop, a reload without keeping state) gave
+  the whole stopped time to the first tick of its next run, so that run's first `Wait`, `TimeLimit` or `Cooldown`
+  ended at once; on the managed pass and ticking itself alike. Only a running brain sleeps now, and a start resets
+  the auto tick's clock.
+- `adsk_schema_check_win64.ps1` passed with exit 0 after printing a schema error, also inside `adsk_all_win64.ps1`;
+  `adsk_selftest_win64.ps1` has a case for it.
+- `adsk_build_win64.ps1` names the module and the `Build.cs` behind a `RulesError`, and prints the log's last lines
+  when no pattern names the failure.
+
 ## 0.5.0 — 2026-10-31
 
 The first release from its own repository: new nodes (`Parallel`, `Set`, `Retry`), sensors, actions, groups and

@@ -7,6 +7,7 @@ Tools/adsk_selftest_win64.ps1 - run the Win64 scripts' failure paths and check e
 Cases, each a real run of a script against the real engine (a few minutes in all):
   check-clean          adsk_check on this plugin                                   exit 0
   check-side-effect    adsk_check on a copy with check(Mutate()) planted            exit 1
+  schema-refused       adsk_schema_check on a project with a file the schema refuses exit 1
   validate-broken      adsk_validate -Paths <a broken .xml>                         exit 1
   validate-missing     adsk_validate -Paths <a relative path to no file>            exit 1, "no such file"
   validate-project     adsk_validate -Project <a directory without a .uproject>     exit 2
@@ -74,6 +75,17 @@ try {
 	$Output = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Copy 'Tools\adsk_check_win64.ps1') 2>&1 | ForEach-Object { "$_" }
 	$Run.Code = $LASTEXITCODE; $Run.Output = $Output -join "`n"
 	Expect 'check-side-effect' $Run 1 'check-side-effect'
+
+	# A scratch project around a copy of Tools and docs, whose behavior root holds a file the schema refuses.
+	$Host_ = Join-Path $Scratch 'SchemaHost'
+	$HostPlugin = Join-Path $Host_ 'Plugins\AdamskAI'
+	New-Item -ItemType Directory -Force -Path $HostPlugin, (Join-Path $Host_ 'Content\AI') | Out-Null
+	[IO.File]::WriteAllText((Join-Path $Host_ 'SchemaHost.uproject'), '{ "FileVersion": 3 }')
+	Copy-Item -Recurse -LiteralPath (Join-Path $Ctx.PluginDir 'Tools') -Destination $HostPlugin
+	Copy-Item -Recurse -LiteralPath (Join-Path $Ctx.PluginDir 'docs') -Destination $HostPlugin
+	[IO.File]::WriteAllText((Join-Path $Host_ 'Content\AI\refused.xml'), '<Agent version="1" id="refused" selftest="1"/>')
+	$Output = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $HostPlugin 'Tools\adsk_schema_check_win64.ps1') -Project $Host_ 2>&1 | ForEach-Object { "$_" }
+	Expect 'schema-refused' @{ Code = $LASTEXITCODE; Output = $Output -join "`n" } 1 'FAIL adsk_schema_check'
 
 	$Broken = Join-Path $Scratch 'broken.xml'
 	[IO.File]::WriteAllText($Broken, '<Agent version="1" id="broken"><StateMachine')

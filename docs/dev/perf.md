@@ -41,6 +41,13 @@ shuttling agents of `AdamskAIWorld.Perf.ShuttlingFleetSleeping` cost 0.038 ms pe
 a Behavior Tree and a StateTree running the same behavior: [roadmap.md](roadmap.md#performance-against-behavior-trees-and-statetree)
 (`Tools/adsk_bench.sh`).
 
+**0.4 against 0.5 on Win64** (2026-10-31, three identical empty hosts, one plugin copy each, three interleaved
+rounds, medians): `Start` 0.45 → 0.47 µs and `Stop` 0.10 → 0.11 µs per instance (the cost of `Concurrent`, `Set`, the
+per-tick input flags and the sleep bookkeeping); 6660 → 6980 bytes per instance; a reload commit over 200 brains 0.98
+→ 1.00 ms; the core tick, the 200-agent frame and the brain pass unchanged; 1000 managed brains 0.27 → 0.08 ms per
+frame by sleeping. The 2026-10-29 table above was measured on 0.4: the same 0.4 code read 0.45 µs per `Start` and 0.98
+ms per commit two days later, so a baseline snapshot is no reference across days; compare two builds in one session.
+
 Runs differ by ±20% on the same machine; compare with the tool below, not by eye. Parallel ticking helps little
 (1.4× even when every node is thread-safe): each instance is about 0.2 µs of work against `ParallelFor`'s scheduling.
 Engine work (movement, navigation, EQS) dominates a real frame.
@@ -59,7 +66,7 @@ Re-baseline deliberately with `-Update`, in the change that explains why. The ce
 | Managed pass µs per brain, 1000 ÷ 250 brains | ≤ 1.3 (stays linear) |
 | Records per agent frame | ≤ 1.0 |
 | Node memory per agent / instance bytes | ≤ 256 B / ≤ 8 KB |
-| Bridge µs per brain tick at 16 candidates | ≤ 2 |
+| Bridge µs per brain tick at 16 candidates | ≤ 3 (one process reads 1.4–2.2 on Win64, another 0.4 or 0.5 build alike, by where its objects lie) |
 | Synchronous compiles in a prewarmed world | 0 (asserted by `AdamskAIWorld.Reload`) |
 
 **In game.** `stat AdamskAI`: cycle stats for the managed pass, brain ticks, the perception bridge and `Acquire`;

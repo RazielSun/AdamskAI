@@ -174,6 +174,7 @@ void FADSKProcedure::StartConcurrent(FADSKActiveNode& Active, const FADSKNodeDef
 	const uint32 ParallelId = Active.ActivationId;
 	const int32 OwnerLaneId = Lane->Id;
 	FADSKLane& OwnerLane = *Lane;
+	Active.ChildLanes.Reserve(Node.ChildCount);
 	for (int32 Child = 0; Child < Node.ChildCount; ++Child)
 	{
 		FADSKLane& ChildLane = *Lanes.Add_GetRef(SpareLanes.IsEmpty() ? MakeUnique<FADSKLane>() : SpareLanes.Pop(EAllowShrinking::No));
@@ -185,7 +186,7 @@ void FADSKProcedure::StartConcurrent(FADSKActiveNode& Active, const FADSKNodeDef
 		Active.ChildLanes.Add(ChildLane.Id);
 	}
 	// Copied: a child that decides the Parallel at once ends it, which cancels the lanes and pops Active.
-	const TArray<int32, TInlineAllocator<ADSK::MaxParallelChildren>> ChildLanes = Active.ChildLanes;
+	const TArray<int32, TInlineAllocator<ADSK::MaxParallelChildren>> ChildLanes(Active.ChildLanes);
 	for (const int32 Id : ChildLanes)
 	{
 		FADSKLane* ChildLane = FindLane(Id);

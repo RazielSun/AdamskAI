@@ -52,13 +52,19 @@ $Log = Join-Path $LogDir "adsk_build_${Target}_$Configuration.log"
 Write-Host "Building $TargetName Win64 $Configuration..."
 $Status = (Invoke-AdskLogged $Ctx.BuildBat (@($TargetName, 'Win64', $Configuration, "-Project=$($Ctx.UProject)", '-WaitMutex', '-NoHotReload') + $ExtraArgs) $Log).Status
 
-# MSVC: `file(line): error C1234:`; linker: `x.obj : error LNK2019:`; UBT/UHT: `Error:` lines.
-Select-String -LiteralPath $Log -Pattern ':\s+(fatal )?error [A-Z]+\d+|note: see declaration|^\s*Error:|^Result:' |
-	Select-Object -First 40 | ForEach-Object { Write-Host $_.Line }
+# MSVC: `file(line): error C1234:`; linker: `x.obj : error LNK2019:`; UBT/UHT: `Error:` and `ERROR:` lines; a
+# RulesError: the missing module and the Build.cs that references it.
+$Matched = @(Select-String -LiteralPath $Log -Pattern ':\s+(fatal )?error [A-Z]+\d+|note: see declaration|^\s*Error:|ERROR:|Could not find definition for module|\(referenced via|^Result:' |
+	Select-Object -First 40)
+$Matched | ForEach-Object { Write-Host $_.Line }
 # UBT can exit 0 without building; the Result line is what it actually says.
 if ($Status -eq 0 -and (Select-String -LiteralPath $Log -Pattern '^Result: Succeeded' -Quiet)) {
 	Write-Host "PASS adsk_build [$TargetName $Configuration]"
 	exit 0
+}
+# A failure none of the patterns names: its cause is in the last lines.
+if (-not ($Matched | Where-Object { $_.Line -notmatch '^Result:' })) {
+	Get-Content -LiteralPath $Log | Where-Object { $_.Trim() } | Select-Object -Last 15 | ForEach-Object { Write-Host "    $_" }
 }
 Write-Host "FAIL adsk_build [$TargetName $Configuration] exit=$Status. Log: $Log"
 exit 1

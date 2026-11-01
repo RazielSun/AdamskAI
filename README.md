@@ -14,7 +14,8 @@ in strict XML, checked headlessly before the game runs, reloaded while it plays 
 - **Exact replay.** Randomness is seeded per agent; a run replays from its seed, inputs and events, with a bounded trace.
 - **Live reload.** Save the XML while playing and every agent keeps the state it was in.
 - **Cheap at rest.** A brain that waits or walks sleeps until its wait ends or its move reports, like a Behavior Tree;
-  1000 brains cost about 0.1 ms per frame ([Measured](#measured)).
+  1000 brains cost about 0.1 ms per frame ([Measured](#measured)). A brain with `OnPreTick` bound or sensors in
+  its file never sleeps; publish such facts with `SetInput` when they change, which wakes it.
 
 Version 0.5.0, beta: XML v1 is stable, the C++ API may still change. Changes: [CHANGELOG.md](CHANGELOG.md); upgrading:
 [docs/migration.md](docs/migration.md); known gaps: [docs/limitations.md](docs/limitations.md).
@@ -97,9 +98,9 @@ not measured yet.
 | Demo fleet, 1000 brains on the managed pass (Linux) | 0.13 ms per frame with recorders, 0.10 ms on workers without |
 | 200 agents walking with `MoveTo` (Linux) | 0.038 ms per frame for the brains |
 | Core tick, every frame (Win64) | 0.20 µs per agent with a 256-record recorder, 0.17 µs without |
-| `Start` / `Stop` (Win64) | 0.36 µs / 0.09 µs |
+| `Start` / `Stop` (Win64) | 0.47 µs / 0.11 µs |
 | Compile a 200-line file (Win64) | 0.35 ms, once per file, shared by every agent |
-| Memory (Win64) | 5.75 KB per instance plus its node memory, allocated up front |
+| Memory (Win64) | 6.8 KB per instance plus its node memory, allocated up front |
 
 Methods, every benchmark, ceilings and how to profile your own project: [docs/dev/perf.md](docs/dev/perf.md).
 
@@ -135,7 +136,8 @@ The whole setup, with the controller pattern: [docs/setup.md](docs/setup.md). Pr
 ## Status
 
 Verified on Linux with UE 5.8.4: the build, the plugin alone in an empty project, about 650 automation tests and 60
-world tests. Win64 was verified on 0.4.0 and owes a re-run; Mac is not built. What is left:
+world tests; the same on Win64 with MSVC 14.51 in three host projects, plus Development and Shipping game builds and
+the cook check (a packaged run of 0.5.0 is still owed). Mac is not built. What is left:
 [docs/dev/roadmap.md](docs/dev/roadmap.md).
 
 ## License

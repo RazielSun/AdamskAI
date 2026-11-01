@@ -1,6 +1,6 @@
 # Setup — deploying AdamskAI into a project
 
-Verified with Unreal Engine 5.8 on Linux (clang) for 0.5.0, and on Win64 (MSVC 14.51) for 0.4.0 (a re-run is owed);
+Verified with Unreal Engine 5.8 for 0.5.0 on Linux (clang) and Win64 (MSVC 14.51; no packaged run of 0.5.0 yet);
 Mac is not built yet (see [limitations.md](limitations.md), [roadmap.md](dev/roadmap.md)). Nothing here needs an editor window.
 Every `Tools/<name>.sh` script has a Windows twin, `Tools\<name>_win64.ps1`, with the same modes, logs and
 exit codes; prerequisites and traps per platform are in [linux.md](linux.md) and [windows.md](windows.md).
@@ -30,8 +30,7 @@ modules load and reports "could not find the class" otherwise.
    Forward-declare plugin types in public headers; include them in `.cpp` files. Includes carry the
    feature folder, as in engine plugins: `#include "Brain/ADSKBrainComponent.h"`,
    `#include "Catalogue/ADSKNodeProvider.h"`, `#include "Runtime/ADSKNode.h"`. Folders: core
-   `Core/ Program/ Runtime/ Nodes/ Trace/`; host `Brain/ Catalogue/ Groups/ Nodes/ Sources/ Settings/ Debug/`; kit
-   `Combat/`.
+   `Core/ Program/ Runtime/ Nodes/ Trace/`; host `Brain/ Catalogue/ Groups/ Nodes/ Sources/ Settings/ Debug/`.
 3. To add native nodes, implement an `IADSKNodeProvider` and register it as a modular feature in the
    module's `StartupModule`, **before the first assembly** (first brain start, first validation or
    first `FADSKRegistryAssembly::TryGet`). Unregister it in `ShutdownModule` after calling
@@ -67,14 +66,16 @@ modules load and reports "could not find the class" otherwise.
 6. Live debugging needs nothing more: the `adsk.*` console commands, the Gameplay Debugger category and the labels
    come with the plugin ([debugging.md](debugging.md)). A project that wants an in-game panel draws it from the
    public debug snapshot ([debugging.md](debugging.md#a-projects-own-panel)).
-7. Exclude the plugin's test content from cooking. `Plugins/AdamskAI/Content/Tests/` (`/AdamskAI/Tests/`) holds
-   the map and EQS assets of the `AdamskAIWorld.*` tests ([testing.md](dev/testing.md#world-tests-adamskaiworld)); nothing
-   else in the plugin references them, but a cook of all maps would pick the test map up. A plugin cannot set
+7. Exclude the plugin's test and demo content from cooking. `Plugins/AdamskAI/Content/Tests/` (`/AdamskAI/Tests/`) holds
+   the map and EQS assets of the `AdamskAIWorld.*` tests ([testing.md](dev/testing.md#world-tests-adamskaiworld)), and
+   `/AdamskAI/Demo` the demo map ([demo.md](demo.md)); nothing else in the plugin references them, but a cook of all
+   maps would pick both up. A plugin cannot set
    this itself, it is a project packaging setting, in `Config/DefaultGame.ini`:
 
    ```ini
    [/Script/UnrealEd.ProjectPackagingSettings]
    +DirectoriesToNeverCook=(Path="/AdamskAI/Tests")
+   +DirectoriesToNeverCook=(Path="/AdamskAI/Demo")
    ```
 
    The test assets use engine classes only, so a cook that misses this line still succeeds; it just ships them.
