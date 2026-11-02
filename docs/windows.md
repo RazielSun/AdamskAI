@@ -8,7 +8,7 @@ hit. The general deployment steps are in [setup.md](setup.md); which command pro
 
 | Need | Why | Verified with |
 |---|---|---|
-| Unreal Engine 5.8 (launcher or source build) | the target engine | 5.8.4 |
+| Unreal Engine 5.6–5.8 (launcher or source build) | the target engine | 5.8.4 |
 | Visual Studio with the C++ game workload and an MSVC the engine accepts | UBT compiles with it | MSVC 14.51 (VS 18 / 2026) |
 | Python 3.8+ as `python` or `py -3` | `adsk_check` rules and the test verdict are shared Python | 3.11; the engine's own `Engine\Binaries\ThirdParty\Python3\Win64\python.exe` is the fallback |
 | Windows PowerShell 5.1 or PowerShell 7 | the `_win64.ps1` scripts; `adsk_schema_check_win64.ps1` uses .NET's `XmlSchemaSet`, so nothing else to install | 5.1 |

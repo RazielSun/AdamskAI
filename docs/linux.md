@@ -8,7 +8,7 @@ the Win64 counterpart is [windows.md](windows.md).
 
 | Need | Why | Verified with |
 |---|---|---|
-| Unreal Engine 5.8 (source build or the Linux binary release), registered in `~/.config/Epic/UnrealEngine/Install.ini` under the `.uproject`'s `EngineAssociation`, or `UE_ROOT` set to its root | the target engine; every script resolves it that way and never guesses a path | 5.8.4 |
+| Unreal Engine 5.6–5.8 (source build or the Linux binary release), registered in `~/.config/Epic/UnrealEngine/Install.ini` under the `.uproject`'s `EngineAssociation`, or `UE_ROOT` set to its root | the target engine; every script resolves it that way and never guesses a path | 5.8.4 |
 | The engine's bundled clang toolchain | UBT compiles with it | the one 5.8.4 ships |
 | `bash`, `timeout`, `mktemp`, `rsync` | the `.sh` scripts; `rsync` copies the plugin in `adsk_host_check.sh` | coreutils, rsync 3 |
 | Python 3.8+ as `python3` | `adsk_check` rules, the test verdict and the perf compare are shared Python | 3.12 |

@@ -11,7 +11,7 @@
 #include "Brain/ADSKBrainComponent.h"
 #include "Brain/ADSKWorldSubsystem.h"
 #include "Engine/Engine.h"
-#include "Engine/NetConnection.h"
+#include "GameFramework/PlayerController.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/GameModeBase.h"
@@ -21,7 +21,10 @@
 #include "GameplayDebuggerCategoryReplicator.h"
 #include "GameplayDebuggerPlayerManager.h"
 #endif
+// Before 5.7 FStringOutputDevice lives in Containers/UnrealString.h.
+#if __has_include("Misc/StringOutputDevice.h")
 #include "Misc/StringOutputDevice.h"
+#endif
 #include "NativeGameplayTags.h"
 #include "Settings/ADSKSettings.h"
 #include "Support/TestChecks.h"
@@ -324,6 +327,16 @@ namespace FNetworkSpecPrivate
 		return Agent;
 	}
 
+	/** The remote client's controller on the server; CQTest before 5.8 leaves ClientConnections' entries null. */
+	APlayerController* RemoteController(UWorld* World)
+	{
+		for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+		{
+			if (APlayerController* Controller = It->Get(); Controller && !Controller->IsLocalController()) return Controller;
+		}
+		return nullptr;
+	}
+
 	uint64 Ticks(const AADSKWorldTestController* Agent)
 	{
 		return Agent && Agent->Brain->GetInstance() ? Agent->Brain->GetInstance()->GetTickCount() : 0;
@@ -364,8 +377,7 @@ NETWORK_TEST_CLASS(FWorldDedicatedServerSpec, "AdamskAIWorld.Network.Dedicated")
 	{
 		Network.ThenServer(TEXT("viewer pawn and two agents"), [this](FState& Server)
 			{
-				ASSERT_THAT(AreEqual(1, Server.ClientConnections.Num()));
-				APlayerController* Remote = Server.ClientConnections[0]->PlayerController;
+				APlayerController* Remote = RemoteController(Server.World);
 				ASSERT_THAT(IsNotNull(Remote, TEXT("the client has no controller on the server")));
 				AADSKWorldTestPawn* Viewer = SpawnFloating<AADSKWorldTestPawn>(Server.World, ViewerSpot);
 				ASSERT_THAT(IsNotNull(Viewer));
@@ -399,7 +411,7 @@ NETWORK_TEST_CLASS(FWorldDedicatedServerSpec, "AdamskAIWorld.Network.Dedicated")
 		SpawnViewerAndAgents();
 		Network.ThenServer(TEXT("debug the near agent"), [this](FState& Server)
 			{
-				APlayerController* Remote = Server.ClientConnections[0]->PlayerController;
+				APlayerController* Remote = RemoteController(Server.World);
 				AGameplayDebuggerPlayerManager& Manager = AGameplayDebuggerPlayerManager::GetCurrent(Server.World);
 				Manager.UpdateAuthReplicators();
 				AGameplayDebuggerCategoryReplicator* Replicator = Manager.GetReplicator(*Remote);

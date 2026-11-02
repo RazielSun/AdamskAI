@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Misc/AutomationTest.h"
+#include "Misc/EngineVersionComparison.h"
 
 #if WITH_AUTOMATION_TESTS && WITH_EDITOR
 
@@ -60,7 +61,9 @@ namespace ADSKWorldMapBuilder
 		}
 		// A new editor world holds AsyncLoadLock until a ticker lifts it; no tick runs here.
 		FAssetCompilingManager::Get().FinishAllCompilation();
+#if UE_VERSION_NEWER_THAN_OR_EQUAL(5, 8, 0)
 		Navigation->RemoveNavigationBuildLock(ENavigationBuildLock::AsyncLoadLock, UNavigationSystemV1::ELockRemovalRebuildAction::NoRebuild);
+#endif
 		Navigation->OnNavigationBoundsUpdated(Bounds);
 		// Spawned here rather than left to Build, which spawns none in a world this new.
 		ARecastNavMesh* NavMesh = World.SpawnActor<ARecastNavMesh>();
@@ -72,7 +75,16 @@ namespace ADSKWorldMapBuilder
 		// The bounds update and the registration are queued for the navigation tick; apply them before building.
 		Navigation->Tick(0.f);
 		Navigation->Build();
-		return FindNavMesh(World) == NavMesh && NavMesh->GetNumActiveTiles() > 0 ? NavMesh : nullptr;
+		if (FindNavMesh(World) != NavMesh) return nullptr;
+		// GetNumActiveTiles is 5.8+; a tile with polygons means something was built.
+		TArray<FNavTileRef> Tiles;
+		NavMesh->GetAllNavMeshTiles(Tiles);
+		TArray<FNavPoly> Polys;
+		for (const FNavTileRef Tile : Tiles)
+		{
+			if (NavMesh->GetPolysInTile(Tile, Polys) && !Polys.IsEmpty()) return NavMesh;
+		}
+		return nullptr;
 	}
 }
 

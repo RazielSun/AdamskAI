@@ -6,7 +6,10 @@
 #include "Misc/PackageName.h"
 #include "UObject/SoftObjectPath.h"
 #include "UObject/UnrealType.h"
+// Before 5.7 FStringOutputDevice lives in Containers/UnrealString.h.
+#if __has_include("Misc/StringOutputDevice.h")
 #include "Misc/StringOutputDevice.h"
+#endif
 
 using namespace ADSKCompilerInternal;
 

@@ -67,4 +67,5 @@ adsk.Status`.
 
 To reproduce a server bug offline, note the brain's `RandomSeed` and take `adsk.DumpTrace` on the server: the seed
 and the trace's inputs and events replay the same decisions (perception and navigation differ between machines, so
-there is nothing to gain on a client).
+there is nothing to gain on a client). Replay in the same kind of build: a Win64 server is compiled with `/fp:fast`
+and an editor on 5.8 is not, so a decision at a float threshold may differ ([limitations.md](limitations.md)).

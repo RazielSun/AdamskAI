@@ -16,7 +16,10 @@
 #include "Components/ActorTestSpawner.h"
 #include "Engine/Engine.h"
 #include "GameFramework/Pawn.h"
+// Before 5.7 FStringOutputDevice lives in Containers/UnrealString.h.
+#if __has_include("Misc/StringOutputDevice.h")
 #include "Misc/StringOutputDevice.h"
+#endif
 #include "HAL/FileManager.h"
 
 namespace FDebugSnapshotSpecPrivate

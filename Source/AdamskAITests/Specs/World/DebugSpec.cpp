@@ -6,7 +6,11 @@
 
 #include "World/WorldScenario.h"
 #include "Debug/ADSKDebugSnapshot.h"
+#include "GameFramework/PlayerController.h"
+// Before 5.7 FStringOutputDevice lives in Containers/UnrealString.h.
+#if __has_include("Misc/StringOutputDevice.h")
 #include "Misc/StringOutputDevice.h"
+#endif
 #include "VisualLogger/VisualLogger.h"
 #include "VisualLogger/VisualLoggerTypes.h"
 #include "CQTest.h"

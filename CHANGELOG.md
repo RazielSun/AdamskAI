@@ -16,6 +16,8 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
 - An Insights CPU scope `UADSKBrainComponent::OnPreTick` around the host's `OnPreTick`, broadcast only when bound.
 
 ### Changed
+- Unreal Engine 5.6 and 5.7 are supported alongside 5.8 from one source. `Content/` (test map, EQS assets, demo arena)
+  is saved with 5.6 so every supported engine reads it.
 - An instance takes 6980 bytes instead of 7492 (6660 in 0.4): a `Parallel`'s child lane list is allocated when the
   `Parallel` starts instead of inline in every active node. Against 0.4, `Start` costs about 5% more and `Stop` 11%
   more per instance: the new branches (`Concurrent`, `Set`), the per-tick input flags and the sleep bookkeeping.
@@ -30,6 +32,8 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
   next on Win64, 0.4 alike.
 
 ### Fixed
+- A Float or Vector set to NaN over 0 could count as unchanged in builds with `/fp:fast` (Win64 games, editors before
+  5.8): no `change` event fired. NaN is checked by bits now.
 - A self-ticking brain woke from a sleep one frame late (100 ms at 10 fps): the engine's interval tick starts a frame
   after it is set and fires only past a whole interval. The interval now ends a frame early, and a brain the engine
   wakes before its time re-arms for the rest.

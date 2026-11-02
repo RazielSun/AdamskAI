@@ -1,17 +1,18 @@
 # AdamskAI
 
-**Agent behavior for Unreal Engine 5.8, written as text.** A statechart of modes with a behavior tree in each, authored
+**Agent behavior for Unreal Engine 5.6–5.8, written as text.** A statechart of modes with a behavior tree in each, authored
 in strict XML, checked headlessly before the game runs, reloaded while it plays and replayed exactly from a seed.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Unreal Engine 5.8](https://img.shields.io/badge/Unreal_Engine-5.8-313131.svg)
+![Unreal Engine 5.6–5.8](https://img.shields.io/badge/Unreal_Engine-5.6--5.8-313131.svg)
 ![Platforms](https://img.shields.io/badge/platforms-Linux_%7C_Win64-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-0.5.0_beta-orange.svg)
 
 - **Behavior is text.** It diffs, goes through review, merges, and a coding agent can write it from the node catalogue.
 - **Errors before Play.** A strict compiler and a headless validator report typos, unknown nodes, type mismatches,
   holds and livelocks as `path:line` diagnostics, in a CI with no renderer.
-- **Exact replay.** Randomness is seeded per agent; a run replays from its seed, inputs and events, with a bounded trace.
+- **Exact replay.** Randomness is seeded per agent; a run replays from its seed, inputs and events in the same
+  build, with a bounded trace ([limitations](docs/limitations.md)).
 - **Live reload.** Save the XML while playing and every agent keeps the state it was in.
 - **Cheap at rest.** A brain that waits or walks sleeps until its wait ends or its move reports, like a Behavior Tree;
   1000 brains cost about 0.1 ms per frame ([Measured](#measured)). A brain with `OnPreTick` bound or sensors in
@@ -137,7 +138,8 @@ The whole setup, with the controller pattern: [docs/setup.md](docs/setup.md). Pr
 
 Verified on Linux with UE 5.8.4: the build, the plugin alone in an empty project, about 650 automation tests and 60
 world tests; the same on Win64 with MSVC 14.51 in three host projects, plus Development and Shipping game builds and
-the cook check, a packaged run with brains loading from the pak and a packaged listen server. Mac is not built. What is left:
+the cook check, a packaged run with brains loading from the pak and a packaged listen server. One source builds and
+passes every test on UE 5.6.1 and 5.7.4 too (Win64; 5.6.1 also on Linux). Mac is not built. What is left:
 [docs/dev/roadmap.md](docs/dev/roadmap.md).
 
 ## License

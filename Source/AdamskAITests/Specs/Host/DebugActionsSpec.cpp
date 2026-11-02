@@ -13,7 +13,10 @@
 #include "CQTest.h"
 #include "Support/TestChecks.h"
 #include "Components/ActorTestSpawner.h"
+// Before 5.7 FStringOutputDevice lives in Containers/UnrealString.h.
+#if __has_include("Misc/StringOutputDevice.h")
 #include "Misc/StringOutputDevice.h"
+#endif
 #include "Support/TempTree.h"
 
 namespace FDebugActionsSpecPrivate

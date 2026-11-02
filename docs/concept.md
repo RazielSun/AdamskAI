@@ -49,7 +49,8 @@ agent can write and check headlessly.
 7. **Small core, genre kits.** Genre nodes and sensors (combat, GAS, smart objects, RTS orders) live in provider
    modules like a project's own nodes ([authoring-nodes.md](authoring-nodes.md)). The core changes only when a kit
    cannot express something with ports, scopes and async leaves.
-8. **Determinism and text are the product.** Same seed, inputs, events and deltas give the same run; files diff,
+8. **Determinism and text are the product.** Same seed, inputs, events and deltas give the same run in the same build
+   (across builds: [limitations.md](limitations.md)); files diff,
    review and validate without an editor. A feature that breaks either needs a strong reason.
 
 ## Where a new thing goes

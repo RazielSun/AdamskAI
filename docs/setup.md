@@ -1,6 +1,7 @@
 # Setup — deploying AdamskAI into a project
 
-Verified with Unreal Engine 5.8 for 0.5.0 on Linux (clang) and Win64 (MSVC 14.51, packaged too);
+Verified with Unreal Engine 5.8 for 0.5.0 on Linux (clang) and Win64 (MSVC 14.51, packaged too), and with 5.6 and 5.7
+(build and tests, no version branches);
 Mac is not built yet (see [limitations.md](limitations.md), [roadmap.md](dev/roadmap.md)). Nothing here needs an editor window.
 Every `Tools/<name>.sh` script has a Windows twin, `Tools\<name>_win64.ps1`, with the same modes, logs and
 exit codes; prerequisites and traps per platform are in [linux.md](linux.md) and [windows.md](windows.md).

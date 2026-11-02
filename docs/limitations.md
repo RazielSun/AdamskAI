@@ -27,6 +27,12 @@ What AdamskAI does not do today, stated so nobody has to discover it.
 - **One payload and one target.** An async action has one optional payload; a perception binding publishes one
   selected target per sense (plus the candidate count, a remembered-or-sensed flag and an alert level), not a list.
 - **Bounded completion queues.** Action results and external events each have capacity 64. A full result queue still takes one result per running leaf (one per `SimpleParallel` lane), so stale posts cannot strand one; any other completion it refuses stays pending and cancellable, with no automatic retry. Perception stimulus events that the brain refuses to queue (a full queue, for example) are dropped rather than retried or reordered.
+- **Determinism is per build.** One binary repeats a run exactly from the same seed, inputs, events and deltas.
+  Different builds may not: MSVC compiles Win64 game targets, and editors before 5.8, with `/fp:fast`; 5.8 editors
+  and every clang platform (Linux, Mac, Android) compute floats strictly. A `Wait` total, a utility score or vector
+  math can then differ in the last bit and take another branch at a threshold, so a trace recorded in the editor is
+  not guaranteed to replay in a Win64 game. Golden traces recorded on Linux do pass under `/fp:fast` on 5.6 today.
+  Roadmap B12.
 - **Tick ownership.** Any actor can host a brain. It is explicitly ticked unless `bAutoTick` makes its component own
   that tick or `bManagedTick` hands it to the world subsystem; use exactly one.
 - **Synchronous preload unless prewarmed.** ObjectPath preload may hitch an Acquire or a reload; files listed in

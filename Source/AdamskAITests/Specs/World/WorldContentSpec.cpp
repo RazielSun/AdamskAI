@@ -22,6 +22,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/PlayerStart.h"
 #include "GameFramework/WorldSettings.h"
+#include "HAL/FileManager.h"
 #include "HAL/PlatformMisc.h"
 #include "NavigationPath.h"
 #include "NavMesh/NavMeshBoundsVolume.h"
@@ -42,10 +43,15 @@ namespace FWorldContentSpecPrivate
 	template <typename AssetType>
 	AssetType* MakeAsset(const TCHAR* Directory, const TCHAR* Name)
 	{
-		// An existing asset is loaded first: a package created over one on disk cannot be saved (partially loaded).
+		// A package created over a file on disk cannot be saved (partially loaded), nor can one loaded from a newer
+		// engine's file, so a package not in memory replaces its file.
 		const FString PackageName = FString(Directory) / Name;
-		UPackage* Package = FPackageName::DoesPackageExist(PackageName) ? LoadPackage(nullptr, *PackageName, LOAD_None) : nullptr;
-		Package = Package ? Package : CreatePackage(*PackageName);
+		UPackage* Package = FindPackage(nullptr, *PackageName);
+		if (!Package)
+		{
+			IFileManager::Get().Delete(*FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension()), false, true, true);
+			Package = CreatePackage(*PackageName);
+		}
 		Package->FullyLoad();
 		AssetType* Asset = FindObject<AssetType>(Package, Name);
 		return Asset ? Asset : NewObject<AssetType>(Package, Name, RF_Public | RF_Standalone | RF_Transactional);

@@ -23,7 +23,9 @@ namespace ADSKTypesPrivate
 
 	bool SameFloat(double A, double B)
 	{
-		return A == B || (FMath::IsNaN(A) && FMath::IsNaN(B));
+		// NaN by bits first: under /fp:fast (MSVC games, editors before 5.8) `NaN == 0` can read true.
+		if (FMath::IsNaN(A) || FMath::IsNaN(B)) return FMath::IsNaN(A) && FMath::IsNaN(B);
+		return A == B;
 	}
 }
 

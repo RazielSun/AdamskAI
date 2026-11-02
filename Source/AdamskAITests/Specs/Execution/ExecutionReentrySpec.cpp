@@ -187,9 +187,10 @@ TEST_CLASS_WITH_FLAGS(FExecutionReentrySpec, "AdamskAI.Execution.Reentry",
 		const uint64 Ticks = Runtime.Instance->GetTickCount();
 		Runtime.Instance->Tick(0.1f);
 		ASSERT_THAT(AreEqual(Ticks + 1, Runtime.Instance->GetTickCount()));
-		ASSERT_THAT(AreEqual(EADSKTickResult::Reentrant, Runtime.Hooks->NestedTick));
-		ASSERT_THAT(AreEqual(EADSKStartResult::Reentrant, Runtime.Hooks->NestedStart));
-		ASSERT_THAT(AreEqual(EADSKInputResult::Accepted, Runtime.Hooks->NestedEvent));
+		// IsTrue, not AreEqual: CQTest before 5.8 cannot print a TOptional.
+		ASSERT_THAT(IsTrue(Runtime.Hooks->NestedTick == TOptional<EADSKTickResult>(EADSKTickResult::Reentrant), TEXT("NestedTick is not Reentrant")));
+		ASSERT_THAT(IsTrue(Runtime.Hooks->NestedStart == TOptional<EADSKStartResult>(EADSKStartResult::Reentrant), TEXT("NestedStart is not Reentrant")));
+		ASSERT_THAT(IsTrue(Runtime.Hooks->NestedEvent == TOptional<EADSKInputResult>(EADSKInputResult::Accepted), TEXT("NestedEvent is not Accepted")));
 		TArray<FString> Queued;
 		Runtime.Instance->GetQueuedEvents(Queued);
 		ASSERT_THAT(AreEqual(TArray<FString>{TEXT("Poke")}, Queued));

@@ -10,7 +10,10 @@
 #include "Brain/ADSKBrainComponent.h"
 #include "Brain/ADSKWorldSubsystem.h"
 #include "Debug/ADSKDebugActions.h"
+// Before 5.7 FStringOutputDevice lives in Containers/UnrealString.h.
+#if __has_include("Misc/StringOutputDevice.h")
 #include "Misc/StringOutputDevice.h"
+#endif
 #include "Engine/DirectionalLight.h"
 #include "Groups/ADSKGroupSubsystem.h"
 #include "Settings/ADSKSettings.h"
