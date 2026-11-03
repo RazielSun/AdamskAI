@@ -35,6 +35,10 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
   next on Win64, 0.4 alike.
 
 ### Fixed
+- The trace export included the monolithic `Json.h`, which warned in `BuildPlugin` on Win64 and Android.
+- `adsk_buildplugin_win64.ps1` takes `-TargetPlatforms` (default `Win64`) and echoes clang warnings and the engine's
+  monolithic-header warning, which it used to drop. `adsk_build_win64.ps1` builds the one editor target in
+  `Source\` when the project name's target is missing (Lyra: `LyraEditor`).
 - A Float or Vector set to NaN over 0 could count as unchanged in builds with `/fp:fast` (Win64 games, editors before
   5.8): no `change` event fired. NaN is checked by bits now.
 - A self-ticking brain woke from a sleep one frame late (100 ms at 10 fps): the engine's interval tick starts a frame

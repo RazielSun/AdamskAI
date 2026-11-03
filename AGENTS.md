@@ -9,8 +9,8 @@ A deterministic, XML-authored agent behavior plugin for Unreal Engine 5.6–5.8:
 registry of native nodes, a hierarchical state machine with procedure trees, a bounded recorder, an
 Unreal host (`AdamskAIHost`) and a headless validator. Product: [README.md](README.md); runtime contract
 (ownership, bounds, tick order, modules): [docs/contract.md](docs/contract.md).
-Version 0.5.0 is verified on Linux and Win64, packaged and networked on Win64; Mac is not built. Status and
-everything still left: [docs/dev/roadmap.md](docs/dev/roadmap.md).
+Version 0.5.0 is verified on Linux and Win64, packaged and networked on Win64; Android is built and smoke-run
+on an emulator; Mac is not built. Status and everything still left: [docs/dev/roadmap.md](docs/dev/roadmap.md).
 
 ## Rules that prevent most mistakes
 

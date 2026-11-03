@@ -6,12 +6,17 @@ Tools/adsk_host_check.sh is the stand-alone proof.
     powershell -ExecutionPolicy Bypass -File Plugins\AdamskAI\Tools\adsk_buildplugin_win64.ps1
     powershell -ExecutionPolicy Bypass -File Plugins\AdamskAI\Tools\adsk_buildplugin_win64.ps1 `
         -Engine 'E:\UE_5.8' -OutDir D:\AdskPackage
+    powershell -ExecutionPolicy Bypass -File Plugins\AdamskAI\Tools\adsk_buildplugin_win64.ps1 `
+        -OutDir D:\AdskPackageAndroid -TargetPlatforms Win64+Android
 
 BuildPlugin builds the plugin inside a generated HostProject (editor Development plus game Development
 and Shipping), so a pass also proves that nothing in this plugin needs the project it sits in. It is
 stricter than a project build in one more way: the generated host uses the latest build settings, which
 turn MSVC's shadowing warning C4459 into an error. Run it before a release and whenever Build.cs or
 public headers change. About two minutes on a warm machine.
+
+-TargetPlatforms is BuildPlugin's own list, default Win64. Android needs the engine's Android target and the
+SDK, NDK and JDK the engine names in Engine\Config\Android\Android_SDK.json (docs/windows.md).
 
 Engine: -Engine, else UE_ROOT, else the launcher/source registration of -Association (default 5.8).
 
@@ -23,7 +28,9 @@ CHECK THE FLAG TOOK EFFECT: a silently ignored -StrictIncludes looks exactly lik
 "Building with precompiled headers and unity disabled", or the run fails even when UAT exits 0.
 
 Errors are echoed even when they sit in an engine header (MSVC blames the header for a plugin name
-that shadows it); the `note: see declaration` line below each names the plugin file.
+that shadows it); the `note: see declaration` line below each names the plugin file. Warnings are echoed
+from outside the engine, MSVC's and clang's alike, plus the engine's monolithic-header warning, which
+names the engine header but means a plugin file included it.
 
 Exit code: RunUAT's (0 success); 1 when UAT passed but strict mode was not confirmed; 2 when the engine
 or plugin is not found, the output directory is unsafe, or an editor is running.
@@ -33,7 +40,8 @@ param(
 	[string] $Plugin,
 	[string] $OutDir = (Join-Path $env:TEMP 'AdskPackage'),
 	[string] $Engine,
-	[string] $Association = '5.8'
+	[string] $Association = '5.8',
+	[string] $TargetPlatforms = 'Win64'
 )
 
 # Windows PowerShell 5.1 leaves $PSScriptRoot empty inside param() defaults, so derive it here.
@@ -68,7 +76,7 @@ if ($Running.Count -gt 0) {
 	exit 2
 }
 
-$UatArgs = @('BuildPlugin', "-Plugin=$Plugin", "-Package=$OutDir", '-TargetPlatforms=Win64', '-StrictIncludes')
+$UatArgs = @('BuildPlugin', "-Plugin=$Plugin", "-Package=$OutDir", "-TargetPlatforms=$TargetPlatforms", '-StrictIncludes')
 $Log = "$OutDir.log"
 Write-Host ('UAT ARGS: ' + ($UatArgs -join ' '))
 Write-Host "UAT LOG:  $Log"
@@ -78,9 +86,9 @@ $Code = (Invoke-AdskLogged $RunUAT $UatArgs $Log).Status
 $Elapsed = (Get-Date) - $Start
 
 # Every error, even inside an engine header (C4459 blames the header; the next `note: see declaration` names us);
-# warnings only from outside the engine.
-Select-String -LiteralPath $Log -Pattern ':\s+(fatal )?error [A-Z]+\d+|note: see declaration|warning C\d+|BUILD (SUCCESSFUL|FAILED)|AutomationException' |
-	Where-Object { $_.Line -notmatch 'warning C\d+' -or $_.Line -notmatch '\\Engine\\Source\\' } |
+# warnings from outside the engine, and the monolithic-header one (COMPILE_WARNING has no C number on MSVC).
+Select-String -CaseSensitive -LiteralPath $Log -Pattern ':\s+(fatal )?error( [A-Z]+\d+)?:?\s|note: see declaration|warning( C\d+)?:|BUILD (SUCCESSFUL|FAILED)|AutomationException' |
+	Where-Object { $_.Line -notmatch 'warning( C\d+)?:' -or $_.Line -notmatch '[\\/]Engine[\\/]Source[\\/]' -or $_.Line -match 'Monolithic headers' } |
 	Select-Object -First 40 | ForEach-Object { Write-Host $_.Line }
 $Strict = Select-String -LiteralPath $Log -Pattern 'Building with precompiled headers and unity disabled' -Quiet
 

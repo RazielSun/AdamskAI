@@ -101,6 +101,29 @@ undoes one.
 - **Wildcards are case-insensitive.** `*.xml` also finds `Guard.XML`; behavior file names must end in
   lowercase `.xml`, and the validator reports such a file instead of skipping it.
 
+## Android (built from Win64)
+
+Verified on UE 5.8.4 (2026-11-02): the plugin for arm64 and x64, a game's `libUnreal.so`, an ASTC APK with the
+behavior files in its UFS manifest, and a smoke run on an x86_64 emulator (`adsk.Status` shows a running brain).
+Not run: a real phone, Shipping, the test suite (`AdamskAITests` is a `DeveloperTool` module and stays out of games).
+
+Needs the engine's Android target (5.8 launcher installs have it; 5.6 and 5.7 need it added in the launcher) and
+the versions in `Engine\Config\Android\Android_SDK.json`: JDK 17, NDK r27c, `android-36`, build-tools 36,
+cmake 3.22.1, platform-tools; `JAVA_HOME`, `ANDROID_HOME` and `NDKROOT` set. Android Studio is not needed: the
+command-line tools install all of it. An x86_64 emulator needs `bBuildForX8664=True` in the project's
+`[/Script/AndroidRuntimeSettings.AndroidRuntimeSettings]`.
+
+```powershell
+# the plugin alone, Win64 and Android
+powershell -ExecutionPolicy Bypass -File $T\adsk_buildplugin_win64.ps1 -OutDir D:\AdskPackageAndroid -TargetPlatforms Win64+Android
+# a game APK; Content\AI must be staged as UFS (setup.md)
+<Engine>\Engine\Build\BatchFiles\RunUAT.bat BuildCookRun -project=<Project>.uproject -platform=Android -cookflavor=ASTC `
+  -clientconfig=Development -build -cook -stage -pak -package -archive -archivedirectory=<OutDir> -map=<Map> -unattended
+adb install -r <OutDir>\Android_ASTC\<Project>-x64.apk
+adb shell "am broadcast -a android.intent.action.RUN -e cmd 'adsk.Status'"
+adb logcat -d -s UE:*
+```
+
 ## Not run on Windows yet
 
 - `adsk_host_check.sh` has no Win64 twin; `adsk_buildplugin_win64.ps1` covers the stand-alone build but

@@ -9,7 +9,8 @@ On Linux the host project's own build script plays this role; this script has no
         -Project D:\Host\Host.uproject -TargetName MyGameEditor
 
 The target is <ProjectName>Editor (or <ProjectName> for -Target Game). A project renamed from a
-template keeps the template's target names; pass -TargetName then. Extra arguments after the named
+template keeps the template's target names (Lyra: LyraEditor): when Source\ has no such .Target.cs but
+exactly one of that kind, that one is built; otherwise pass -TargetName. Extra arguments after the named
 ones go to UBT unchanged.
 
 NO EDITOR MAY BE RUNNING for this project: it holds the module DLLs and the link fails on a file it
@@ -44,7 +45,16 @@ if ($Code -ne 0) { exit $Code }
 
 if (-not (Assert-AdskNoEditor $Ctx)) { exit 2 }
 
-if (-not $TargetName) { $TargetName = if ($Target -eq 'Editor') { "$($Ctx.Name)Editor" } else { $Ctx.Name } }
+if (-not $TargetName) {
+	$TargetName = if ($Target -eq 'Editor') { "$($Ctx.Name)Editor" } else { $Ctx.Name }
+	$SourceDir = Join-Path $Ctx.ProjectRoot 'Source'
+	if (-not (Test-Path -LiteralPath (Join-Path $SourceDir "$TargetName.Target.cs"))) {
+		$Kind = @(Get-ChildItem -LiteralPath $SourceDir -Filter '*.Target.cs' -ErrorAction SilentlyContinue |
+			ForEach-Object { $_.Name -replace '\.Target\.cs$', '' } |
+			Where-Object { if ($Target -eq 'Editor') { $_ -like '*Editor' } else { $_ -notmatch '(Editor|Server|Client)$' } })
+		if ($Kind.Count -eq 1) { $TargetName = $Kind[0] }
+	}
+}
 $LogDir = Join-Path $Ctx.ProjectRoot 'Saved\Logs'
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 $Log = Join-Path $LogDir "adsk_build_${Target}_$Configuration.log"

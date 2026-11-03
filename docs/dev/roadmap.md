@@ -12,6 +12,7 @@ delete it from this file and describe the result where it belongs ([migration.md
 | Win64, UE 5.6.1 and 5.7.4 | 2026-11-02 | `BuildPlugin -StrictIncludes`, a host project build, 660 `AdamskAI.*`, 65 `AdamskAIWorld.*` each; no project XML, game targets or packaging |
 | Linux, UE 5.6.1, clang | 2026-11-02 | `adsk_host_check.sh` (build, check, validate, 660 `AdamskAI.*`, strict includes), 65 `AdamskAIWorld.*`; `Content/` regenerated with it, and 5.8.4 reads it (65/0) |
 | Linux, UE 5.8.4, clang | 2026-10-31 | `adsk_all.sh --world` (check, validate, schema check, simulate, `AdamskAI.*`, `AdamskAIWorld.*`), `adsk_host_check.sh` (the plugin alone in an empty host: build, validate, `AdamskAI.*`, strict includes); a 30-minute fuzzer soak: 15.2 million mutants, 948,470 compiled and ran, none broke a rule |
+| Android, UE 5.8.4, NDK r27c (built on Win64) | 2026-11-02 | `BuildPlugin -TargetPlatforms=Win64+Android -StrictIncludes`; a ThirdPersonGame `libUnreal.so` for arm64 and x64; an ASTC APK with the project XML in the UFS manifest; on an x86_64 emulator (Android 16) `adsk.Status` shows a running brain, no ensure or crash. Not run: a phone, Shipping, the test suite |
 | Mac | never | — |
 
 Not run on Win64 for 0.5.0: scripted PIE scenarios through Unreal MCP. The fixes the Win64 runs found are applied on

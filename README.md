@@ -5,7 +5,7 @@ in strict XML, checked headlessly before the game runs, reloaded while it plays 
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Unreal Engine 5.6–5.8](https://img.shields.io/badge/Unreal_Engine-5.6--5.8-313131.svg)
-![Platforms](https://img.shields.io/badge/platforms-Linux_%7C_Win64-lightgrey.svg)
+![Platforms](https://img.shields.io/badge/platforms-Linux_%7C_Win64_%7C_Android-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-0.5.0_beta-orange.svg)
 
 - **Behavior is text.** It diffs, goes through review, merges, and a coding agent can write it from the node catalogue.
@@ -139,7 +139,8 @@ The whole setup, with the controller pattern: [docs/setup.md](docs/setup.md). Pr
 Verified on Linux with UE 5.8.4: the build, the plugin alone in an empty project, about 650 automation tests and 60
 world tests; the same on Win64 with MSVC 14.51 in three host projects, plus Development and Shipping game builds and
 the cook check, a packaged run with brains loading from the pak and a packaged listen server. One source builds and
-passes every test on UE 5.6.1 and 5.7.4 too (Win64; 5.6.1 also on Linux). Mac is not built. What is left:
+passes every test on UE 5.6.1 and 5.7.4 too (Win64; 5.6.1 also on Linux). Android (UE 5.8.4, built on Win64): the
+plugin and a game for arm64 and x64, and an APK whose brains run on an emulator. Mac is not built. What is left:
 [docs/dev/roadmap.md](docs/dev/roadmap.md).
 
 ## License
