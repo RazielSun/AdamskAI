@@ -28,7 +28,7 @@ Where AdamskAI spends time and memory, the numbers measured on Win64, and how to
 | `AdamskAI.Perf.CoreFleet` | 1000 instances, core nodes only, 300 frames | 0.20 µs per agent tick with a 256-record recorder, 0.17–0.18 µs without one (Shipping-like); 0.13 ms per frame on workers; 5.75 KB per instance plus 128 B node memory; 0.73 records per agent frame |
 | `AdamskAI.Perf.ParallelChurn` | 1000 instances whose tree is one `SimpleParallel` restarting every few frames (76 starts per agent in 300 frames) (2026-10-30) | 0.20 µs per agent tick serially, 0.10–0.11 ms per frame on workers; 0.22 µs and 0.11–0.12 ms before cancelled lanes were kept as spares |
 | `AdamskAI.Perf.ManagedTick` | the same file on managed brains, every brain every frame | 0.24 µs per brain at 250 and at 1000 brains: linear |
-| `AdamskAI.Perf.PerceptionBridge` | one brain plus a bridge choosing among N sensed actors | 0.16 µs with no bridge; 0.7 at 4, 1.4–1.9 at 16, 4.8 at 64 candidates |
+| `AdamskAI.Perf.PerceptionBridge` | one brain plus a bridge choosing among N sensed actors; `candidates_16_ignoring_8` sets `IgnoreGameplayTags` with half the candidates tagged | 0.16 µs with no bridge; 0.7 at 4, 1.4–1.9 at 16, 4.8 at 64 candidates; Linux 2026-11-03: 1.2–1.6 at 16, 1.6–1.7 ignoring 8 of 16 (each candidate's tags read twice a tick) |
 | `AdamskAI.Perf.ProjectCompile` | read and compile the project's behavior files | a 200-line file 0.35 ms, a 60-line file 0.10 ms |
 | `AdamskAI.Perf.StartCost` | `Start` and `Stop` of 1000 instances of the core file, 20 rounds; one reload commit over 200 brains on one file, 10 commits (2026-10-30) | 0.36 µs per `Start`, 0.09 µs per `Stop`; a commit 0.65 ms for 200 brains (3.2 µs per brain: prepare, stop, publish, restart) |
 | `AdamskAIWorld.Perf.ShuttlingFleet` | 200 agents walking A↔B with `MoveTo`, PIE, `-nullrhi` | 5.0 ms per whole frame, of which the managed brain pass 0.124 ms (2.5%); all serial, since `MoveTo` is a host node |
@@ -66,7 +66,7 @@ Re-baseline deliberately with `-Update`, in the change that explains why. The ce
 | Managed pass µs per brain, 1000 ÷ 250 brains | ≤ 1.3 (stays linear) |
 | Records per agent frame | ≤ 1.0 |
 | Node memory per agent / instance bytes | ≤ 256 B / ≤ 8 KB |
-| Bridge µs per brain tick at 16 candidates | ≤ 3 (one process reads 1.4–2.2 on Win64, another 0.4 or 0.5 build alike, by where its objects lie) |
+| Bridge µs per brain tick at 16 candidates, with or without `IgnoreGameplayTags` | ≤ 3 (one process reads 1.4–2.2 on Win64, another 0.4 or 0.5 build alike, by where its objects lie) |
 | Synchronous compiles in a prewarmed world | 0 (asserted by `AdamskAIWorld.Reload`) |
 
 **In game.** `stat AdamskAI`: cycle stats for the managed pass, brain ticks, the perception bridge and `Acquire`;

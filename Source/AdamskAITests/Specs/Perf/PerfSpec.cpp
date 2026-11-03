@@ -15,6 +15,7 @@
 #include "Perception/AISense_Sight.h"
 #include "Components/ActorTestSpawner.h"
 #include "Components/SceneComponent.h"
+#include "NativeGameplayTags.h"
 #include "CQTest.h"
 #include "Dom/JsonObject.h"
 #include "HAL/PlatformTime.h"
@@ -27,6 +28,7 @@
 #include "Support/CompilerSpecSupport.h"
 #include "Support/TestChecks.h"
 #include "Support/FakeHostServices.h"
+#include "Support/GameplayTagActors.h"
 #include "Support/TempTree.h"
 
 /** Benchmarks, not thresholds: timings vary by machine, so a test fails only when the workload itself breaks. */
@@ -178,9 +180,10 @@ namespace FPerfSpecPrivate
 		"<State id=\"active\" tree=\"wait\"><On event=\"Lost\" goto=\"idle\"/></State></StateMachine>"
 		"<Tree id=\"wait\"><Wait id=\"wait_node\" duration=\"1000\"/></Tree></Agent>");
 
-	AActor& SpawnPlaced(FActorTestSpawner& Spawner, const FVector& Location)
+	template <typename ActorType = AActor>
+	ActorType& SpawnPlaced(FActorTestSpawner& Spawner, const FVector& Location)
 	{
-		AActor& Actor = Spawner.SpawnActor<AActor>();
+		ActorType& Actor = Spawner.SpawnActor<ActorType>();
 		USceneComponent* Root = NewObject<USceneComponent>(&Actor);
 		Actor.AddInstanceComponent(Root);
 		Root->RegisterComponent();
@@ -466,7 +469,10 @@ TEST_CLASS_WITH_FLAGS(FPerfSpec, "AdamskAI.Perf",
 		Report(*TestRunner, TEXT("StartCost"), Numbers);
 	}
 
-	/** One brain whose perception bridge chooses among N sensed actors before every tick; 0 is the brain alone. */
+	/**
+	 * One brain whose perception bridge chooses among N sensed actors before every tick; 0 is the brain alone.
+	 * `candidates_16_ignoring_8`: IgnoreGameplayTags set, every candidate with the tag interface, half of them tagged.
+	 */
 	TEST_METHOD(PerceptionBridge)
 	{
 		constexpr int32 Ticks = 2000;
@@ -480,9 +486,14 @@ TEST_CLASS_WITH_FLAGS(FPerfSpec, "AdamskAI.Perf",
 		Binding.TargetLocationInput = TEXT("Location");
 		Binding.TargetSeenEvent = TEXT("Seen");
 		Binding.TargetLostEvent = TEXT("Lost");
+		FNativeGameplayTag Dead{TEXT("AdamskAI"), TEXT("AdamskAIHost"), TEXT("AdamskAI.Test.Perf.Dead"), TEXT("Perf bench tag"), ENativeGameplayTagToken::PRIVATE_USE_MACRO_INSTEAD};
 		const TSharedRef<FJsonObject> Numbers = MakeShared<FJsonObject>();
-		for (const int32 Count : {0, 4, 16, 64})
+		for (const TPair<int32, bool> Case : {TPair<int32, bool>(0, false), {4, false}, {16, false}, {64, false}, {16, true}})
 		{
+			const int32 Count = Case.Key;
+			const bool bIgnoring = Case.Value;
+			Binding.IgnoreGameplayTags.Reset();
+			if (bIgnoring) Binding.IgnoreGameplayTags.AddTag(Dead.GetTag());
 			FActorTestSpawner Spawner;
 			AActor& Host = SpawnPlaced(Spawner, FVector::ZeroVector);
 			UAIPerceptionComponent* Perception = NewObject<UAIPerceptionComponent>(&Host);
@@ -505,7 +516,9 @@ TEST_CLASS_WITH_FLAGS(FPerfSpec, "AdamskAI.Perf",
 			ASSERT_THAT(IsTrue(Brain->IsADSKRunning(), TEXT("the bench brain did not start: ") + Brain->GetLastError()));
 			for (int32 Index = 0; Index < Count; ++Index)
 			{
-				AActor& Seen = SpawnPlaced(Spawner, FVector(100.0 * (Index + 1), 50.0 * Index, 0.0));
+				const FVector Location(100.0 * (Index + 1), 50.0 * Index, 0.0);
+				AActor& Seen = bIgnoring ? SpawnPlaced<AADSKTestTaggedActor>(Spawner, Location) : SpawnPlaced(Spawner, Location);
+				if (bIgnoring && Index % 2 == 0) Cast<AADSKTestTaggedActor>(&Seen)->OwnedTags.AddTag(Dead.GetTag());
 				Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Seen, Seen.GetActorLocation(), true);
 			}
 			const double Start = FPlatformTime::Seconds();
@@ -519,7 +532,8 @@ TEST_CLASS_WITH_FLAGS(FPerfSpec, "AdamskAI.Perf",
 				ASSERT_THAT(AreEqual(Count, Bridge->GetCandidateCountForTest(UAISense_Sight::StaticClass())));
 				ASSERT_THAT(IsTrue(Brain->GetInstance()->GetActiveStatePath().Last() == TEXT("active"), TEXT("the bridge never published its target")));
 			}
-			Numbers->SetNumberField(FString::Printf(TEXT("candidates_%d_us_per_brain_tick"), Count), Seconds * 1e6 / Ticks);
+			Numbers->SetNumberField(bIgnoring ? FString::Printf(TEXT("candidates_%d_ignoring_%d_us_per_brain_tick"), Count, Count / 2)
+				: FString::Printf(TEXT("candidates_%d_us_per_brain_tick"), Count), Seconds * 1e6 / Ticks);
 			Brain->Cleanup();
 		}
 		Report(*TestRunner, TEXT("PerceptionBridge"), Numbers);
