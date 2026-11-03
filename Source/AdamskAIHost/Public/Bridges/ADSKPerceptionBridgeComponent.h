@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "GameplayTagContainer.h"
 #include "Misc/AutomationTest.h"
 #include "Perception/AISense.h"
 #include "Runtime/ADSKInstance.h"
@@ -34,6 +35,9 @@ struct FADSKPerceptionBinding
 	UPROPERTY(EditAnywhere, Category = "AdamskAI") FName RequiredActorTag = NAME_None;
 	/** Optional exact FAIStimulus::Tag filter. Configure before BeginPlay; loss still clears accepted sight. */
 	UPROPERTY(EditAnywhere, Category = "AdamskAI") FName RequiredStimulusTag = NAME_None;
+	/** A candidate whose IGameplayTagAssetInterface has any of these (or a child) stays tracked but is not selected, counted,
+	 *  alerted on or raised as a stimulus until the tag goes. Configure before BeginPlay. */
+	UPROPERTY(EditAnywhere, Category = "AdamskAI") FGameplayTagContainer IgnoreGameplayTags;
 
 	/** Seconds a lost actor stays a candidate at its last sensed location; 0 forgets at once. Sensed candidates always win. */
 	UPROPERTY(EditAnywhere, Category = "AdamskAI", meta = (ClampMin = "0")) float ForgetAfter = 0.f;
@@ -113,6 +117,10 @@ private:
 		float ForgetAfter = 0.f;
 		FName RequiredActorTag;
 		FName RequiredStimulusTag;
+		FGameplayTagContainer IgnoreGameplayTags;
+		/** Set by Select: candidates not ignored, and whether any of them is sensed. */
+		int32 EligibleCount = 0;
+		bool bAnyEligibleSensed = false;
 		float Alert = 0.f;
 		bool bAlerted = false;
 		bool bHadPublishedTarget = false;
@@ -130,6 +138,7 @@ private:
 	void ProcessStimulus(UClass* Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed, FName Tag);
 	static bool AcceptsActor(const FBindingState& State, const AActor& Actor);
 	static bool AcceptsStimulus(const FBindingState& State, const AActor& Actor, FName Tag);
+	static bool IsIgnored(const FBindingState& State, const AActor& Actor);
 	void Resync(FBindingState& State, TSubclassOf<UAISense> Sense);
 	static void AddCandidate(FBindingState& State, AActor* Actor, const FVector& Location);
 	AActor* Select(FBindingState& State, TSubclassOf<UAISense> Sense);

@@ -154,6 +154,7 @@ Core changes, each with what a file does until then:
 | K7 | Response curves for `Score` and `select` scores, instead of `weight * value + bias` only | needs and fatigue in a simulation | the host evaluates the curve and publishes a Float Input | 1–2 days | the first utility choice a line cannot express |
 | K8 | Composite switching: a composite `OnUpdate` that may switch to another child, so a project writes its own reactive composites and `ReactiveSelector`/`UtilitySelector` become ordinary composites (undoes the `EADSKSelectorPolicy` split) | project-defined reactive control nodes | none needed yet | 3–4 days | a project composite that needs to switch children |
 | R1 | Parallel regions in the state machine (SCXML `<parallel>`, HFSM2 orthogonal regions): one active leaf and tree per region | two independent machines in one agent (alertness beside movement) | nested `SimpleParallel`, or two brains | 1–3 weeks | a mode that nested parallels can no longer express readably |
+| K13 | Eventless transitions: an `On` with `if` and no event, taken when its condition holds after the tree ends | a Behavior Tree root selector ported as it is (Lyra's bot) | a `decide` state whose `tree.success` and `tree.failure` handlers dispatch: one extra tick per decision and dispatcher lines | 1–2 days | a recipe "port a BT root selector" turns out too clumsy; write the recipe first |
 | K10 | Snapshots on disk: a host helper (or an `IADSKHostServices` hook) that serializes `FADSKSnapshot` and maps its Object ids to something stable (an actor GUID, a soft path) and back | save games | the project serializes the snapshot and maps the ids itself | about 1 day | the first project with save games |
 
 Host features:
@@ -171,6 +172,19 @@ Host features:
 | H10 | A time-of-day service publishing an enum Input | the first schedule-driven file |
 | H11 | A turn driver: ticks a brain only on its turn, until `EndTurn` | the first turn-based host |
 | H12 | `PlayMontage` async leaf and AnimNotify to Event with `Bind` | the first file that waits on a montage or an animation window |
+| H13 | `RunEQSActor`: the query's best actor into an Object slot (`out-target`), so `MoveToActor` follows a moving target; queries whose generators yield no actors fail validation | a hunt where a point goes stale; Lyra's `EQS_FindTarget` works through a point today |
+| H16 | `AdamskAIGameFeatures`, an optional module: a `UGameFeatureAction` that calls `FADSKBehaviorRoots::Register` on activation and `Unregister` on deactivation, with the activation test in C | behavior files shipped inside a Game Feature plugin (Lyra's ShooterCore); `Content/AI` of the project works without it |
+| H17 | One target for several senses: a binding option that feeds sight and damage into the same `TargetInput` | a file that must fire at an attacker it cannot see; Lyra's BT does, the port turns to face the attacker and lets sight pick it |
+| H18 | `Act` finds its performer among the host's components, not only on the pawn or the controller | a performer that is neither (a weapon component); changes the "pawn, else controller" contract |
+
+Kits outside this plugin (a separate plugin each, depending on `AdamskAIHost`):
+
+| Kit | Contents | Take it when |
+|---|---|---|
+| `AdamskAIGAS` | `ActivateAbility` (async leaf, cancels the ability on leave), `SendGameplayEvent` (succeeds when the event is delivered: a passive ability waiting on it is not counted as activated), `WithLooseTag` scope; sensors for the brain's own ASC tags, tag counts, attributes, can-activate and cooldown; a bridge component subscribing to tag and attribute changes so the brain may sleep; `FADSKGASActionMap` turning an `Act` action into an event or ability for a performer. 4–6 days | a GAS project adopts AdamskAI as its pilot (Lyra: its bots run on the plugin today with no change to it, 21 : 21 against Lyra's BT bots) |
+
+A Lyra recipe ("port Lyra bots": the controller, the bot subsystem, `lyra_bot.xml`) goes into [recipes](../recipes/README.md)
+rather than a kit: Lyra's classes are not exported, so the code lives in the game module. Write it with the pilot.
 
 Not planned: names, strings or lists as slot types (concept.md principle 4: lists live in the host, the file sees one
 target).

@@ -11,7 +11,7 @@ exit codes; prerequisites and traps per platform are in [linux.md](linux.md) and
 | Module | Type | Use |
 |---|---|---|
 | `AdamskAI` | Runtime | language, registry, definitions, executor, recorder; `Core`/`CoreUObject` only |
-| `AdamskAIHost` | Runtime | `Engine`/`AIModule` host: settings, provider assembly, world subsystem, brain, the host nodes (`MoveTo`, `LookAt`, `RunEQS`, `Focus`, `MoveSpeed`, `Act`, `HoldToken`, `Radio`), `IADSKActionPerformer`, sensors (`Distance`, `LineOfSight`, `Grounded`, `PlayerPawn`, `GroupTarget`), the group service (`UADSKGroupSubsystem`), validation service, catalogue renderer; debug snapshot/actions/trace export outside Shipping |
+| `AdamskAIHost` | Runtime | `Engine`/`AIModule` host: settings, provider assembly, world subsystem, brain, the host nodes (`MoveTo`, `LookAt`, `RunEQS`, `Focus`, `MoveSpeed`, `Act`, `HoldToken`, `Radio`), EQS contexts reading a brain slot, `IADSKActionPerformer`, sensors (`Distance`, `LineOfSight`, `Grounded`, `PlayerPawn`, `GroupTarget`), the group service (`UADSKGroupSubsystem`), validation service, catalogue renderer; debug snapshot/actions/trace export outside Shipping |
 | `AdamskAIDebug` | Runtime, denied Shipping/Test | Gameplay Debugger category and world labels ([debugging.md](debugging.md)) |
 | `AdamskAIDemo` | Runtime, denied Shipping/Test | demo scenes on a generated arena, `adsk.Demo <Scene>` ([demo.md](demo.md)); nothing depends on it |
 | `AdamskAIEditor` | Editor | `AdamskAIValidate` commandlet, report writer, fixture runner and the behavior-root watcher; never linked by a game target |
@@ -283,7 +283,14 @@ Perception bindings have two optional filters: `RequiredActorTag` is an ordinary
 the bridge snapshots them for that lifetime. Both filters apply before a positive observation can add a candidate
 or queue a stimulus, and also on resync after a stop/reload. Losing a previously accepted stimulus still clears
 current sensing even if the loss carries no tag. Removing the required actor tag drops the candidate on the next
-sample. Target-selection policy remains in `SelectTarget` or the project.
+sample.
+
+`IgnoreGameplayTags` hides a candidate whose `IGameplayTagAssetInterface` has one of the tags or a child of one
+(`Status.Death` hides `Status.Death.Dying`): it is not selected or counted, does not raise the alert, and its
+stimuli queue no event. It stays tracked, so once the tag goes it is a candidate again without a new stimulus; a
+selected target that gains the tag is dropped on the next sample, which raises `TargetLostEvent` when nothing else
+is selected. `SelectTarget` receives only the candidates left, so the default "sensed before remembered" rule needs
+no replacing to skip the dying. Target-selection policy remains in `SelectTarget` or the project.
 
 For a heard point, the existing `StimulusEvent` already carries one Vector parameter named `location`; bind it to
 a Local in the handler. A rejected stimulus neither refreshes the observation nor queues that event. Hearing is

@@ -4,6 +4,10 @@
 
 #if WITH_AUTOMATION_TESTS && WITH_EDITOR
 
+#include "Engine/TargetPoint.h"
+#include "EnvironmentQuery/Generators/EnvQueryGenerator_SimpleGrid.h"
+#include "Nodes/ADSKEnvQueryContexts.h"
+#include "Objects/ADSKObjectHandles.h"
 #include "World/WorldQueries.h"
 #include "World/WorldScenario.h"
 #include "CQTest.h"
@@ -23,6 +27,17 @@ namespace FEqsSpecPrivate
 			"<On event=\"tree.success\" goto=\"found\"/><On event=\"tree.failure\" goto=\"failed\"/><On event=\"Leave\" goto=\"left\"/></State>"
 			"<State id=\"found\"/><State id=\"failed\"/><State id=\"left\"/></StateMachine>"
 			"<Tree id=\"query\"><RunEQS id=\"query_run\" query=\"%s\" out-point=\"Point\">%s</RunEQS></Tree></Agent>"), *Query, *Params);
+	}
+
+	/** Waits for Go, then runs Query: its context reads the Target Input. */
+	FString TargetQueryXml(const FString& Query)
+	{
+		return FString::Printf(TEXT("<Agent version=\"1\" id=\"world_eqs_target\"><Inputs><Input name=\"Target\" type=\"Object\" default=\"none\"/></Inputs>"
+			"<Locals><Local name=\"Point\" type=\"Vector\"/></Locals><Events><Event name=\"Go\"/></Events>"
+			"<StateMachine id=\"m\" initial=\"waiting\"><State id=\"waiting\"><On event=\"Go\" goto=\"querying\"/></State>"
+			"<State id=\"querying\" tree=\"query\"><On event=\"tree.success\" goto=\"found\"/><On event=\"tree.failure\" goto=\"failed\"/></State>"
+			"<State id=\"found\"/><State id=\"failed\"/></StateMachine>"
+			"<Tree id=\"query\"><RunEQS id=\"query_run\" query=\"%s\" out-point=\"Point\"/></Tree></Agent>"), *Query);
 	}
 
 	FString Params(float Radius, int32 Rings, bool bReachable)
@@ -132,6 +147,39 @@ TEST_CLASS_WITH_FLAGS(FWorldEqsSpec, "AdamskAIWorld.Eqs",
 			const double Distance = FVector::Dist2D(Agent.Value(TEXT("Point")).Vector, SpawnPoint);
 			ASSERT_THAT(IsTrue(FMath::IsNearlyEqual(Distance, 400.0, 60.0), FString::Printf(TEXT("the point is %.0f cm away, expected about 400"), Distance)));
 		});
+	}
+
+	/** A grid around ADSKEnvQueryContext_Target: the query centers on the marker in the brain's Target, not on the querier. */
+	TEST_METHOD(ASlotContextCentersTheQueryOnTheBrainsTarget)
+	{
+		if (!Scenario.IsOpen()) return;
+		const FVector Goal = SpawnPoint + FVector(800.0, 0.0, 0.0);
+		TestCommandBuilder
+			.StartWhen(TEXT("navmesh ready"), [this] { return Scenario.IsNavigationReady(); }, Timeout)
+			.Then(TEXT("spawn the agent and the marker"), [this, Goal]
+			{
+				UPackage* Package = CreatePackage(MemoryPackage);
+				MemoryQuery.Reset(NewObject<UEnvQuery>(Package, TEXT("EQ_Memory"), RF_Public | RF_Standalone | RF_Transient));
+				UEnvQueryGenerator_SimpleGrid* Grid = NewObject<UEnvQueryGenerator_SimpleGrid>(MemoryQuery.Get());
+				Grid->GenerateAround = UADSKEnvQueryContext_Target::StaticClass();
+				Grid->GridSize.DefaultValue = 150.f;
+				Grid->SpaceBetween.DefaultValue = 100.f;
+				Grid->ProjectionData.TraceMode = EEnvQueryTrace::Navigation;
+				UEnvQueryOption* Option = NewObject<UEnvQueryOption>(MemoryQuery.Get());
+				Option->Generator = Grid;
+				MemoryQuery->GetOptionsMutable().Add(Option);
+				ATargetPoint* Marker = Scenario.GetWorld().SpawnActor<ATargetPoint>(Goal, FRotator::ZeroRotator);
+				Agent = Scenario.SpawnAgent(SpawnPoint, Scenario.WriteBehavior(TEXT("eqs_target.xml"), TargetQueryXml(FString(MemoryPackage) + TEXT(".EQ_Memory"))));
+				ASSERT_THAT(AreEqual(EADSKInputResult::Accepted, Agent.Brain->SetInput(TEXT("Target"), FADSKObjectHandles::Make(Marker))));
+				ASSERT_THAT(AreEqual(EADSKInputResult::Accepted, Agent.Brain->EnqueueEvent(TEXT("Go"))));
+			})
+			.Until(TEXT("the query ends"), [this] { return HasFinished(Agent); }, Timeout)
+			.Then(TEXT("found near the marker"), [this, Goal]
+			{
+				ADSK_ASSERT(Agent.PathIs({TEXT("m"), TEXT("found")}));
+				const double Distance = FVector::Dist2D(Agent.Value(TEXT("Point")).Vector, Goal);
+				ASSERT_THAT(IsTrue(Distance <= 250.0, FString::Printf(TEXT("the point is %.0f cm from the marker, expected within 250"), Distance)));
+			});
 	}
 
 	/** The brain ticks before the EQS manager, so the state is left before the query runs; no late result may land. */

@@ -13,6 +13,10 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
 - Perception binding filters `RequiredActorTag` (ordinary Actor Tags) and `RequiredStimulusTag` (exact stimulus tag).
   Empty filters preserve behavior; callback and resync use the same filters, loss still clears accepted sensing,
   and removing the required actor tag invalidates the candidate on the next sample.
+- Perception binding `IgnoreGameplayTags`: a candidate with one of the GameplayTags (or a child) is not selected,
+  counted, alerted on or raised as a stimulus, and returns when the tag goes. `SelectTarget` gets only the rest.
+- EQS contexts read from the querier's brain: `ADSKEnvQueryContext_Target` gives the actor in `Target`, and a C++
+  subclass of `UADSKEnvQueryContext_Slot` reads any Object or Vector slot. A query no longer needs a Blackboard copy.
 - An Insights CPU scope `UADSKBrainComponent::OnPreTick` around the host's `OnPreTick`, broadcast only when bound.
 
 ### Changed

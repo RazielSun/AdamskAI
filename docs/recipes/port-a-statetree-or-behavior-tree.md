@@ -116,6 +116,13 @@ when the query does not declare a parameter of that name and type. The node fail
 which reads as an AI decision; check them in PIE with the Visual Logger's `LogEQS` entries, which list every item and the test that dropped it. Do not
 author the older `randomBest25` field; use `pick`.
 
+A query whose context read a Blackboard key reads the brain instead, so the target has one owner. Set the context
+to `ADSKEnvQueryContext_Target` ("AdamskAI Target"): the actor in the querier brain's `Target` Object slot. For
+another slot, subclass `UADSKEnvQueryContext_Slot` in C++ and set `SlotName` in the constructor; an Object slot
+gives its actor, a Vector slot its point ([ADSKEnvQueryContexts.h](../../Source/AdamskAIHost/Public/Nodes/ADSKEnvQueryContexts.h)).
+The slot is read when the query runs. `none` gives an empty context; a missing slot, a slot of another type or a
+querier with no brain also warns once. The validator does not see which slot a query asset reads.
+
 ## What has no equivalent
 
 From [../limitations.md](../limitations.md): Blueprint tasks, conditions and decorators (behavior is XML and nodes

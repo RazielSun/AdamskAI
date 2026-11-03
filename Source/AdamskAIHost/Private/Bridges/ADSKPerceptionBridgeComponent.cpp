@@ -7,6 +7,7 @@
 #include "Brain/ADSKBrainComponent.h"
 #include "Brain/ADSKHostServices.h"
 #include "GameFramework/Actor.h"
+#include "GameplayTagAssetInterface.h"
 #include "Objects/ADSKObjectHandles.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AIPerceptionSystem.h"
@@ -53,6 +54,7 @@ void UADSKPerceptionBridgeComponent::BeginPlay()
 		State.ForgetAfter = Binding.ForgetAfter;
 		State.RequiredActorTag = Binding.RequiredActorTag;
 		State.RequiredStimulusTag = Binding.RequiredStimulusTag;
+		State.IgnoreGameplayTags = Binding.IgnoreGameplayTags;
 	}
 	Perceptions[0]->OnTargetPerceptionUpdated.AddUniqueDynamic(this, &UADSKPerceptionBridgeComponent::OnTargetPerceptionUpdated);
 	PreTickHandle = Brains[0]->OnPreTick.AddUObject(this, &UADSKPerceptionBridgeComponent::OnPreTick);
@@ -185,6 +187,13 @@ bool UADSKPerceptionBridgeComponent::AcceptsStimulus(const FBindingState& State,
 	return AcceptsActor(State, Actor) && (State.RequiredStimulusTag.IsNone() || State.RequiredStimulusTag == Tag);
 }
 
+bool UADSKPerceptionBridgeComponent::IsIgnored(const FBindingState& State, const AActor& Actor)
+{
+	if (State.IgnoreGameplayTags.IsEmpty()) return false;
+	const IGameplayTagAssetInterface* Tags = Cast<const IGameplayTagAssetInterface>(&Actor);
+	return Tags && Tags->HasAnyMatchingGameplayTags(State.IgnoreGameplayTags);
+}
+
 void UADSKPerceptionBridgeComponent::ProcessStimulus(UClass* Sense, AActor* Actor, FVector Location, bool bSuccessfullySensed, FName Tag)
 {
 	FBindingState* State = States.Find(Sense);
@@ -199,6 +208,7 @@ void UADSKPerceptionBridgeComponent::ProcessStimulus(UClass* Sense, AActor* Acto
 	}
 	if (!AcceptsStimulus(*State, *Actor, Tag)) return;
 	AddCandidate(*State, Actor, Location);
+	if (IsIgnored(*State, *Actor)) return;
 	if (State->Stimuli.Num() == MaxQueuedStimuli) { State->Stimuli.RemoveAt(0); ++DroppedStimuli; }
 	State->Stimuli.Add(Location);
 }
@@ -275,7 +285,13 @@ AActor* UADSKPerceptionBridgeComponent::Select(FBindingState& State, TSubclassOf
 	}
 	TArray<AActor*>& Candidates = SelectScratch;
 	Candidates.Reset();
-	for (const TWeakObjectPtr<AActor>& Entry : State.Sorted) Candidates.Add(Entry.Get());
+	// An ignored candidate stays tracked, so clearing its tag brings it back without a new stimulus.
+	for (const TWeakObjectPtr<AActor>& Entry : State.Sorted) { if (!IsIgnored(State, *Entry.Get())) Candidates.Add(Entry.Get()); }
+	State.EligibleCount = Candidates.Num();
+	State.bAnyEligibleSensed = Algo::AnyOf(State.Candidates, [&State](const TPair<TWeakObjectPtr<AActor>, FBindingState::FCandidate>& Candidate)
+	{
+		return Candidate.Value.LostAt < 0.0 && !IsIgnored(State, *Candidate.Key.Get());
+	});
 	if (SelectTarget.IsBound())
 	{
 		AActor* Selected = SelectTarget.Execute(*this, Sense, Candidates);
@@ -313,8 +329,7 @@ void UADSKPerceptionBridgeComponent::LogInputFailure(int32 BindingIndex, EADSKIn
 void UADSKPerceptionBridgeComponent::UpdateAlert(int32 BindingIndex, FBindingState& State, float Delta, FADSKInstance& Instance)
 {
 	const FADSKPerceptionBinding& Binding = Bindings[BindingIndex];
-	const bool bAnySensed = Algo::AnyOf(State.Candidates, [](const TPair<TWeakObjectPtr<AActor>, FBindingState::FCandidate>& Candidate) { return Candidate.Value.LostAt < 0.0; });
-	State.Alert = FMath::Clamp(State.Alert + (bAnySensed ? Binding.AlertRise : -Binding.AlertDecay) * Delta, 0.f, 1.f);
+	State.Alert = FMath::Clamp(State.Alert + (State.bAnyEligibleSensed ? Binding.AlertRise : -Binding.AlertDecay) * Delta, 0.f, 1.f);
 	if (!Binding.AlertInput.IsEmpty()) { const EADSKInputResult Result = Brain->SetInput(ResolvedInputs[BindingIndex].Alert, FADSKValue::MakeFloat(State.Alert)); if (Result != EADSKInputResult::Accepted) LogInputFailure(BindingIndex, Result); }
 	const FString* Crossing = !State.bAlerted && State.Alert >= 1.f ? &Binding.AlertedEvent : State.bAlerted && State.Alert <= 0.f ? &Binding.CalmedEvent : nullptr;
 	if (!Crossing) return;
@@ -355,7 +370,7 @@ void UADSKPerceptionBridgeComponent::OnPreTick()
 		if (!Binding.TargetInput.IsEmpty()) { const EADSKInputResult Result = Brain->SetInput(ResolvedInputs[Index].Target, FADSKObjectHandles::Make(Target)); if (Result != EADSKInputResult::Accepted) LogInputFailure(Index, Result); }
 		const bool bTargetSensed = Target && State->Candidates.FindChecked(Target).LostAt < 0.0;
 		if (!Binding.SensedInput.IsEmpty()) { const EADSKInputResult Result = Brain->SetInput(ResolvedInputs[Index].Sensed, FADSKValue::MakeBool(bTargetSensed)); if (Result != EADSKInputResult::Accepted) LogInputFailure(Index, Result); }
-		if (!Binding.TargetCountInput.IsEmpty()) { const EADSKInputResult Result = Brain->SetInput(ResolvedInputs[Index].TargetCount, FADSKValue::MakeInt(State->Candidates.Num())); if (Result != EADSKInputResult::Accepted) LogInputFailure(Index, Result); }
+		if (!Binding.TargetCountInput.IsEmpty()) { const EADSKInputResult Result = Brain->SetInput(ResolvedInputs[Index].TargetCount, FADSKValue::MakeInt(State->EligibleCount)); if (Result != EADSKInputResult::Accepted) LogInputFailure(Index, Result); }
 		UpdateAlert(Index, *State, Delta, *Instance);
 		if (Target && !Binding.TargetLocationInput.IsEmpty())
 		{

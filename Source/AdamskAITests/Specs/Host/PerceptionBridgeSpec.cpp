@@ -14,12 +14,14 @@
 #include "Support/TempTree.h"
 #include "Components/ActorTestSpawner.h"
 #include "Components/SceneComponent.h"
+#include "NativeGameplayTags.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISense_Hearing.h"
 #include "Perception/AISense_Sight.h"
 #include "CQTest.h"
 #include "Support/TestChecks.h"
 #include "Support/FakeHostServices.h"
+#include "Support/GameplayTagActors.h"
 
 namespace FPerceptionBridgeSpecPrivate
 {
@@ -132,6 +134,24 @@ namespace FPerceptionBridgeSpecPrivate
 		FADSKPerceptionBinding Result = SightBinding();
 		Result.RequiredActorTag = TEXT("Source");
 		Result.RequiredStimulusTag = TEXT("Important");
+		Result.SensedInput = TEXT("Sensed");
+		Result.TargetCountInput = TEXT("Count");
+		Result.AlertInput = TEXT("Alert");
+		return Result;
+	}
+
+	struct FScopedIgnoreTags
+	{
+		FNativeGameplayTag Death{TEXT("AdamskAI"), TEXT("AdamskAIHost"), TEXT("AdamskAI.Test.Bridge.Death"),
+			TEXT("Perception bridge test parent"), ENativeGameplayTagToken::PRIVATE_USE_MACRO_INSTEAD};
+		FNativeGameplayTag Dying{TEXT("AdamskAI"), TEXT("AdamskAIHost"), TEXT("AdamskAI.Test.Bridge.Death.Dying"),
+			TEXT("Perception bridge test child"), ENativeGameplayTagToken::PRIVATE_USE_MACRO_INSTEAD};
+	};
+
+	FADSKPerceptionBinding IgnoreBinding(const FScopedIgnoreTags& Tags)
+	{
+		FADSKPerceptionBinding Result = SightBinding();
+		Result.IgnoreGameplayTags.AddTag(Tags.Death.GetTag());
 		Result.SensedInput = TEXT("Sensed");
 		Result.TargetCountInput = TEXT("Count");
 		Result.AlertInput = TEXT("Alert");
@@ -475,6 +495,61 @@ TEST_CLASS_WITH_FLAGS(FPerceptionBridgeSpec, "AdamskAI.Host.PerceptionBridge",
 		ASSERT_THAT(AreEqual(0, Runtime.Value(TEXT("Count")).Int));
 		Runtime.Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(20), false);
 		ASSERT_THAT(AreEqual(0, Runtime.Bridge->GetCandidateCountForTest(UAISense_Sight::StaticClass())));
+	}
+
+	TEST_METHOD(AnIgnoredGameplayTagHidesACandidateUntilTheTagGoes)
+	{
+		FScopedIgnoreTags Tags;
+		FBridgeRuntime Runtime(LoadDefinition(FilterXml()), {IgnoreBinding(Tags)});
+		FADSKScopedFakeHostServices Services(Runtime.Spawner.GetWorld());
+		Services->Time = 0.0;
+		AADSKTestTaggedActor& Candidate = Runtime.Spawner.SpawnActor<AADSKTestTaggedActor>();
+		Candidate.OwnedTags.AddTag(Tags.Dying.GetTag());
+		Runtime.Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Candidate, FVector(10), true);
+		Runtime.Brain->TickBrain(0.1f);
+		Services->Time = 1.0;
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(IsFalse(Runtime.Value(TEXT("Has")).bBool, TEXT("a dying child-tagged candidate was selected")));
+		ASSERT_THAT(AreEqual(0, Runtime.Value(TEXT("Count")).Int));
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("Alert")).Float == 0.f, TEXT("an ignored candidate raised the alert")));
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("LastStimulus")) == FADSKValue::MakeVector(FVector::ZeroVector), TEXT("an ignored candidate raised a stimulus")));
+		ASSERT_THAT(AreEqual(FString(TEXT("idle")), Runtime.State()));
+		ASSERT_THAT(AreEqual(1, Runtime.Bridge->GetCandidateCountForTest(UAISense_Sight::StaticClass())));
+
+		Candidate.OwnedTags.Reset();
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("Has")).bBool, TEXT("clearing the tag did not bring the candidate back")));
+		ASSERT_THAT(IsTrue(Runtime.Value(TEXT("Sensed")).bBool));
+		ASSERT_THAT(AreEqual(1, Runtime.Value(TEXT("Count")).Int));
+		ASSERT_THAT(AreEqual(FString(TEXT("active")), Runtime.State()));
+
+		Candidate.OwnedTags.AddTag(Tags.Death.GetTag());
+		Runtime.Brain->TickBrain(0.1f);
+		ASSERT_THAT(IsFalse(Runtime.Value(TEXT("Has")).bBool, TEXT("a target that gained the tag stayed selected")));
+		ASSERT_THAT(AreEqual(FString(TEXT("lost")), Runtime.State()));
+	}
+
+	TEST_METHOD(AnIgnoredCandidateIsSkippedByTheDefaultAndTheBoundSelector)
+	{
+		FScopedIgnoreTags Tags;
+		FBridgeRuntime Runtime(LoadDefinition(FilterXml()), {IgnoreBinding(Tags)});
+		AADSKTestTaggedActor& Near = Runtime.Spawner.SpawnActor<AADSKTestTaggedActor>();
+		AActor& Far = Runtime.Spawner.SpawnActor<AActor>();
+		SetLocation(Near, FVector(10, 0, 0));
+		SetLocation(Far, FVector(500, 0, 0));
+		Near.OwnedTags.AddTag(Tags.Death.GetTag());
+		Runtime.Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Near, FVector(10, 0, 0), true);
+		Runtime.Bridge->InjectStimulusForTest(UAISense_Sight::StaticClass(), &Far, FVector(500, 0, 0), true);
+		ASSERT_THAT(IsTrue(Runtime.Bridge->SelectTargetForTest(UAISense_Sight::StaticClass()) == &Far, TEXT("selected ") + GetNameSafe(Runtime.Bridge->SelectTargetForTest(UAISense_Sight::StaticClass()))));
+
+		int32 Offered = -1;
+		Runtime.Bridge->SelectTarget.BindLambda([&Offered](const UADSKPerceptionBridgeComponent&, TSubclassOf<UAISense>, TConstArrayView<AActor*> Candidates)
+		{
+			Offered = Candidates.Num();
+			return Candidates.IsEmpty() ? nullptr : Candidates[0];
+		});
+		ASSERT_THAT(IsTrue(Runtime.Bridge->SelectTargetForTest(UAISense_Sight::StaticClass()) == &Far));
+		ASSERT_THAT(AreEqual(1, Offered));
 	}
 
 	TEST_METHOD(ResyncAfterStopAndDefinitionReplacementUsesTheSameFilters)
