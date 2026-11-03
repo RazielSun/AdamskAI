@@ -93,7 +93,6 @@ Each needs a maintainer's yes or no; the recommendation is in the last column.
 | B6 | One monitor interface (recorder, Visual Logger, Insights, debugger as subscribers) and an execution gate for breakpoints such as `file:node:enter`, keeping the debugger out of the runtime | when a breakpoint is first wanted |
 | B7 | A save-and-restore round trip after every tick of every golden trace. A restore restarts the leaf state's tree, so records diverge by design; comparing state paths and Locals at quiet points is possible. `AdamskAI.Fuzz.Compiler` already restarts every mutant from snapshots | only if snapshot bugs show up |
 | B11 | `AdamskAIDemo` as a `DeveloperTool` module, or denied to `Game` targets: today it is allowed in Development game builds, adds the `adsk.Demo*` commands and mounts `@AdskDemo` on `Plugins/AdamskAI/Demo`, which is never staged | yes; setup.md already keeps `/AdamskAI/Demo` out of the cook |
-| B12 | Determinism across builds: `FPSemantics = Precise` in the `AdamskAI` and `AdamskAIHost` Build.cs, so Win64 game builds and pre-5.8 editors compute the plugin's floats as Linux and 5.8 editors do; then golden traces run in a packaged Win64 game. Cost: a separate PCH variant (check on 5.6 and 5.7) and slightly slower float math, measured by the bench. Until then the guarantee is per build ([limitations.md](../limitations.md)) | yes, with a Win64 run that measures the cost |
 | B10 | `RunEQS` item counts in the trace: an empty query records how many items were generated and passed (today only the Visual Logger's `LogEQS` entry has them). Needs a reason or payload on async completions through the core | yes, at the next EQS investigation |
 
 `Examples/chase_and_wait.xml` declares `Home` and `Reach` but nothing reads them (`note unread-input`); dropping them
@@ -106,6 +105,7 @@ changes its golden trace and compat tables.
 | Unreal Insights regions | Trace → Channels `AdamskAI`, `region`, `bookmark`, `cpu`; record 30 s of agents, open in Insights: regions `<controller> <state>`, CPU scopes named by node kind under `FADSKInstance::Tick` |
 | Project Settings panel | Project Settings → Plugins → AdamskAI shows every `UADSKSettings` field; a change writes `[/Script/AdamskAIHost.ADSKSettings]` to `DefaultGame.ini` |
 | Another `BehaviorRoot` | with the root moved (files too), PIE and a live reload work; validation and tests on such a root already pass |
+| Precise floats on Win64 | `AdamskAI` and `AdamskAIHost` set `FPSemantics = Precise`: a Win64 game build's log shows `/fp:precise` for them; `adsk_perf_compare_win64.ps1` measures the cost against the baseline; the golden traces replay in a packaged Win64 game |
 | Mac | `RunUAT BuildPlugin -Plugin=<path>/AdamskAI.uplugin -Package=<out> -TargetPlatforms=Mac -StrictIncludes` |
 
 ## Tooling

@@ -16,6 +16,9 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
 - An Insights CPU scope `UADSKBrainComponent::OnPreTick` around the host's `OnPreTick`, broadcast only when bound.
 
 ### Changed
+- `AdamskAI` and `AdamskAIHost` compile with precise floating point everywhere: Win64 games and editors before 5.8
+  used `/fp:fast`, so a decision at a float threshold could differ from the editor. Before 5.8 these two modules
+  build without a precompiled header.
 - Unreal Engine 5.6 and 5.7 are supported alongside 5.8 from one source. `Content/` (test map, EQS assets, demo arena)
   is saved with 5.6 so every supported engine reads it.
 - An instance takes 6980 bytes instead of 7492 (6660 in 0.4): a `Parallel`'s child lane list is allocated when the

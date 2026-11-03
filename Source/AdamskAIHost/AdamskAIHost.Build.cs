@@ -7,6 +7,8 @@ public class AdamskAIHost : ModuleRules
 	public AdamskAIHost(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		// One float result in every build: MSVC compiles games, and editors before 5.8, with /fp:fast otherwise.
+		FPSemantics = FPSemanticsMode.Precise;
 		// GameplayTags is public: the brain's active state tags are an FGameplayTagContainer.
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AIModule", "DeveloperSettings", "GameplayTags", "AdamskAI" });
 		PrivateDependencyModuleNames.AddRange(new string[] { "Projects", "Json" });

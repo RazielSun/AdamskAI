@@ -7,6 +7,8 @@ public class AdamskAI : ModuleRules
 	public AdamskAI(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		// One float result in every build: MSVC compiles games, and editors before 5.8, with /fp:fast otherwise.
+		FPSemantics = FPSemanticsMode.Precise;
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject" });
 
