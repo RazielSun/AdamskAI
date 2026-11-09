@@ -1,0 +1,46 @@
+# The checks that need no engine: static plugin rules, the decisions, the scripts' own failure paths, and on a pull
+# request its commit messages and description. Engine checks (validate, simulate, tests) run on a machine with
+# Unreal; their result goes in the commits' `Test:` lines and the description's "Commands run".
+
+name: checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tools
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libxml2-utils
+
+      - name: Static rules and decisions
+        run: Tools/adsk_check.sh
+
+      - name: Scripts' failure paths
+        run: Tools/adsk_selftest.sh --static
+
+      - name: Commit messages
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: Tools/adsk_commit_check.sh --range "$BASE..$HEAD"
+
+      - name: Pull request description
+        if: github.event_name == 'pull_request'
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s\n' "$BODY" > "$RUNNER_TEMP/pr-body.md"
+          Tools/adsk_commit_check.sh --pr-body "$RUNNER_TEMP/pr-body.md"

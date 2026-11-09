@@ -8,6 +8,10 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
 ## Unreleased
 
 ### Added
+- Development rules a script checks: decisions in `docs/dev/decisions/` with evidence `adsk_check` resolves
+  (`decision-evidence`), `Tools/adsk_commit_check.sh` (commit bodies with `Test:` / `Not verified:`, filled pull request
+  sections), the Linux `Tools/adsk_selftest.sh`, a GitHub workflow running the checks that need no engine, and
+  `docs/dev/proofs/` for evidence no test carries.
 - `HasGameplayTag` sensor: reads `IGameplayTagAssetInterface` on the target actor and publishes a Bool Input,
   with hierarchical matching. Missing actors or interfaces read false; Actor Tags and components are not searched.
 - Perception binding filters `RequiredActorTag` (ordinary Actor Tags) and `RequiredStimulusTag` (exact stimulus tag).
@@ -39,6 +43,9 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
   next on Win64, 0.4 alike.
 
 ### Fixed
+- `adsk_test.sh` (Linux, without a project runner) returned 3 instead of 1 for a filter that matches no test: the
+  UnrealTraceServer the editor forks overwrote the tail of the redirected output, completion markers included. The
+  engine now writes its log to `Saved/Logs/adsk_test.log` itself (`-abslog`); stdout goes to `adsk_test.stdout.log`.
 - The trace export included the monolithic `Json.h`, which warned in `BuildPlugin` on Win64 and Android.
 - `adsk_buildplugin_win64.ps1` takes `-TargetPlatforms` (default `Win64`) and echoes clang warnings and the engine's
   monolithic-header warning, which it used to drop. `adsk_build_win64.ps1` builds the one editor target in

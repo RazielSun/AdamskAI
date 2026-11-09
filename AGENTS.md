@@ -58,7 +58,8 @@ script as `powershell -ExecutionPolicy Bypass -File Plugins\AdamskAI\Tools\<scri
 | The plugin alone, outside any project | `adsk_host_check.sh` | `adsk_buildplugin_win64.ps1` |
 | Benchmarks against this machine's baseline and the ceilings | `adsk_perf_compare.sh` | `adsk_perf_compare_win64.ps1` |
 | What AdamskAI adds to and keeps out of the cook | — (the Linux project checks its own cook) | `adsk_cook_check_win64.ps1` |
-| The scripts' own failure paths and exit codes | — (owed) | `adsk_selftest_win64.ps1` |
+| The scripts' own failure paths and exit codes | `adsk_selftest.sh [--static]` | `adsk_selftest_win64.ps1` |
+| Commit messages and a pull request description (no engine) | `adsk_commit_check.sh [--range\|--message\|--pr-body]` | `adsk_commit_check_win64.ps1` |
 
 The usual loop after a change: build, check, validate, test (`adsk_all` runs them in order); after changing a behavior file, validate it and run its
 scenarios (write one when a state machine change could loop: [docs/dev/testing.md](docs/dev/testing.md#simulation)). Strict
@@ -108,6 +109,8 @@ snapshots, labels and the optional panel are in [docs/debugging.md](docs/debuggi
 |---|---|
 | Which command proves what? How do the world tests work? | [docs/dev/testing.md](docs/dev/testing.md) |
 | What is verified, what is left, what is wanted but not built? | [docs/dev/roadmap.md](docs/dev/roadmap.md), the one list; delete an item there when it lands |
+| Why was it decided this way, and what still proves it? | [docs/dev/decisions/](docs/dev/decisions/README.md); read the ones that touch an area before changing it |
+| Where is the evidence for a run no test carries? | [docs/dev/proofs/](docs/dev/proofs/README.md) |
 | How is performance measured, and against which ceilings? | [docs/dev/perf.md](docs/dev/perf.md) |
 | Invalid inputs and their exact diagnostics | [Fixtures/](Fixtures/) |
 | How do I propose a change? | [CONTRIBUTING.md](CONTRIBUTING.md) |
@@ -120,6 +123,9 @@ snapshots, labels and the optional panel are in [docs/debugging.md](docs/debuggi
   (see [docs/dev/testing.md](docs/dev/testing.md)). Never name the schema inside a behavior file: `xsi:` attributes do not compile.
 - Add an expectation to a fixture without checking the compiler's diagnostic is the right one.
 - Treat a crash, timeout or missing `ADSK_VALIDATE_COMPLETE` marker as a pass.
+- Call a fix proved before its regression was seen to fail with the fix removed and pass with it restored.
+- Reverse a decision in [docs/dev/decisions/](docs/dev/decisions/README.md) silently: write a new one that supersedes it.
+- Commit without a `Test:` or `Not verified:` line in the body ([CONTRIBUTING.md](CONTRIBUTING.md#pull-requests)).
 - Build while an editor for the project is running, or kill editors by process name to get around it;
   the Windows scripts list the PIDs and refuse.
 - Call a function with side effects inside `check()`: it compiles out of Shipping and Test. Use `verify()`

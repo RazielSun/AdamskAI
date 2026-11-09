@@ -12,7 +12,7 @@
 # only as a fallback: `**** TEST COMPLETE. EXIT CODE: N ****` and `Automation Test Queue Empty N tests performed`).
 # The commands are comma-separated, as in the project tooling; a semicolon-separated form was
 # observed to leave the editor running after the tests, so it is not used.
-# Full output goes to Saved/Logs/adsk_test.log.
+# The engine log goes to Saved/Logs/adsk_test.log, the process's stdout to Saved/Logs/adsk_test.stdout.log.
 #
 # Exit codes: 0 every executed test passed; 1 a test failed or none ran; 2 usage, project or
 # engine failure; 3 timeout, crash, or a missing/incomplete completion.
@@ -60,18 +60,22 @@ adsk_preflight || exit $?
 REPORT_DIR="$ADSK_PROJECT_ROOT/Saved/AdamskAI/automation"
 LOG_DIR="$ADSK_PROJECT_ROOT/Saved/Logs"
 LOG="$LOG_DIR/adsk_test.log"
+# The engine writes its own log to $LOG (-abslog): stdout is shared with the UnrealTraceServer the editor forks, whose
+# output overwrote the tail of a redirected stdout, completion markers included. stdout goes to a file of its own.
+STDOUT_LOG="$LOG_DIR/adsk_test.stdout.log"
 # The report directory is deleted before every run so a stale one can never read as a pass.
 if [ -L "$REPORT_DIR" ] || { [ -e "$REPORT_DIR" ] && [ ! -d "$REPORT_DIR" ]; }; then
 	adsk_err "$REPORT_DIR is a symlink or not a directory; refusing to delete it."
 	exit 2
 fi
-rm -rf -- "$REPORT_DIR" && mkdir -p "$REPORT_DIR" "$LOG_DIR" || { adsk_err "cannot prepare report and log directories."; exit 2; }
+rm -rf -- "$REPORT_DIR" && mkdir -p "$REPORT_DIR" "$LOG_DIR" && rm -f -- "$LOG" "$STDOUT_LOG" || {
+	adsk_err "cannot prepare report and log directories."; exit 2; }
 
 echo "Running tests [$FILTER]..."
 timeout --signal=TERM --kill-after=30s "${ADSK_TEST_TIMEOUT:-900}s" \
-	"$ADSK_EDITOR_CMD" "$ADSK_UPROJECT" "-ReportExportPath=$REPORT_DIR" \
+	"$ADSK_EDITOR_CMD" "$ADSK_UPROJECT" "-ReportExportPath=$REPORT_DIR" "-abslog=$LOG" \
 	-unattended -nullrhi -nosplash -nopause \
-	"-ExecCmds=Automation RunTests $FILTER, Automation Quit," >"$LOG" 2>&1
+	"-ExecCmds=Automation RunTests $FILTER, Automation Quit," >"$STDOUT_LOG" 2>&1
 STATUS=$?
 
 TIMED_OUT=0

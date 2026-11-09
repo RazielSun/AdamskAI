@@ -116,6 +116,60 @@ if semantics.exists():
             elif name not in conformance:
                 report(semantics, number, "semantics-citation", f"no Fixtures/conformance/{name}.xml")
 
+
+def test_registered(name):
+    # A test class, a prefix of one, or one of its methods.
+    return any(test == name or test.startswith(name + ".") or name.startswith(test + ".") for test in test_names)
+
+
+# docs/dev/decisions: numbered files with a known status and evidence that still resolves.
+decisions = plugin / "docs" / "dev" / "decisions"
+DECISION_NAME = re.compile(r"^(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
+STATUS = re.compile(r"^(?:Proposed|Accepted, \d{4}-\d{2}-\d{2}|Superseded by (\d{4}))$")
+if decisions.is_dir():
+    numbers = {}
+    for path in sorted(decisions.glob("*.md")):
+        if path.name == "README.md":
+            continue
+        name = DECISION_NAME.match(path.name)
+        if not name:
+            report(path, 1, "decision-evidence", "a decision file is named NNNN-lowercase-slug.md")
+            continue
+        number = name.group(1)
+        if number in numbers:
+            report(path, 1, "decision-evidence", f"number {number} is also {numbers[number]}")
+        numbers[number] = path.name
+        lines = path.read_text(encoding="utf-8").splitlines()
+        if not lines or not lines[0].startswith(f"# {number}: "):
+            report(path, 1, "decision-evidence", f"the first line is '# {number}: <title>'")
+        fields = {}
+        for line_number, line in enumerate(lines, 1):
+            if line.startswith("## "):
+                break
+            key, _, value = line.partition(": ")
+            if key in ("Status", "Evidence"):
+                fields[key] = (line_number, value.strip())
+        if "Status" not in fields:
+            report(path, 1, "decision-evidence", "no 'Status:' line before the first section")
+        elif not (status := STATUS.match(fields["Status"][1])):
+            report(path, fields["Status"][0], "decision-evidence",
+                   "Status is 'Proposed', 'Accepted, YYYY-MM-DD' or 'Superseded by NNNN'")
+        elif status.group(1) and not list(decisions.glob(f"{status.group(1)}-*.md")):
+            report(path, fields["Status"][0], "decision-evidence", f"no decision {status.group(1)} supersedes it")
+        if "Evidence" not in fields:
+            report(path, 1, "decision-evidence", "no 'Evidence:' line before the first section")
+            continue
+        line_number, value = fields["Evidence"]
+        names = [part.strip() for group in CITATION.findall(value) for part in group.split(",")]
+        if not names:
+            report(path, line_number, "decision-evidence", "Evidence names no test, fixture or path")
+        for cited in names:
+            if cited.startswith("AdamskAI"):
+                if not test_registered(cited):
+                    report(path, line_number, "decision-evidence", f"no test registers '{cited}'")
+            elif not (plugin / cited.split("#", 1)[0]).exists() and cited not in conformance:
+                report(path, line_number, "decision-evidence", f"no file '{cited}' in the plugin")
+
 for finding in findings:
     print(finding)
 print(f"{'FAIL' if findings else 'PASS'} adsk_check: {len(files)} files, {len(findings)} findings")

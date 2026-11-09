@@ -30,6 +30,11 @@ follow [AGENTS.md](AGENTS.md), which this file shares its rules with.
 5. Update the documents your change affects in the same change: the reference a user reads, a C++ break in
    [docs/migration.md](docs/migration.md), a summary line in [CHANGELOG.md](CHANGELOG.md), and delete a roadmap item
    that landed.
+6. A choice between real alternatives (a default, a build setting, a dependency or ownership rule) gets a decision in
+   [docs/dev/decisions/](docs/dev/decisions/README.md); a reversal supersedes the old one instead of deleting it.
+   Read the decisions that touch an area before changing it.
+7. Evidence no test carries (a platform run, a benchmark, a before/after) goes in
+   [docs/dev/proofs/](docs/dev/proofs/README.md), and the roadmap or the decision links to it.
 
 ## Code rules
 
@@ -60,9 +65,17 @@ own.
   the right one before you add the expectation.
 - A behavior that could loop gets a simulation scenario ([docs/dev/testing.md](docs/dev/testing.md#simulation)).
 - A crash, a timeout or a missing completion marker is never a pass.
+- **Restore the bug.** A fix is proved by its regression: break the fix on purpose, watch that test fail, restore it,
+  watch it pass, and say both in the pull request. The same holds for a new check or rule. A test that has never been
+  seen to fail is not yet evidence.
 
 ## Pull requests
 
-One topic per pull request. Say what you changed, which commands you ran and with what result, and what you did
-not verify (a platform, PIE, a packaged build). By contributing you agree your work is released under the
+One topic per pull request. Say what you changed, which commands you ran and with what result, what you saw fail
+and pass again, and what you did not verify (a platform, PIE, a packaged build): the template's four sections.
+
+Every commit body has a `Test: <command and result>` line or a `Not verified: <what>` line (`Test: none, docs only`
+when nothing runs), and names a decision as `ADR-NNNN`. CI checks the commits and the description with
+`Tools/adsk_commit_check.sh`; run it yourself first (`--range origin/main..HEAD`, `--pr-body <file>`). Commits made
+before this rule are not held to it. By contributing you agree your work is released under the
 [MIT License](LICENSE).

@@ -6,6 +6,9 @@ delete it from this file and describe the result where it belongs ([migration.md
 
 ## Verified so far
 
+A run recorded from 2026-11-09 on has its command, machine and raw output in [proofs/](proofs/README.md); the rows
+below predate that and are the only record of their runs.
+
 | Platform | Last run | Result |
 |---|---|---|
 | Win64, UE 5.8.4, MSVC 14.51 | 2026-10-31 | 0.5.0 in three host projects: build, check, validate, schema check, simulate, 656 `AdamskAI.*`, 63 `AdamskAIWorld.*`, game Development + Shipping; strict includes, `BuildPlugin -StrictIncludes`, cook check, `adsk_selftest_win64.ps1`; a 5-minute fuzzer soak; `-game -nullrhi` smoke of five project maps with no AdamskAI warning. 2026-11-01: packaged Development (pak) with brains starting from the pak, a packaged listen server and client (brains on the server only), MSVC static analysis clean, `AdamskAI.*` under ASan, a 30-minute fuzzer soak; a Shipping package running 5 minutes; live reload on a project map with the project's controller (keep-state, a rejected save, restore); 40 PIE map changes with no leaked brain, subsystem or UObject; 1000 managed brains for 14 minutes with flat memory |
@@ -113,7 +116,7 @@ changes its golden trace and compat tables.
 
 | Item | Details |
 |---|---|
-| Linux twin of `adsk_selftest_win64.ps1` | the scripts' own failure paths and exit codes; `adsk_perf_compare.sh --project` has not run on Linux either |
+| `adsk_perf_compare.sh --project` on Linux | it has not run there |
 | `adsk_perf_ab` | a baseline snapshot does not reproduce across days (`baseline-waw-007.json`: 0.36 µs per `Start`, the same 0.4 code read 0.45 two days later): two plugin builds (a tag and the working tree) in two clean hosts, interleaved runs, N ≥ 3, median and spread; record the CPU load before a run and warn on a busy machine; refresh a baseline only from such a run |
 | Win64 twins | `adsk_bench_win64.ps1` (the bench has run on Win64 only by hand) and `adsk_host_check_win64.ps1` |
 | Catalogue regeneration | `adsk_validate --regenerate` / `-Regenerate` writing the project's catalogue and schema, and the full command in the `catalogue-stale` line, which names only the flag |

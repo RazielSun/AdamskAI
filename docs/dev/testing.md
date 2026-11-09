@@ -41,17 +41,22 @@ Tooling checks, run when a script changes:
 
 | What | Linux | Windows |
 |---|---|---|
-| Every script's failure path against the real engine: a planted `check()` side effect, a broken and a missing `-Paths` file, a bad `-Project`, a filter matching nothing, a 3 s test timeout, `adsk_build` and `adsk_strict_includes` with an editor open; each must give its documented exit code | not written yet | `adsk_selftest_win64.ps1 [-SkipEditor]` |
+| Every script's failure path against the real engine: a planted `check()` side effect, a broken and a missing `-Paths` file, a bad `-Project`, a filter matching nothing, a 3 s test timeout, `adsk_build` and `adsk_strict_includes` with an editor open; each must give its documented exit code | `adsk_selftest.sh [--static]`: the same cases without the editor-open ones (Linux refuses through the host preflight, which it covers), plus a planted decision, the commit and PR rules and a schema refusal; `--static` runs only the cases that need no engine (CI) | `adsk_selftest_win64.ps1 [-SkipEditor]` |
+| Commit messages (`Test:` / `Not verified:` line, `ADR-NNNN` resolves) and a pull request description (the template's sections filled) | `adsk_commit_check.sh [--range <a..b>\|--message <f>\|--pr-body <f>]` | `adsk_commit_check_win64.ps1 [-Range\|-Message\|-PrBody]` |
 | Benchmark numbers against this machine's baseline (`Fixtures/perf/baseline-<machine>.json`); `WORSE` marks a number 20% worse | `adsk_perf_compare.sh <project> [--update] [--strict]` | `adsk_perf_compare_win64.ps1 [-Update] [-Strict]` |
 
-The static rules (`Tools/lib/adsk_check.py`), the test verdict (`Tools/lib/adsk_test_report.py`) and the perf
+`.github/workflows/checks.yml` runs `adsk_check`, `adsk_selftest.sh --static` and, on a pull request, the commit and
+description rules on every push; it needs no engine, so engine results reach a reviewer only through the `Test:` lines.
+
+The static rules (`Tools/lib/adsk_check.py`), the commit rules (`Tools/lib/adsk_commit_check.py`), the test verdict (`Tools/lib/adsk_test_report.py`) and the perf
 comparison (`Tools/lib/adsk_perf_compare.py`) are one Python file each, run by both platforms' scripts, so they
 cannot drift.
 
 `adsk_check` rules: MIT header line, `.generated.h` last, nothing but questions (`Is*`, `Has*`, `Find*`,
 `Contains*`, argument-less `Get*()`, ...) inside `check()` because it compiles out of Shipping and Test,
 Build.cs dependencies from an allowlist (so no game module), an Engine-free core module, no ImGui include
-anywhere, and a resolving test named by every rule of [semantics.md](../semantics.md).
+anywhere, a resolving test named by every rule of [semantics.md](../semantics.md), and every decision in
+[decisions/](decisions/README.md) well-formed with evidence that resolves (`decision-evidence`).
 
 The scripts run a host-project preflight before launching an editor: `ADSK_PREFLIGHT=<command>` (nonzero
 exit refuses the run), `ADSK_PREFLIGHT=none`, or, by default, the project's own `Tools/lib/preflight.sh`

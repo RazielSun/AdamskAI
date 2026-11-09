@@ -15,13 +15,16 @@
 #   no-imgui             no plugin file includes ImGui (projects draw their own panels)
 #   semantics-citation   every rule in docs/semantics.md names a conformance file or a registered
 #                        AdamskAI.* test that checks it, and every name resolves
+#   decision-evidence    every docs/dev/decisions/NNNN-slug.md has a matching title, a Status of Proposed,
+#                        Accepted (dated) or Superseded by an existing decision, and Evidence whose every test,
+#                        fixture or path resolves
 #
 # Exit codes: 0 clean, 1 findings, 2 setup failure (python3 missing, plugin layout not found).
 
 set -uo pipefail
 
 case "${1:-}" in
-	-h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+	-h|--help) sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
 	"") ;;
 	*) echo "ERROR: unknown argument '$1'. Try --help." >&2; exit 2 ;;
 esac
