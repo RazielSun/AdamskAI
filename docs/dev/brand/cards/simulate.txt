@@ -1,0 +1,18 @@
+    1.033  search -> search  (tree.success)
+    1.533  search -> chase  (TargetChanged)
+    3.567  chase -> strike  (tree.success)
+    4.100  strike -> strike  (tree.success)
+    4.633  strike -> strike  (tree.success)
+    5.167  strike -> strike  (tree.success)
+    5.700  strike -> strike  (tree.success)
+    6.233  strike -> strike  (tree.success)
+    6.767  strike -> strike  (tree.success)
+    7.300  strike -> strike  (tree.success)
+    7.833  strike -> strike  (tree.success)
+    8.033  strike -> search  (TargetChanged)
+    9.067  search -> search  (tree.success)
+   10.100  search -> search  (tree.success)
+   11.133  search -> search  (tree.success)
+Plugins/AdamskAI/Fixtures/scenarios/hunt_actor.json: hunt_actor.xml, 12.00 s in 360 steps of 0.0333 s, seed 1: 15 transitions, at most 3 in one second; entered chase, mode, search, strike
+summary: mode=simulate files=1 errors=0 warnings=0 notes=0
+PASS adsk_validate [simulate]

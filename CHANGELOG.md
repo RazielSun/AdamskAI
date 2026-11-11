@@ -8,6 +8,9 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
 ## Unreleased
 
 ### Added
+- Demo screenshots: `adsk.Demo.Camera` views the arena from a preset or any camera, and `adsk.Demo.Shot` writes a
+  screenshot after a delay in game seconds, optionally without the demo's text and exiting afterwards, so a headless
+  game can capture a scene ([docs/demo.md](docs/demo.md#screenshots)).
 - Development rules a script checks: decisions in `docs/dev/decisions/` with evidence `adsk_check` resolves
   (`decision-evidence`), `Tools/adsk_commit_check.sh` (commit bodies with `Test:` / `Not verified:`, filled pull request
   sections), the Linux `Tools/adsk_selftest.sh`, a GitHub workflow running the checks that need no engine, and

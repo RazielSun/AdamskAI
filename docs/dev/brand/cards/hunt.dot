@@ -1,0 +1,20 @@
+digraph agent {
+  compound=true;
+  node [shape=box, style=rounded];
+  subgraph "cluster_mode" {
+    label="mode (initial=search)";
+    "search" [label="search\ntree search"];
+    "chase" [label="chase\ntree chase"];
+    "strike" [label="strike\ntree strike"];
+  }
+  "search" -> "chase" [label="TargetChanged [unless Target is none]"];
+  "search" -> "search" [label="tree.success [if Target is none]"];
+  "search" -> "chase" [label="tree.success"];
+  "chase" -> "search" [label="TargetChanged [if Target is none]"];
+  "chase" -> "strike" [label="tree.success"];
+  "chase" -> "search" [label="tree.failure"];
+  "strike" -> "search" [label="TargetChanged [if Target is none]"];
+  "strike" -> "strike" [label="tree.success [if Target is Marked]"];
+  "strike" -> "chase" [label="tree.success"];
+  "strike" -> "search" [label="tree.failure"];
+}

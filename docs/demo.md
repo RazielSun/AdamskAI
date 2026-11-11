@@ -4,6 +4,8 @@ A map and console scenes that show what AdamskAI does, with nothing but engine s
 bindings, no UI. Every scene is also a headless test (`AdamskAIWorld.Demo.*`), so it keeps working as the plugin
 changes, and the Fleet scene writes the performance numbers this page quotes.
 
+<p align="center"><img src="images/demo-tokens.jpg" alt="The Tokens scene: one agent strikes, five circle and wait for a token" width="100%"></p>
+
 ## Run it
 
 1. In the editor's Content Browser, enable **Settings → Show Plugin Content** and open
@@ -57,6 +59,27 @@ off every brain ticks every frame and the pass costs 0.40 ms and 0.23 ms.
 
 Both write `Saved/AdamskAI/perf/<test>.json`. The pass includes the managed ticker's own bookkeeping; the core alone
 is in [perf.md](dev/perf.md).
+
+## Screenshots
+
+Two commands make a scene's picture reproducible, in the editor or from a headless game:
+
+| Command | What it does |
+|---|---|
+| `adsk.Demo.Camera overview\|top` | views the arena from a fixed camera: at an angle from the south, or straight down |
+| `adsk.Demo.Camera <x> <y> <z> <pitch> <yaw> [fov]` | the same from any place, centimetres and degrees; `fov` is horizontal, default 90 |
+| `adsk.Demo.Shot <seconds> [name] [clean] [quit]` | a screenshot that many game seconds from now, to `Saved/Screenshots/<Platform>/AdamskAI/<name>.png` (default name: the scene's). `clean` hides the demo's on-screen text but keeps the labels; `quit` exits once the file is on disk |
+
+One scene, one process, about fifteen seconds on Linux with no window:
+
+```bash
+UnrealEditor <Project>.uproject /AdamskAI/Demo/Maps/L_AdskDemo -game -RenderOffscreen -ForceRes -resx=1920 -resy=1080 \
+  -unattended -nosplash -nopause \
+  "-ExecCmds=adsk.Demo Tokens, adsk.Demo.Camera 0 -1000 750 -35 90 55, adsk.Demo.Shot 12 tokens clean quit"
+```
+
+The log line `adsk.Demo.Shot: wrote <path>` names the file; without it after 20 s the command logs an error and, with
+`quit`, exits anyway. A shot taken earlier with the same name is deleted first, so a stale picture never passes.
 
 ## How it is built
 

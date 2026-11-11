@@ -148,6 +148,8 @@ literals and child counts, not references, slot types or ids, which stay the com
 
 ## Simulation
 
+<p align="center"><img src="../images/simulate.png" alt="adsk_simulate on the hunt_actor scenario: a lane of states over 12 seconds and the transitions it printed" width="100%"></p>
+
 `adsk_simulate` runs a behavior file headless against a JSON scenario: no world, no PIE, fixed steps, seconds of
 work. Core nodes run as shipped; every other leaf (host or project) is a double that ends as the scenario says, and
 every other scope only runs its child, so the file compiles exactly as shipped against the full catalogue. Use it

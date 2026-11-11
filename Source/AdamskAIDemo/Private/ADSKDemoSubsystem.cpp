@@ -5,8 +5,15 @@
 #include "ADSKDemoActors.h"
 #include "ADSKDemoLayout.h"
 #include "ADSKDemoModule.h"
+#include "Algo/AnyOf.h"
 #include "Algo/Find.h"
 #include "Brain/ADSKBrainComponent.h"
+#include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
+#include "CoreGlobals.h"
+#include "GameFramework/PlayerController.h"
+#include "HAL/PlatformTime.h"
+#include "UnrealClient.h"
 #include "Engine/Engine.h"
 #include "Brain/ADSKWorldSubsystem.h"
 #include "Groups/ADSKGroupSubsystem.h"
@@ -107,6 +114,60 @@ namespace ADSKDemoSubsystemPrivate
 			UADSKDemoSubsystem* Demo = UADSKDemoSubsystem::Get(World);
 			if (Demo && Demo->GetTarget()) { Demo->GetTarget()->bWalking = Args.IsEmpty() || !Args[0].Equals(TEXT("stop"), ESearchCase::IgnoreCase); }
 		}));
+
+	FAutoConsoleCommandWithWorldAndArgs ShotCommand(TEXT("adsk.Demo.Shot"),
+		TEXT("adsk.Demo.Shot <seconds> [name] [clean] [quit]: a screenshot that many game seconds from now, to Saved/Screenshots/<Platform>/AdamskAI/<name>.png. clean hides the demo's text; quit exits once the file is written."),
+		FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& Args, UWorld* World)
+		{
+			UADSKDemoSubsystem* Demo = UADSKDemoSubsystem::Get(World);
+			if (!Demo || Args.IsEmpty() || !Args[0].IsNumeric())
+			{
+				UE_LOG(LogAdamskAIDemo, Warning, TEXT("adsk.Demo.Shot <seconds> [name] [clean] [quit]"));
+				return;
+			}
+			FString Name;
+			bool bClean = false, bQuit = false;
+			for (int32 Index = 1; Index < Args.Num(); ++Index)
+			{
+				if (Args[Index].Equals(TEXT("clean"), ESearchCase::IgnoreCase)) { bClean = true; }
+				else if (Args[Index].Equals(TEXT("quit"), ESearchCase::IgnoreCase)) { bQuit = true; }
+				else { Name = Args[Index]; }
+			}
+			FString Error;
+			if (!Demo->RequestShot(FCString::Atod(*Args[0]), Name, bClean, bQuit, Error)) { UE_LOG(LogAdamskAIDemo, Warning, TEXT("adsk.Demo.Shot: %s"), *Error); }
+		}));
+
+	/** Presets for adsk.Demo.Camera: the arena at an angle from the south, and straight down. */
+	struct FCameraPreset { const TCHAR* Name; FVector Location; FRotator Rotation; float FieldOfView; };
+	const FCameraPreset CameraPresets[] = {
+		{TEXT("overview"), FVector(0.0, -4300.0, 3400.0), FRotator(-40.0, 90.0, 0.0), 90.f},
+		{TEXT("top"), FVector(0.0, 0.0, 7600.0), FRotator(-90.0, 90.0, 0.0), 80.f},
+	};
+
+	FAutoConsoleCommandWithWorldAndArgs CameraCommand(TEXT("adsk.Demo.Camera"),
+		TEXT("adsk.Demo.Camera overview|top|<x> <y> <z> <pitch> <yaw> [fov]: views the arena from a fixed camera."),
+		FConsoleCommandWithWorldAndArgsDelegate::CreateLambda([](const TArray<FString>& Args, UWorld* World)
+		{
+			UADSKDemoSubsystem* Demo = UADSKDemoSubsystem::Get(World);
+			if (!Demo) { return; }
+			FString Error;
+			if (Args.Num() == 1)
+			{
+				const FCameraPreset* Preset = Algo::FindByPredicate(CameraPresets, [&Args](const FCameraPreset& Each) { return Args[0].Equals(Each.Name, ESearchCase::IgnoreCase); });
+				if (!Preset) { UE_LOG(LogAdamskAIDemo, Warning, TEXT("adsk.Demo.Camera: unknown preset '%s' (overview, top)"), *Args[0]); return; }
+				if (!Demo->SetCamera(Preset->Location, Preset->Rotation, Preset->FieldOfView, Error)) { UE_LOG(LogAdamskAIDemo, Warning, TEXT("adsk.Demo.Camera: %s"), *Error); }
+				return;
+			}
+			if (Args.Num() < 5 || Args.Num() > 6 || Algo::AnyOf(Args, [](const FString& Arg) { return !Arg.IsNumeric(); }))
+			{
+				UE_LOG(LogAdamskAIDemo, Warning, TEXT("adsk.Demo.Camera overview|top|<x> <y> <z> <pitch> <yaw> [fov]"));
+				return;
+			}
+			const FVector Location(FCString::Atod(*Args[0]), FCString::Atod(*Args[1]), FCString::Atod(*Args[2]));
+			const FRotator Rotation(FCString::Atod(*Args[3]), FCString::Atod(*Args[4]), 0.0);
+			const float FieldOfView = Args.Num() == 6 ? FCString::Atof(*Args[5]) : 90.f;
+			if (!Demo->SetCamera(Location, Rotation, FieldOfView, Error)) { UE_LOG(LogAdamskAIDemo, Warning, TEXT("adsk.Demo.Camera: %s"), *Error); }
+		}));
 }
 
 using namespace ADSKDemoSubsystemPrivate;
@@ -125,7 +186,83 @@ bool UADSKDemoSubsystem::DoesSupportWorldType(EWorldType::Type WorldType) const
 void UADSKDemoSubsystem::Deinitialize()
 {
 	Clear();
+	if (Camera) { Camera->Destroy(); Camera = nullptr; }
 	Super::Deinitialize();
+}
+
+FString UADSKDemoSubsystem::GetShotDirectory()
+{
+	return FPaths::ConvertRelativePathToFull(FPaths::ScreenShotDir() / TEXT("AdamskAI"));
+}
+
+bool UADSKDemoSubsystem::RequestShot(double DelaySeconds, const FString& Name, bool bClean, bool bQuit, FString& OutError)
+{
+	FString Base = Name.IsEmpty() ? (Scene.IsEmpty() ? FString(TEXT("demo")) : Scene.ToLower()) : Name;
+	if (Base.Len() > 64 || Algo::AnyOf(Base, [](TCHAR Char) { return !FChar::IsAlnum(Char) && Char != TEXT('_') && Char != TEXT('-'); }))
+	{
+		OutError = FString::Printf(TEXT("name '%s' must be up to 64 letters, digits, '_' or '-'"), *Base);
+		return false;
+	}
+	const FString Path = GetShotDirectory() / Base + TEXT(".png");
+	// The quit path waits for this file, so an older one must not satisfy it.
+	IFileManager::Get().Delete(*Path, false, true, true);
+	Shot.Emplace(FPendingShot{GetWorld()->GetTimeSeconds() + FMath::Max(0.0, DelaySeconds), Path, bQuit});
+	bHideText = bClean;
+	return true;
+}
+
+bool UADSKDemoSubsystem::SetCamera(const FVector& Location, const FRotator& Rotation, float FieldOfView, FString& OutError)
+{
+	APlayerController* Player = GetWorld()->GetFirstPlayerController();
+	if (!Player)
+	{
+		OutError = TEXT("no local player controller");
+		return false;
+	}
+	if (!Camera)
+	{
+		FActorSpawnParameters Params;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		Camera = GetWorld()->SpawnActor<ACameraActor>(Location, Rotation, Params);
+	}
+	Camera->SetActorLocationAndRotation(Location, Rotation);
+	Camera->GetCameraComponent()->SetFieldOfView(FMath::Clamp(FieldOfView, 10.f, 170.f));
+	Camera->GetCameraComponent()->bConstrainAspectRatio = false;
+	// Otherwise a later possession hands the view back to the pawn.
+	Player->bAutoManageActiveCameraTarget = false;
+	Player->SetViewTarget(Camera);
+	return true;
+}
+
+void UADSKDemoSubsystem::TickShot()
+{
+	if (!Shot.IsSet())
+	{
+		return;
+	}
+	if (!Shot->bRequested)
+	{
+		if (GetWorld()->GetTimeSeconds() < Shot->At)
+		{
+			return;
+		}
+		FScreenshotRequest::RequestScreenshot(Shot->Path, true, false);
+		Shot->bRequested = true;
+		Shot->RequestedRealTime = FPlatformTime::Seconds();
+		return;
+	}
+	// The viewport writes the file on a later frame; wait for it rather than for the request delegate.
+	const bool bWritten = IFileManager::Get().FileSize(*Shot->Path) > 0;
+	const bool bTimedOut = FPlatformTime::Seconds() - Shot->RequestedRealTime > 20.0;
+	if (!bWritten && !bTimedOut)
+	{
+		return;
+	}
+	if (bWritten) { UE_LOG(LogAdamskAIDemo, Display, TEXT("adsk.Demo.Shot: wrote %s"), *Shot->Path); }
+	else { UE_LOG(LogAdamskAIDemo, Error, TEXT("adsk.Demo.Shot: no file at %s after 20 s"), *Shot->Path); }
+	const bool bQuit = Shot->bQuit;
+	Shot.Reset();
+	if (bQuit) { RequestEngineExit(TEXT("adsk.Demo.Shot")); }
 }
 
 TArray<FString> UADSKDemoSubsystem::GetSceneNames()
@@ -441,6 +578,7 @@ void UADSKDemoSubsystem::MeasureFleet()
 
 void UADSKDemoSubsystem::Tick(float DeltaTime)
 {
+	TickShot();
 	if (Scene.IsEmpty() || !GEngine)
 	{
 		return;
@@ -479,7 +617,7 @@ void UADSKDemoSubsystem::Tick(float DeltaTime)
 		Hint,
 		Live,
 	};
-	for (int32 Index = 0; Index < UE_ARRAY_COUNT(Lines); ++Index)
+	for (int32 Index = 0; Index < UE_ARRAY_COUNT(Lines) && !bHideText; ++Index)
 	{
 		GEngine->AddOnScreenDebugMessage(FirstMessageKey + Index, 0.f, Index == 0 ? FColor::Cyan : FColor::White, Lines[Index]);
 	}

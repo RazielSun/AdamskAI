@@ -7,6 +7,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "ADSKDemoSubsystem.generated.h"
 
+class ACameraActor;
 class AADSKDemoController;
 class AADSKDemoDot;
 class AADSKDemoTarget;
@@ -61,6 +62,13 @@ public:
 	/** Where that copy lives. */
 	static FString GetEditDirectory();
 
+	/** `adsk.Demo.Shot`: a screenshot DelaySeconds of game time from now, to GetShotDirectory()/Name.png. */
+	bool RequestShot(double DelaySeconds, const FString& Name, bool bClean, bool bQuit, FString& OutError);
+	/** Saved/Screenshots/<Platform>/AdamskAI, as a full path. */
+	static FString GetShotDirectory();
+	/** `adsk.Demo.Camera`: views the arena from a fixed camera; FieldOfView is horizontal, in degrees. */
+	bool SetCamera(const FVector& Location, const FRotator& Rotation, float FieldOfView, FString& OutError);
+
 private:
 	/** Spawns a demo agent at Location running Source (`@Mount/file.xml`) with Inputs; null after a failure. */
 	AADSKDemoController* SpawnAgent(const FVector& Location, const FString& Source, TConstArrayView<FADSKNamedValue> Inputs, FString& OutError);
@@ -77,6 +85,19 @@ private:
 
 	bool SetupFleet(FString& OutError);
 	void MeasureFleet();
+	void TickShot();
+
+	struct FPendingShot
+	{
+		double At = 0.0;
+		FString Path;
+		bool bQuit = false;
+		bool bRequested = false;
+		double RequestedRealTime = 0.0;
+	};
+	TOptional<FPendingShot> Shot;
+	/** Set by `adsk.Demo.Shot ... clean`: the scene's on-screen lines stay off. */
+	bool bHideText = false;
 
 	/** The tick settings the Fleet scene changed, as they were. */
 	struct FSavedTickSettings
@@ -112,4 +133,8 @@ private:
 
 	UPROPERTY()
 	TArray<TObjectPtr<AActor>> Spawned;
+
+	/** Outlives scene changes; destroyed with the subsystem. */
+	UPROPERTY()
+	TObjectPtr<ACameraActor> Camera;
 };

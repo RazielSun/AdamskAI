@@ -1,12 +1,19 @@
-# AdamskAI
+<h1 align="center"><img src="docs/images/banner.png" alt="AdamskAI" width="100%"></h1>
 
-**Agent behavior for Unreal Engine 5.6–5.8, written as text.** A statechart of modes with a behavior tree in each, authored
-in strict XML, checked headlessly before the game runs, reloaded while it plays and replayed exactly from a seed.
+<p align="center"><b>Agent behavior for Unreal Engine 5.6–5.8, written as text.</b></p>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Unreal Engine 5.6–5.8](https://img.shields.io/badge/Unreal_Engine-5.6--5.8-313131.svg)
-![Platforms](https://img.shields.io/badge/platforms-Linux_%7C_Win64_%7C_Android-lightgrey.svg)
-![Version](https://img.shields.io/badge/version-0.5.0_beta-orange.svg)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <img src="https://img.shields.io/badge/Unreal_Engine-5.6--5.8-313131.svg" alt="Unreal Engine 5.6–5.8">
+  <img src="https://img.shields.io/badge/platforms-Linux_%7C_Win64_%7C_Android-lightgrey.svg" alt="Platforms: Linux, Win64, Android">
+  <img src="https://img.shields.io/badge/version-0.5.0_beta-orange.svg" alt="Version 0.5.0 beta">
+</p>
+
+<!-- The hero picture goes here once it exists: agents in a scene with their state / node labels,
+     docs/images/hero.png, 1600 px wide, drawn by docs/dev/brand/cards. -->
+
+A statechart of modes with a behavior tree in each, authored in strict XML, checked headlessly before the game runs,
+reloaded while it plays and replayed exactly from a seed.
 
 - **Behavior is text.** It diffs, goes through review, merges, and a coding agent can write it from the node catalogue.
 - **Errors before Play.** A strict compiler and a headless validator report typos, unknown nodes, type mismatches,
@@ -54,6 +61,24 @@ To see it run, open `Plugins/AdamskAI Content/Demo/Maps/L_AdskDemo` (Content Bro
 Play and type `adsk.Demo Chase`. Seven scenes cover patrols, interrupts, squad calls, attack tokens, live reload and a
 1000-brain fleet with its cost on screen: [docs/demo.md](docs/demo.md).
 
+<p align="center"><img src="docs/images/statechart.png" alt="Every On line of hunt_actor.xml is one numbered arrow between the search, chase and strike states" width="100%"></p>
+
+## Quick start
+
+1. `git clone https://github.com/RazielSun/AdamskAI.git Plugins/AdamskAI` in your project (or add it as a submodule)
+   and enable `AdamskAI` in the `.uproject`.
+2. Add `AdamskAI` and `AdamskAIHost` to your game module's dependencies.
+3. Give your `AAIController` a `UADSKBrainComponent`, call `InitializeFromSource(TEXT("guard.xml"))`, publish the
+   file's required inputs with `SetInput`, then `StartLogic()` once and `TickBrain(DeltaTime)` every controller tick.
+4. Write `Content/AI/guard.xml`, starting from [Examples/](Examples/README.md).
+5. Build the editor, then check everything headlessly:
+   `Plugins/AdamskAI/Tools/adsk_all.sh` (Windows: `Tools\adsk_all_win64.ps1`).
+
+<p align="center"><img src="docs/images/validate.png" alt="adsk_validate reports an unknown node, a type mismatch and a misspelt goto as path:line errors" width="100%"></p>
+
+The whole setup, with the controller pattern: [docs/setup.md](docs/setup.md). Project nodes come from an
+`IADSKNodeProvider` in your module: [docs/authoring-nodes.md](docs/authoring-nodes.md).
+
 ## AdamskAI, Behavior Tree or StateTree?
 
 | | AdamskAI | Behavior Tree | StateTree |
@@ -77,6 +102,8 @@ Pick AdamskAI when behavior should live in text, be tested like code and replay 
 pattern by pattern, also against BehaviorTree.CPP, py_trees, HFSM2 and SCXML: [docs/comparison.md](docs/comparison.md).
 
 ## Measured
+
+<p align="center"><img src="docs/images/bench.png" alt="Microseconds per agent: AdamskAI against Behavior Tree and StateTree" width="100%"></p>
 
 One behavior written three ways and run side by side (`Tools/adsk_bench.sh`): patrol (wait 1 s, wait 1 s) and alert
 (wait 0.25 s twice), switched by a host flag that flips every 1.5 s per agent, so about 14,000 branch entries in
@@ -104,20 +131,6 @@ not measured yet.
 | Memory (Win64) | 6.8 KB per instance plus its node memory, allocated up front |
 
 Methods, every benchmark, ceilings and how to profile your own project: [docs/dev/perf.md](docs/dev/perf.md).
-
-## Quick start
-
-1. `git clone https://github.com/RazielSun/AdamskAI.git Plugins/AdamskAI` in your project (or add it as a submodule)
-   and enable `AdamskAI` in the `.uproject`.
-2. Add `AdamskAI` and `AdamskAIHost` to your game module's dependencies.
-3. Give your `AAIController` a `UADSKBrainComponent`, call `InitializeFromSource(TEXT("guard.xml"))`, publish the
-   file's required inputs with `SetInput`, then `StartLogic()` once and `TickBrain(DeltaTime)` every controller tick.
-4. Write `Content/AI/guard.xml`, starting from [Examples/](Examples/README.md).
-5. Build the editor, then check everything headlessly:
-   `Plugins/AdamskAI/Tools/adsk_all.sh` (Windows: `Tools\adsk_all_win64.ps1`).
-
-The whole setup, with the controller pattern: [docs/setup.md](docs/setup.md). Project nodes come from an
-`IADSKNodeProvider` in your module: [docs/authoring-nodes.md](docs/authoring-nodes.md).
 
 ## Documentation
 

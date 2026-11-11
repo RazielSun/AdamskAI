@@ -205,3 +205,26 @@ target).
 | Replication component | `UADSKReplicatedStateComponent` mirroring `OnActiveTagsChanged` into a replicated container | wait until two projects have written the same component by hand |
 | Game Feature mount activation test | a world test activating a test Game Feature plugin with a behavior mount | needs a test Game Feature plugin; mounts are covered through `BehaviorMounts` |
 | Internal procedure boundary (A6) | a cleaner split between the procedure stepper and the instance | no user-visible gain |
+
+### D. Replay and rewind
+
+A brain's decisions depend only on its file, its state, the Inputs and events the host gives it, the tick deltas and
+its seed; the world reaches it only as Inputs. So a run that kept those can be run again headless and must give the
+same records, and "rewind to tick N" is a replay to tick N. What exists: golden traces for the examples
+(`AdamskAI.Examples.Run`), seed replay tests, `AdamskAI.Trace.Equivalence`, `adsk_simulate` scenarios written by hand,
+`adsk.DumpTrace` and `FADSKSnapshot`. What does not: turning a recorded game run into a replay, a whole run kept
+from its start, a timeline to step through, and the editor's Rewind Debugger. The rows go in order; each one needs
+the one before it.
+
+| # | Feature | What it unlocks | Until then | Cost | Take it when |
+|---|---|---|---|---|---|
+| D1 | Check what `adsk.DumpTrace` keeps against what a replay needs: every Input write with its value, events with parameters, each tick's delta, the seed, when each host leaf finished and how, and Object values as stable ids. Write down what is missing | knowing how far D2 is | the manual recipe in [debugging.md](../debugging.md#networked-games): seed plus the dump, read by a person | an hour or two | before any other row |
+| D2 | `adsk_replay`: a dump becomes an `adsk_simulate` scenario (Inputs and events at their ticks, host leaves finishing when and how they did), runs headless and diffs its trace with the dump. Proved on a recorded `adsk.Demo Chase` run with an empty diff, then on a SimpleCommando enemy | a bug from a play session reproduced offline and kept as a test; determinism proved on a real game run, not only on examples | `adsk_simulate` scenarios written by hand | 2–3 days | the first bug that only shows in play, or the owner's call |
+| D3 | A whole run recorded from its start: `adsk.Record <address> on\|off` streams one brain's records to a file instead of the 256-record ring, which drops the oldest into a `Gap` | D2 on runs longer than a few seconds | `RecorderCapacity` raised for the session | about 1 day | D2 meets a `Gap` |
+| D4 | A trace viewer: a static HTML page from a trace or dump, one lane per agent with its states over time; a click shows the Inputs at that tick, the transition taken and the condition value it read; two traces side by side show where they diverge | reading "why did it do that" without the log; pictures for the README and posts | `grep transition-taken` on the trace | 2–3 days | after D2, or earlier for the docs and marketing |
+| D5 | Rewind to tick N: replay to N from the start, or from the nearest snapshot taken on a state entry (a snapshot restarts the leaf tree, K11, so only entries are exact), and step forward one tick at a time with the state, Locals and node statuses shown | stepping through a decision like a debugger | replaying the whole run and reading the records | 2–3 days on top of D2 | after D2 and D4 |
+| D6 | Unreal's Rewind Debugger: a trace channel and a Gameplay Insights track per brain (state path and active node over time), scrubbed in the editor together with animation and physics, as StateTree has | rewind inside the editor, in step with the rest of the game | D4 and D5 outside the editor | 1–2 weeks; overlaps B6 (one monitor interface, breakpoints) | a project asks for it, or after D5 proves the format |
+
+Limits that stay: Shipping has no recorder; values the host computes in its own modules can differ in the last bit
+between the editor and a packaged Win64 game ([limitations.md](../limitations.md)); a replay reproduces the brain's
+decisions, not the world, so perception and navigation are replayed as the Inputs and completions they produced.
