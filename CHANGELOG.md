@@ -8,6 +8,7 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
 ## Unreleased
 
 ### Added
+- `adsk.Labels.Scale`: the font scale of the `adsk.Labels` world labels, 0.5 to 4 ([debugging](docs/debugging.md)).
 - `Tools/adsk_export.sh`: a clean copy of the plugin for a project's `Plugins/`, from a commit and through the same
   filter as BuildPlugin, without building ([setup](docs/setup.md#getting-the-plugin)). The package filter now also leaves
   `docs/images/` out.

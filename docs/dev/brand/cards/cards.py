@@ -162,7 +162,7 @@ def card_bench():
 def card_demo(shot):
     body = (head("adsk.Demo Tokens · headless capture", "Two strike, the rest <em>wait their turn</em>") +
             f'<div class="panel"><img src="file://{shot}" style="display:block;width:100%"></div>'
-            f'<div class="foot">L_AdskDemo, adsk.Demo Tokens + adsk.Demo.Shot 12 · HoldToken on a pool of two: white strikes, purple circles · labels: state / node</div>')
+            f'<div class="foot">L_AdskDemo, adsk.Demo Tokens + adsk.Demo.Shot 10 · HoldToken on a pool of two: white strikes, purple circles · labels: state / node</div>')
     shoot("demo-tokens", page(body, 1600, 1080), 1600, 1080, jpeg=True)
 
 

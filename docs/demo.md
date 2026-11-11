@@ -4,7 +4,7 @@ A map and console scenes that show what AdamskAI does, with nothing but engine s
 bindings, no UI. Every scene is also a headless test (`AdamskAIWorld.Demo.*`), so it keeps working as the plugin
 changes, and the Fleet scene writes the performance numbers this page quotes.
 
-<p align="center"><img src="images/demo-tokens.jpg" alt="The Tokens scene: one agent strikes, five circle and wait for a token" width="100%"></p>
+<p align="center"><img src="images/demo-tokens.jpg" alt="The Tokens scene: two agents strike, four circle and wait for a token" width="100%"></p>
 
 ## Run it
 

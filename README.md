@@ -57,11 +57,13 @@ publishes facts (`Target`); the file decides. An excerpt of [Examples/hunt_actor
 </Tree>
 ```
 
+<p align="center"><img src="docs/images/statechart.png" alt="Every On line of hunt_actor.xml is one numbered arrow between the search, chase and strike states" width="100%"></p>
+
 To see it run, open `Plugins/AdamskAI Content/Demo/Maps/L_AdskDemo` (Content Browser, *Show Plugin Content*), press
 Play and type `adsk.Demo Chase`. Seven scenes cover patrols, interrupts, squad calls, attack tokens, live reload and a
 1000-brain fleet with its cost on screen: [docs/demo.md](docs/demo.md).
 
-<p align="center"><img src="docs/images/statechart.png" alt="Every On line of hunt_actor.xml is one numbered arrow between the search, chase and strike states" width="100%"></p>
+<p align="center"><img src="docs/images/demo-tokens.jpg" alt="The Tokens demo scene: two agents strike, four circle and wait for a token, each labelled state / node" width="100%"></p>
 
 ## Quick start
 

@@ -74,6 +74,9 @@ def diagram(W, H, cx, cy, node_w, node_h, inner=None, numbers=True, label_size=1
     def badges(x, y, items):
         out = ""
         n = len(items)
+        if numbers and n > 1:
+            w = (n - 1) * 34 + 36
+            out += f'<rect x="{x - w / 2:.1f}" y="{y - 18:.1f}" width="{w:.1f}" height="36" rx="18" fill="#06100b"/>'
         for k, (i, l) in enumerate(items):
             bx = x + (k - (n - 1) / 2) * 34
             c = KCOL[kind(l)]
@@ -117,12 +120,12 @@ def v_numbered():
     legend = "".join(f'<span style="display:inline-flex;align-items:center;gap:8px;margin-right:22px">'
                      f'<i style="width:14px;height:14px;border-radius:50%;background:{c}"></i>{t}</span>'
                      for c, t in ((GREEN, "tree.success"), (AMBER, "TargetChanged"), (RED, "tree.failure")))
-    extra = ".cols{display:grid;grid-template-columns:1.05fr 1fr;gap:22px;height:640px} .cols .panel{height:100%}"
+    extra = ".cols{display:grid;grid-template-columns:1.05fr 1fr;gap:22px;height:560px} .cols .panel{height:100%}"
     body = (b.head("adsk_graph · the file is the source", "Every <em>line</em> is an arrow") +
             f'<div class="cols">{panel("Examples/hunt_actor.xml", f"<pre style=\"font-size:15px;line-height:1.62\">{xml_lines(True)}</pre>")}'
-            f'{panel("the same ten transitions", f"<div style=\"height:calc(100% - 100px);padding:24px 20px 0\">{svg}</div>"
+            f'{panel("the same ten transitions", f"<div style=\"height:calc(100% - 96px);padding:18px 20px 0\">{svg}</div>"
                      f"<div style=\"padding:6px 24px;font:400 15px JetBrains Mono;color:{DIM}\">{legend}</div>")}</div>'
             f'<div class="foot">{FOOT} Numbers follow the file order of the On lines.</div>')
-    b.shoot("statechart", b.page(body, 1600, 860, extra), 1600, 860)
+    b.shoot("statechart", b.page(body, 1600, 780, extra), 1600, 780)
 
 

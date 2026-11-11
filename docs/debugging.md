@@ -14,7 +14,7 @@ issued generation by two. Fresh standalone instances still start at zero. Genera
 the odd issued generations repeat after roughly `2^31` running replacements on one brain. Reload
 requests the source again.
 
-Set `adsk.Labels 1` for one-frame `state / node` world labels over every brain's pawn. The labels collect a light
+Set `adsk.Labels 1` for one-frame `state / node` world labels over every brain's pawn. `adsk.Labels.Scale <0.5–4>` sizes their font (default 1), for screenshots and large screens. The labels collect a light
 snapshot on the game thread only while the variable is on.
 
 ## A project's own panel
