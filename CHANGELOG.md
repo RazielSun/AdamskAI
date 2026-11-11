@@ -8,6 +8,9 @@ What changed for someone who uses the plugin, newest first. Every C++ break and 
 ## Unreleased
 
 ### Added
+- `Tools/adsk_export.sh`: a clean copy of the plugin for a project's `Plugins/`, from a commit and through the same
+  filter as BuildPlugin, without building ([setup](docs/setup.md#getting-the-plugin)). The package filter now also leaves
+  `docs/images/` out.
 - Demo screenshots: `adsk.Demo.Camera` views the arena from a preset or any camera, and `adsk.Demo.Shot` writes a
   screenshot after a delay in game seconds, optionally without the demo's text and exiting afterwards, so a headless
   game can capture a scene ([docs/demo.md](docs/demo.md#screenshots)).

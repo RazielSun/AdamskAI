@@ -65,8 +65,10 @@ Play and type `adsk.Demo Chase`. Seven scenes cover patrols, interrupts, squad c
 
 ## Quick start
 
-1. `git clone https://github.com/RazielSun/AdamskAI.git Plugins/AdamskAI` in your project (or add it as a submodule)
-   and enable `AdamskAI` in the `.uproject`.
+1. Put the plugin at `Plugins/AdamskAI` in your project and enable `AdamskAI` in the `.uproject`: either
+   `git clone https://github.com/RazielSun/AdamskAI.git Plugins/AdamskAI` (or a submodule) to follow the repository,
+   or, from a clone elsewhere, `Tools/adsk_export.sh --out <Project>/Plugins/AdamskAI` for only what a project needs
+   ([setup](docs/setup.md#getting-the-plugin)).
 2. Add `AdamskAI` and `AdamskAIHost` to your game module's dependencies.
 3. Give your `AAIController` a `UADSKBrainComponent`, call `InitializeFromSource(TEXT("guard.xml"))`, publish the
    file's required inputs with `SetInput`, then `StartLogic()` once and `TickBrain(DeltaTime)` every controller tick.

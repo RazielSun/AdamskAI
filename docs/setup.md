@@ -22,6 +22,31 @@ dependency of the tests. None depends on project game code. The editor module lo
 `Default` phase, not `PostEngineInit`: the engine resolves `-run=<Commandlet>` before post-engine-init
 modules load and reports "could not find the class" otherwise.
 
+## Getting the plugin
+
+Two ways to put it at `<Project>/Plugins/AdamskAI`:
+
+- **Follow the repository:** `git clone https://github.com/RazielSun/AdamskAI.git Plugins/AdamskAI`, or a submodule.
+  You get everything, including what only developing the plugin needs.
+- **Copy what a project needs:** from a clone anywhere else,
+  `Tools/adsk_export.sh --out <Project>/Plugins/AdamskAI [--rev <commit>]`. It takes a commit, never uncommitted
+  changes, and keeps the files `RunUAT BuildPlugin` would package (its default `Source/`, `Content/`, `Resources/`,
+  then [Config/FilterPlugin.ini](../Config/FilterPlugin.ini)), as source, without building. On Windows,
+  `Tools\adsk_buildplugin_win64.ps1` builds that package through BuildPlugin itself.
+
+What the copy leaves out, and why a project does not need it:
+
+| Left out | What it is for |
+|---|---|
+| `docs/dev/` | the plugin's roadmap, decisions, test strategy, benchmarks and brand sources |
+| `docs/images/` | the pictures of the repository page; the copied pages show their alt text |
+| `Bench/` | the benchmark plugin `Tools/adsk_bench.sh` builds in a separate host; the bench does not run from a copy |
+| `.github/`, `CONTRIBUTING.md`, `CLAUDE.md` | the repository's CI and contribution rules |
+
+What it keeps although it looks like development: `Source/AdamskAITests` and `Content/Tests/` (the `adsk_test` and
+world tests), `Fixtures/` (read by the validator and the tests), `Tools/`, `Examples/`, `Demo/`, and `docs/`, which a
+coding agent reads from [AGENTS.md](../AGENTS.md).
+
 ## Steps
 
 1. Enable the plugin in the project's `.uproject` `Plugins` list (`AdamskAI`) and keep it under

@@ -60,6 +60,7 @@ script as `powershell -ExecutionPolicy Bypass -File Plugins\AdamskAI\Tools\<scri
 | What AdamskAI adds to and keeps out of the cook | — (the Linux project checks its own cook) | `adsk_cook_check_win64.ps1` |
 | The scripts' own failure paths and exit codes | `adsk_selftest.sh [--static]` | `adsk_selftest_win64.ps1` |
 | Commit messages and a pull request description (no engine) | `adsk_commit_check.sh [--range\|--message\|--pr-body]` | `adsk_commit_check_win64.ps1` |
+| A clean copy for a project's `Plugins/`, from a commit (no engine) | `adsk_export.sh --out <dir> [--rev <commit>]` | — (`adsk_buildplugin_win64.ps1` packages the same set) |
 
 The usual loop after a change: build, check, validate, test (`adsk_all` runs them in order); after changing a behavior file, validate it and run its
 scenarios (write one when a state machine change could loop: [docs/dev/testing.md](docs/dev/testing.md#simulation)). Strict
@@ -104,6 +105,8 @@ snapshots, labels and the optional panel are in [docs/debugging.md](docs/debuggi
 | Valid starting points | [Examples/](Examples/README.md); running scenes: [docs/demo.md](docs/demo.md) |
 
 ### Developing the plugin (verification, what is left)
+
+These pages are in the repository only; a copy made by `adsk_export` or BuildPlugin leaves `docs/dev/` out.
 
 | Question | Answer |
 |---|---|

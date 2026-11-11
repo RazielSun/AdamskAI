@@ -14,6 +14,9 @@
 #   commit-range         adsk_commit_check --range <a revision that does not exist>       exit 2
 #   pr-template          adsk_commit_check --pr-body on the unfilled template             exit 1
 #   schema-refused       adsk_schema_check on a project with a file the schema refuses    exit 1
+#   export-clean         adsk_export --out <a new directory>                               exit 0
+#   export-not-empty     adsk_export --out <the same directory, now holding the copy>      exit 2
+#   export-rev           adsk_export --rev <a revision that does not exist>               exit 2
 # Engine cases (left out with --static; build the editor target first, no editor of the project running):
 #   validate-broken      adsk_validate --paths <a broken .xml>                            exit 1
 #   validate-missing     adsk_validate --paths <a relative path to no file>               exit 1, "no such file"
@@ -107,6 +110,9 @@ printf 'fix: planted\n\nTest: none, docs only\nRefs: ADR-0999\n' >"$SCRATCH/deci
 expect commit-decision 1 "ADR-0999" "$TOOLS/adsk_commit_check.sh" --message "$SCRATCH/decision.msg"
 expect commit-range 2 "" "$TOOLS/adsk_commit_check.sh" --range "adsk-selftest-no-such-revision..HEAD"
 expect pr-template 1 "pr-section" "$TOOLS/adsk_commit_check.sh" --pr-body "$PLUGIN_DIR/.github/pull_request_template.md"
+expect export-clean 0 "wrote" "$TOOLS/adsk_export.sh" --out "$SCRATCH/export/AdamskAI"
+expect export-not-empty 2 "not empty" "$TOOLS/adsk_export.sh" --out "$SCRATCH/export/AdamskAI"
+expect export-rev 2 "" "$TOOLS/adsk_export.sh" --out "$SCRATCH/export-rev" --rev "adsk-selftest-no-such-revision"
 
 # A scratch project around a copy of Tools and docs, whose behavior root holds a file the schema refuses.
 SCHEMA_HOST="$SCRATCH/SchemaHost"
