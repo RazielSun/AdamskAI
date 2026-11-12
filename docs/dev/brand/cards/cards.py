@@ -1,6 +1,6 @@
 """AdamskAI tool cards for the README and docs: validator, simulator, benchmark, demo frame; the statechart card is
 statechart.py. Real tool output, kept beside this file (see README.md here). Writes docs/images/*.
-Run: python3 -I docs/dev/brand/cards/cards.py [--demo-shot <png from adsk.Demo.Shot>]"""
+Run: python3 -I docs/dev/brand/cards/cards.py [--demo-shot <png from adsk.Demo.Shot>] [--hero-shot <game capture> [<crop w:h:x:y>]]"""
 import html, json, os, re, shutil, subprocess, sys, tempfile
 
 SRC = os.path.dirname(os.path.abspath(__file__))
@@ -166,8 +166,20 @@ def card_demo(shot):
     shoot("demo-tokens", page(body, 1600, 1080), 1600, 1080, jpeg=True)
 
 
+# ------------------------------------------------------------------ 06 hero frame
+def card_hero(shot, crop=None):
+    # A game frame as it is: the crop drops a window border, then 1600 px wide like the banner.
+    vf = (f"crop={crop}," if crop else "") + "scale=1600:-2:flags=lanczos"
+    out = os.path.join(OUT, "hero.jpg")
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", shot, "-vf", vf, "-q:v", "3", out], check=True)
+    print("wrote", os.path.relpath(out, ROOT))
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
+    if args[:1] == ["--hero-shot"] and len(args) in (2, 3):
+        card_hero(os.path.abspath(args[1]), args[2] if len(args) == 3 else None)
+        sys.exit(0)
     card_validate()
     card_simulate()
     card_bench()

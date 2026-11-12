@@ -9,8 +9,7 @@
   <img src="https://img.shields.io/badge/version-0.5.0_beta-orange.svg" alt="Version 0.5.0 beta">
 </p>
 
-<!-- The hero picture goes here once it exists: agents in a scene with their state / node labels,
-     docs/images/hero.png, 1600 px wide, drawn by docs/dev/brand/cards. -->
+<p align="center"><img src="docs/images/hero.jpg" alt="A shooter level in play: enemies labelled state / node (idle / patrol_move, idle / idle_wait) and the Gameplay Debugger's AdamskAI category listing one brain's inputs, locals and trace" width="100%"></p>
 
 A statechart of modes with a behavior tree in each, authored in strict XML, checked headlessly before the game runs,
 reloaded while it plays and replayed exactly from a seed.

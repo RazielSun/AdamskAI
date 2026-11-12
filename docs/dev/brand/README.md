@@ -31,10 +31,12 @@ from real tool output, in the same style:
 | `docs/images/validate.png` | `adsk_validate.sh --paths` on [cards/hunt_actor_typos.xml](cards/hunt_actor_typos.xml) (`Wiat`, `far`, `strik`), output typed into `cards.py` | README, *Quick start* |
 | `docs/images/simulate.png` | [cards/simulate.txt](cards/simulate.txt) (`adsk_simulate.sh Fixtures/scenarios/hunt_actor.json`) | [testing.md](../testing.md#simulation) |
 | `docs/images/bench.png` | the README's *Measured* table, typed into `cards.py` | README, *Measured* |
+| `docs/images/hero.jpg` | a 1920×1080 windowed game capture with `adsk.Labels 1` and the Gameplay Debugger's `AdamskAI` category, cropped to drop the window border (`--hero-shot <file> 1920:1048:2:2`) and scaled to 1600 px | the top of [README.md](../../../README.md) |
 | `docs/images/demo-tokens.jpg` | a screenshot from `adsk.Demo Tokens, adsk.Labels.Scale 1.6, adsk.Demo.Camera 0 -1000 750 -35 90 55, adsk.Demo.Shot 10 tokens clean quit` ([demo.md](../../demo.md#screenshots)) | README, *What a behavior looks like*; [demo.md](../../demo.md) |
 
 ```bash
 python3 -I docs/dev/brand/cards/cards.py --demo-shot Saved/Screenshots/<Platform>/AdamskAI/tokens.png
+python3 -I docs/dev/brand/cards/cards.py --hero-shot <capture.jpg> [<crop w:h:x:y>]   # hero.jpg only
 ```
 
 The benchmark card carries numbers: when the README's *Measured* table changes, change `card_bench` with it and
